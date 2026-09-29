@@ -1,0 +1,72 @@
+---
+import Icon, { type IconNaam } from './Icon.astro';
+
+// Langzaam scrollende band met spullen die gerepareerd worden. Puur CSS: de lijst staat er twee keer
+// (de tweede aria-hidden), en schuift een halve breedte op. Stil bij hover en bij minder beweging.
+interface Props {
+  items: { label: string; icoon: IconNaam }[];
+}
+const { items } = Astro.props;
+---
+
+<div class="band bg-ink py-5 text-paper" role="region" aria-label="Wat we repareren">
+  <div class="band-spoor">
+    {
+      [0, 1].map((kopie) => (
+        <ul class="band-lijst" aria-hidden={kopie === 1 ? 'true' : undefined}>
+          {items.map((i) => (
+            <li class="flex items-center gap-3 font-display text-kop-3 font-extrabold whitespace-nowrap">
+              <Icon naam={i.icoon} maat={30} class="text-signaal" />
+              {i.label}
+              <span aria-hidden="true" class="ml-6 inline-block h-2 w-2 rounded-full bg-signaal" />
+            </li>
+          ))}
+        </ul>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .band {
+    overflow: hidden;
+    border-block: 1.5px dashed var(--kleur-inkt-lijn);
+  }
+  .band-spoor {
+    display: flex;
+    width: max-content;
+  }
+  .band-lijst {
+    display: flex;
+    gap: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .band-spoor {
+      animation: band 48s linear infinite;
+    }
+    .band:hover .band-spoor {
+      animation-play-state: paused;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* Geen beweging: de lijst loopt door naar een volgende regel */
+    .band-spoor {
+      width: auto;
+      justify-content: center;
+    }
+    .band-lijst {
+      flex-wrap: wrap;
+      justify-content: center;
+      padding-inline: 1rem;
+    }
+    .band-lijst[aria-hidden='true'] {
+      display: none;
+    }
+  }
+  @keyframes band {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+</style>

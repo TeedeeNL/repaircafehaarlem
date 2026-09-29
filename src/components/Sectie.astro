@@ -1,0 +1,42 @@
+---
+// Sectie met een kop: klein mono-kopje (eyebrow), grote display-kop en optionele intro.
+interface Props {
+  id?: string;
+  kopje?: string;
+  titel?: string;
+  intro?: string;
+  donker?: boolean;
+  diep?: boolean;
+  class?: string;
+  binnen?: string;
+}
+const { id, kopje, titel, intro, donker = false, diep = false, class: extra, binnen } = Astro.props;
+const kopId = id ? `${id}-kop` : undefined;
+---
+
+<section
+  id={id}
+  aria-labelledby={titel ? kopId : undefined}
+  class:list={['relative py-sectie', donker && 'bg-ink text-paper', diep && 'bg-paper-deep', extra]}
+>
+  <div class:list={['mx-auto max-w-page px-rand', binnen]}>
+    {
+      (kopje || titel) && (
+        <header class="mb-10 flex max-w-[46rem] flex-col gap-3 md:mb-14" data-reveal>
+          {kopje && (
+            <p class:list={['font-mono text-meta font-semibold tracking-[.16em] uppercase', donker ? 'text-signaal' : 'text-rust']}>
+              {kopje}
+            </p>
+          )}
+          {titel && (
+            <h2 id={kopId} class="font-display text-kop-2 font-extrabold tracking-[-0.02em]">
+              {titel}
+            </h2>
+          )}
+          {intro && <p class:list={['text-lead', donker ? 'text-ink-licht' : 'text-ink-muted']}>{intro}</p>}
+        </header>
+      )
+    }
+    <slot />
+  </div>
+</section>

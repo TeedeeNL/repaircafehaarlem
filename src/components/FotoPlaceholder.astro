@@ -1,0 +1,19 @@
+---
+// Plek voor een echte foto. Vaste beeldverhouding, dus geen verspringing als de foto later komt.
+// Vervang door <Image src=... width height loading="lazy" alt="..."> met dezelfde verhouding.
+interface Props {
+  omschrijving: string;
+  verhouding?: string;
+  class?: string;
+}
+const { omschrijving, verhouding = '4 / 3', class: extra } = Astro.props;
+---
+
+<figure
+  class:list={['foto relative grid place-items-center overflow-hidden rounded-xl border-thin border-ink bg-stripes', extra]}
+  style={`aspect-ratio: ${verhouding}`}
+>
+  <figcaption class="rounded-md px-3 py-2 text-center font-mono text-meta text-ink-muted" style="background: var(--kleur-vlak)">
+    [FOTO: {omschrijving}]
+  </figcaption>
+</figure>

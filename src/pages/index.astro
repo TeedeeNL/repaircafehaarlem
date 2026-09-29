@@ -2,66 +2,226 @@
 // S1 Home (W1, F-11). Prerendered; de sessiekaart is een server island met actuele plekken.
 export const prerender = true;
 
+import { getEntry } from 'astro:content';
 import Layout from '../components/Layout.astro';
+import Bon from '../components/Bon.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Faq from '../components/Faq.astro';
+import FotoPlaceholder from '../components/FotoPlaceholder.astro';
+import Icon, { type IconNaam } from '../components/Icon.astro';
+import Knop from '../components/Knop.astro';
+import Label from '../components/Label.astro';
+import Marquee from '../components/Marquee.astro';
+import Sectie from '../components/Sectie.astro';
 import VolgendeSessie from '../components/VolgendeSessie.astro';
-import { infoPaginas } from '../lib/menu';
 
-const paginas = await infoPaginas();
+const [overOns, huisregels, vragen] = await Promise.all([
+  getEntry('info', 'over-ons'),
+  getEntry('info', 'huisregels'),
+  getEntry('info', 'veelgestelde-vragen'),
+]);
+
+const spullen: { label: string; icoon: IconNaam }[] = [
+  { label: 'Broodrooster', icoon: 'broodrooster' },
+  { label: 'Fiets', icoon: 'fiets' },
+  { label: 'Lamp', icoon: 'lamp' },
+  { label: 'Broek', icoon: 'broek' },
+  { label: 'Koffiezetapparaat', icoon: 'koffie' },
+  { label: 'Radio', icoon: 'radio' },
+  { label: 'Telefoon', icoon: 'telefoon' },
+  { label: 'Rits of zoom', icoon: 'naald' },
+];
+
+// De stappen gebruiken alleen wat al op de site staat (aanmeldformulier, bevestiging, huisregels, FAQ).
+const stappen: { titel: string; tekst: string; icoon: IconNaam; kantel: number }[] = [
+  { titel: 'Meld je apparaat aan', tekst: 'Kies een sessie en beschrijf wat er kapot is. Duurt zo’n twee minuten.', icoon: 'moersleutel', kantel: -2 },
+  { titel: 'Je krijgt een referentienummer', tekst: 'Het staat op je bevestiging. Daarmee vraag je later de status op.', icoon: 'label', kantel: 1.5 },
+  { titel: 'Kom langs en kijk mee', tekst: 'Neem het apparaat, de stekker of oplader en je referentienummer mee. Je blijft erbij.', icoon: 'oog', kantel: -1 },
+  { titel: 'Mee naar huis', tekst: 'Reparatie is gratis, nieuwe onderdelen betaal je zelf. Lukt het niet, dan hoor je waarom.', icoon: 'thuis', kantel: 2 },
+];
+
+const puntIcoon: IconNaam[] = ['persoon', 'moersleutel', 'label'];
+const kopWoorden = ['Kapot?', 'Gooi', 'het', 'niet', 'weg.'];
 ---
 
 <Layout titel="Repair Cafe Haarlem">
-  <div class="mx-auto flex max-w-page flex-col gap-12 px-4 pt-7 pb-14 lg:pt-14">
-    <div class="flex flex-col gap-3 lg:grid lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-12">
-      <div class="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-5">
-        <p class="font-mono text-meta font-semibold tracking-[.06em] text-rust-700 uppercase">Elke eerste zaterdag</p>
-        <h1 class="font-display text-4xl leading-[1.02] font-extrabold tracking-[-.02em] text-balance lg:text-6xl lg:leading-[.98]">
-          Kapot? Gooi het niet weg.
+  <!-- Hero -->
+  <section class="hero relative overflow-hidden" aria-labelledby="hero-kop">
+    <div class="mx-auto grid max-w-page items-center gap-12 px-rand pt-10 pb-16 lg:grid-cols-[1.12fr_0.88fr] lg:gap-16 lg:pt-16 lg:pb-24">
+      <div class="flex min-w-0 flex-col gap-6">
+        <p class="hero-in self-start" style="--i: 0">
+          <span class="badge">
+            <Icon naam="kalender" maat={16} />
+            Elke eerste zaterdag
+          </span>
+        </p>
+        <h1 id="hero-kop" class="font-display text-kop-1 font-extrabold tracking-[-0.035em]">
+          {
+            kopWoorden.map((w, i) => (
+              <>
+                <span class:list={['hero-woord', i === 0 && 'hero-accent']} style={`--i: ${i + 1}`}>
+                  {w}
+                </span>{' '}
+              </>
+            ))
+          }
         </h1>
-        <p class="text-lead text-pretty lg:max-w-[420px] lg:text-[19px]">
+        <p class="hero-in max-w-[34ch] text-lead text-ink-muted md:text-xl" style="--i: 6">
           Vrijwilligers repareren gratis je apparaat. Jij kijkt mee en leert hoe het werkt.
         </p>
-
-        <div class="order-last mt-2 lg:order-none lg:mt-0">
+        <div class="hero-in flex flex-wrap gap-3" style="--i: 7">
+          <Knop href="/aanmelden" pijl>Apparaat aanmelden</Knop>
+          <Knop href="/status" variant="lijn">Status opvragen</Knop>
+        </div>
+        <div class="hero-in max-w-[30rem]" style="--i: 8">
           <VolgendeSessie server:defer>
-            <div
-              slot="fallback"
-              aria-hidden="true"
-              class="h-[248px] rounded-xl border-thin border-line bg-surface lg:max-w-[460px]"
-            >
-            </div>
+            <div slot="fallback" aria-hidden="true" class="h-[170px] rounded-lg border-thin border-dashed border-line-strong bg-surface"></div>
           </VolgendeSessie>
         </div>
       </div>
 
-      <div class="mt-3 grid h-[168px] place-items-center rounded-xl border border-line bg-stripes lg:mt-0 lg:aspect-[4/3] lg:h-auto">
-        <span class="font-mono text-xs text-ink-muted">foto: vrijwilliger aan de werkbank</span>
+      <div class="hero-in relative mx-auto w-full max-w-[26rem] lg:max-w-none" style="--i: 4">
+        <FotoPlaceholder omschrijving="vrijwilliger aan de werkbank" verhouding="4 / 5" class="rotate-[1.5deg] shadow-card" />
+        <Label as="div" kantel={-7} variant="oranje" class="!absolute -bottom-6 -left-4 w-44 text-center md:-left-10 md:w-52">
+          <p class="font-mono text-tiny font-semibold tracking-[.18em] uppercase opacity-90">Huisregel 04</p>
+          <p class="mt-1 font-display text-2xl leading-none font-extrabold">Reparatie is gratis</p>
+        </Label>
+        <Icon naam="moersleutel" maat={120} class="pointer-events-none absolute -top-8 -right-6 rotate-12 text-kraft max-lg:hidden" />
       </div>
     </div>
+  </section>
 
-    <section aria-labelledby="goed-om-te-weten" class="flex flex-col">
-      <h2 id="goed-om-te-weten" class="pb-2 font-mono text-xs font-semibold tracking-[.06em] text-ink-muted uppercase lg:pb-3">
-        Goed om te weten
-      </h2>
-      <ul class="flex flex-col border-b border-line lg:grid lg:grid-cols-3 lg:gap-4 lg:border-0">
-        {
-          paginas.map((p) => (
-            <li>
-              <a
-                href={p.href}
-                class="flex min-h-[52px] flex-col justify-center gap-1 border-t border-line text-ink no-underline hover:text-rust-700 lg:rounded-xl lg:border lg:bg-surface lg:p-5"
-              >
-                <span class="flex justify-between gap-2 text-lead font-bold lg:font-display lg:text-xl lg:font-extrabold">
-                  {p.label}
-                  <span aria-hidden="true" class="text-rust">
-                    →
-                  </span>
-                </span>
-                {p.samenvatting && <span class="hidden text-small text-ink-muted lg:block">{p.samenvatting}</span>}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
-  </div>
+  <Marquee items={spullen} />
+
+  <!-- Hoe werkt het -->
+  <Sectie id="hoe-werkt-het" kopje="Hoe werkt het" titel="Van kapot naar weer heel, in vier stappen">
+    <ol class="stappen relative grid gap-14 pt-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+      {
+        stappen.map((s, i) => (
+          <li class="stap" data-reveal style={`--i: ${i}`}>
+            <Label as="div" kantel={s.kantel} class="h-full">
+              <div class="flex items-start justify-between gap-3">
+                <span class="font-mono text-meta font-semibold tracking-[.12em] text-rust">STAP {String(i + 1).padStart(2, '0')}</span>
+                <Icon naam={s.icoon} maat={26} class="text-ink" />
+              </div>
+              <hr class="scheur" />
+              <h3 class="font-display text-kop-3 font-extrabold break-words hyphens-auto lg:text-[1.3rem] xl:text-[1.45rem]">{s.titel}</h3>
+              <p class="mt-2 text-small text-ink-muted">{s.tekst}</p>
+            </Label>
+          </li>
+        ))
+      }
+    </ol>
+  </Sectie>
+
+  <!-- Over ons -->
+  {
+    overOns && (
+      <Sectie id="over-ons" kopje={overOns.data.titel} titel="Buren met gouden handen" intro={overOns.data.intro} diep>
+        <div class="grid gap-5 md:grid-cols-3">
+          {(overOns.data.punten ?? []).map((p, i) => (
+            <article class="kaart draai-ouder" data-reveal style={`--i: ${i}`}>
+              <span class="kaart-icoon">
+                <Icon naam={puntIcoon[i] ?? 'moersleutel'} maat={28} class="icoon-draai" />
+              </span>
+              <h3 class="mt-5 font-display text-kop-3 font-extrabold">{p.titel}</h3>
+              <p class="mt-2 text-ink-muted">{p.tekst}</p>
+            </article>
+          ))}
+        </div>
+        <p class="mt-8" data-reveal>
+          <a href="/info/over-ons" class="inline-flex min-h-touch items-center gap-2 font-bold">
+            Meer over ons <Icon naam="pijl-rechts" maat={18} />
+          </a>
+        </p>
+      </Sectie>
+    )
+  }
+
+  <!-- Huisregels en vragen -->
+  <Sectie id="goed-om-te-weten" kopje="Goed om te weten" titel="Huisregels en vragen">
+    <div class="grid items-start gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+      {
+        huisregels && (
+          <div class="flex flex-col gap-4 lg:sticky lg:top-28" data-reveal>
+            <Bon titel={huisregels.data.titel} regels={huisregels.data.regels ?? []} />
+            <a href="/info/huisregels" class="mt-4 inline-flex min-h-touch items-center gap-2 self-start font-bold">
+              Alle huisregels <Icon naam="pijl-rechts" maat={18} />
+            </a>
+          </div>
+        )
+      }
+      {
+        vragen && (
+          <div class="flex flex-col gap-5">
+            <h3 class="font-display text-kop-3 font-extrabold" data-reveal>
+              {vragen.data.titel}
+            </h3>
+            <Faq vragen={vragen.data.vragen ?? []} />
+            {vragen.data.intro && (
+              <p class="text-ink-muted" data-reveal>
+                {vragen.data.intro}
+              </p>
+            )}
+          </div>
+        )
+      }
+    </div>
+  </Sectie>
+
+  <CtaBand titel="Heb je iets dat het niet meer doet?" tekst="Meld het aan voor de eerstvolgende sessie. Vrijwilligers repareren gratis je apparaat, jij kijkt mee." />
 </Layout>
+
+<style>
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    border: 1.5px solid var(--kleur-inkt);
+    border-radius: 999px;
+    background: var(--kleur-vlak);
+    font-family: var(--font-rc-mono);
+    font-size: var(--tekst-xs);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .badge :global(svg) {
+    color: var(--kleur-oranje);
+  }
+  .hero-woord {
+    display: inline-block;
+  }
+  .hero-accent {
+    position: relative;
+    color: var(--kleur-oranje);
+  }
+  .hero-accent::after {
+    /* handgetrokken onderstreping */
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0.1em;
+    bottom: 0.02em;
+    height: 0.14em;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M2 8c30-5 60-6 95-4s70 3 101-1' fill='none' stroke='%23e0561f' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E")
+      no-repeat center / 100% 100%;
+  }
+  .stappen::before {
+    /* waslijn waar de labels aan hangen */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 2%;
+    right: 2%;
+    height: 1.5px;
+    background: var(--kleur-lijn-sterk);
+    display: none;
+  }
+  @media (min-width: 1024px) {
+    .stappen::before {
+      display: block;
+    }
+  }
+</style>

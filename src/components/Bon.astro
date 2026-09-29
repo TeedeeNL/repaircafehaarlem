@@ -1,0 +1,56 @@
+---
+// Kassabon-kaart: genummerde regels met gestippelde scheiding en een gekartelde onderrand.
+interface Props {
+  titel: string;
+  regels: string[];
+  class?: string;
+}
+const { titel, regels, class: extra } = Astro.props;
+---
+
+<div class:list={['bon relative', extra]}>
+  <p class="border-b-thin border-dashed border-ink pb-3 text-center font-mono text-meta font-semibold tracking-[.2em] uppercase">
+    {titel}
+  </p>
+  <ol class="flex flex-col">
+    {
+      regels.map((r, i) => (
+        <li class="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-2 border-b border-dashed border-line-strong py-3.5 last:border-b-0" data-reveal style={`--i: ${i}`}>
+          <span class="font-mono font-semibold text-rust" aria-hidden="true">
+            {String(i + 1).padStart(2, '0')}
+          </span>
+          <span>{r}</span>
+        </li>
+      ))
+    }
+  </ol>
+</div>
+
+<style>
+  .bon {
+    padding: 1.4rem 1.4rem 2rem;
+    background: var(--kleur-vlak);
+    border: 1.5px solid var(--kleur-inkt);
+    border-bottom: 0;
+    box-shadow: var(--schaduw-kaart);
+    font-family: var(--font-rc-tekst);
+  }
+  .bon::after {
+    /* gekartelde afscheurrand */
+    content: '';
+    position: absolute;
+    left: -1.5px;
+    right: -1.5px;
+    bottom: -10px;
+    height: 12px;
+    background:
+      linear-gradient(-45deg, transparent 6px, var(--kleur-vlak) 6px) 0 0 / 12px 12px repeat-x,
+      linear-gradient(45deg, transparent 6px, var(--kleur-vlak) 6px) 0 0 / 12px 12px repeat-x;
+    filter: drop-shadow(0 1.5px 0 var(--kleur-inkt));
+  }
+  .bon ol {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+  }
+</style>
