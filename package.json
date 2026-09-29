@@ -15,7 +15,8 @@
     "db:migrate": "wrangler d1 migrations apply DB --local",
     "db:seed": "wrangler d1 execute DB --local --file=migrations/seed.sql",
     "db:reset": "npm run db:migrate && npm run db:seed",
-    "hash": "node scripts/hash-wachtwoord.mjs"
+    "hash": "node scripts/hash-wachtwoord.mjs",
+    "account": "node scripts/maak-account.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.3",

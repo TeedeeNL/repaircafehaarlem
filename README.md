@@ -46,6 +46,6 @@ Statusopvraag proberen: `RC-2026-0009` met `sanne@voorbeeld.nl`.
 1. `npx wrangler d1 create repair-cafe` en het `database_id` in `wrangler.toml` invullen.
 2. `npx wrangler d1 migrations apply DB --remote` (nooit `seed.sql` op productie).
 3. Echte Turnstile-sleutels: `TURNSTILE_SITE_KEY` in `wrangler.toml` en `npx wrangler secret put TURNSTILE_SECRET_KEY`.
-4. Accounts aanmaken met `npm run hash -- <wachtwoord>` en een `INSERT INTO vrijwilliger` via `wrangler d1 execute DB --remote`.
+4. Accounts aanmaken: `npm run account -- --naam "Naam" --email adres@voorbeeld.nl --rol coordinator --remote`. Het wachtwoord (minimaal 12 tekens) wordt verborgen gevraagd; alleen hash en salt gaan naar D1.
 5. Mail via [EUSEND](https://eusend.dev) (verwerking en opslag in de EU): verifieer een (sub)domein in het EUSEND-dashboard (DNS-records publiceren), zet `MAIL_AFZENDER` in `wrangler.toml` (bijv. `Repair Cafe Haarlem <aanmelding@send.jouwdomein.nl>`) en `npx wrangler secret put EUSEND_API_KEY` (een `eu_live_`-sleutel; `eu_test_` bezorgt niets). Ontbreekt een van beide of weigert EUSEND de mail, dan blijft de aanmelding staan, toont S3 "de mail volgt later" en staat de reden (zonder e-mailadres) in de Worker-log.
 6. `/statistiek` wordt per verzoek uit D1 gelezen (`Cache-Control: s-maxage=3600`). Dat wijkt af van ontwerpkeuze K7 (statisch), omdat de build op Cloudflare geen toegang heeft tot de productiedatabase.
