@@ -1,110 +1,116 @@
 ---
-// S5 Login vrijwilligers (W5, F-05, TE-04). Vanaf hier crew-stijl.
+// S5 Login vrijwilligers (W5, F-05, TE-04).
 export const prerender = false;
 
 import Layout from '../components/Layout.astro';
 import Alert from '../components/Alert.astro';
 import Button from '../components/Button.astro';
 import FormField from '../components/FormField.astro';
-import { leesState, STATES_AAN } from '../lib/state';
-
-const STATES = [
-  { key: 'onjuist', label: 'S5b Onjuiste inloggegevens' },
-  { key: 'geblokkeerd', label: 'S5c Geblokkeerd' },
-  { key: 'doorverwezen', label: 'S5d Doorverwezen van /crew' },
-] as const;
-const state = leesState(Astro.url, STATES);
+import { vrijwilligerOpEmail } from '../lib/db/vrijwilliger';
+import { controleerWachtwoord, doeAlsofControle } from '../lib/auth/wachtwoord';
+import { startSessie } from '../lib/auth/sessie';
+import { loginBlokkade, registreerMislukteLogin, wisMislukteLogins } from '../lib/auth/limiet';
+import { LOGIN_VELDEN, loginSchema } from '../lib/schemas/login';
+import { leesFormulier, valideer, type Fouten } from '../lib/schemas/formulier';
 
 // Alleen interne paden als terugsprong, nooit een externe URL.
-const terugParam = Astro.url.searchParams.get('terug') ?? '';
-const terug = /^\/(crew|beheer)(\/|$)/.test(terugParam) ? terugParam : '';
+const veiligDoel = (pad: unknown) =>
+  typeof pad === 'string' && /^\/(crew|beheer)(\/[a-z-]*)?$/.test(pad) ? pad : '/crew';
 
-// Mock: uitloggen en inloggen zonder controle. Straks: wachtwoord-hash, sessiecookie en blokkade.
+const terugParam = Astro.url.searchParams.get('terug');
+if (Astro.locals.gebruiker && Astro.request.method === 'GET') return Astro.redirect(veiligDoel(terugParam), 302);
+
+let email = '';
+let fouten: Fouten = {};
+let onjuist = false;
+let blokkade = { geblokkeerd: false, minuten: 0 };
+let terug = terugParam ? veiligDoel(terugParam) : '';
+
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
-  if (form.get('actie') === 'uitloggen') return Astro.redirect('/login', 303);
-  const doel = String(form.get('terug') ?? '');
-  return Astro.redirect(/^\/(crew|beheer)(\/|$)/.test(doel) ? doel : '/crew', 303);
+  terug = form.get('terug') ? veiligDoel(form.get('terug')) : '';
+  const check = valideer(loginSchema, leesFormulier(form, LOGIN_VELDEN));
+  email = (check.succes ? check.data.email : check.waarden.email) ?? '';
+
+  if (!check.succes) {
+    fouten = check.fouten;
+    Astro.response.status = 400;
+  } else {
+    blokkade = await loginBlokkade(check.data.email);
+    if (!blokkade.geblokkeerd) {
+      const v = await vrijwilligerOpEmail(check.data.email);
+      const klopt = v
+        ? await controleerWachtwoord(check.data.wachtwoord, v.salt, v.wachtwoord_hash)
+        : await doeAlsofControle(check.data.wachtwoord);
+
+      if (v && klopt) {
+        await wisMislukteLogins(check.data.email);
+        await startSessie(Astro.cookies, v.id);
+        return Astro.redirect(terug || '/crew', 303);
+      }
+      // Zelfde melding bij onbekend adres en fout wachtwoord.
+      if (await registreerMislukteLogin(check.data.email)) blokkade = { geblokkeerd: true, minuten: 15 };
+      else onjuist = true;
+    }
+    Astro.response.status = blokkade.geblokkeerd ? 429 : 401;
+  }
 }
 
-const onjuist = state === 'onjuist';
-const geblokkeerd = state === 'geblokkeerd';
-const doorverwezen = state === 'doorverwezen' || terug !== '';
-if (onjuist) Astro.response.status = 401;
-if (geblokkeerd) Astro.response.status = 429;
+const doorverwezen = Boolean(terug) && Astro.request.method === 'GET';
 ---
 
-<Layout titel="Inloggen vrijwilligers" variant="crew" states={STATES} state={state}>
+<Layout titel="Inloggen vrijwilligers" variant="crew">
   <div class="mx-auto max-w-[420px] px-4 pt-6 pb-14 md:pt-8">
     <form method="post" action="/login" novalidate class="flex flex-col gap-3.5">
       <h1 class="font-display text-2xl font-extrabold md:text-[26px]">Inloggen vrijwilligers</h1>
 
       {
-        doorverwezen && !geblokkeerd && (
+        doorverwezen && (
           <Alert soort="info" compact>
-            Log in om de werklijst te openen.
+            Log in om verder te gaan.
           </Alert>
         )
       }
       {onjuist && <Alert soort="error" compact titel="Onjuiste inloggegevens" />}
       {
-        geblokkeerd && (
+        blokkade.geblokkeerd && (
           <Alert soort="warn" compact titel="Account tijdelijk geblokkeerd" id="geblokkeerd">
-            Te veel mislukte pogingen. Probeer het over 15 minuten opnieuw.
+            Te veel mislukte pogingen. Probeer het over {blokkade.minuten} {blokkade.minuten === 1 ? 'minuut' : 'minuten'}{' '}
+            opnieuw.
           </Alert>
         )
       }
 
       {terug && <input type="hidden" name="terug" value={terug} />}
 
-      {
-        !geblokkeerd && (
-          <>
-            <FormField
-              id="l-email"
-              name="email"
-              label="E-mailadres"
-              type="email"
-              inputmode="email"
-              autocomplete="username"
-              maat="crew"
-              value={onjuist ? 'joost@repaircafehaarlem.nl' : undefined}
-              required
-            />
-            <FormField
-              id="l-wachtwoord"
-              name="wachtwoord"
-              label="Wachtwoord"
-              type="password"
-              autocomplete="current-password"
-              maat="crew"
-              toonKnop
-              autofocus={onjuist}
-              required
-            />
-          </>
-        )
-      }
+      <FormField
+        id="l-email"
+        name="email"
+        label="E-mailadres"
+        type="email"
+        inputmode="email"
+        autocomplete="username"
+        maat="crew"
+        value={email}
+        error={fouten.email}
+        autofocus={Boolean(fouten.email)}
+        required
+      />
+      <FormField
+        id="l-wachtwoord"
+        name="wachtwoord"
+        label="Wachtwoord"
+        type="password"
+        autocomplete="current-password"
+        maat="crew"
+        toonKnop
+        error={fouten.wachtwoord}
+        autofocus={onjuist || (!fouten.email && Boolean(fouten.wachtwoord))}
+        required
+      />
 
-      {
-        geblokkeerd ? (
-          <Button uit maat="crew" breed aria-describedby="geblokkeerd">
-            Inloggen
-          </Button>
-        ) : (
-          <Button type="submit" variant="crew" maat="crew" breed>
-            Inloggen
-          </Button>
-        )
-      }
+      <Button type="submit" variant="crew" maat="crew" breed>Inloggen</Button>
       <p class="text-sm text-ink-muted">Geen account? De coördinator maakt accounts aan.</p>
-      {
-        STATES_AAN && (
-          <p class="rounded-lg border border-dashed border-line-strong px-3 py-2.5 text-sm text-ink-muted">
-            Demo: elk e-mailadres en wachtwoord logt in als coördinator.
-          </p>
-        )
-      }
     </form>
   </div>
 </Layout>

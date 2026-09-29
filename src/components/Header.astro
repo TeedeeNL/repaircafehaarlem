@@ -107,8 +107,7 @@ const huidig = (href: string) => (pad.replace(/\/$/, '') === href ? 'page' : und
             <span class="text-line max-sm:hidden">
               {gebruiker.naam} · {gebruiker.rol === 'coordinator' ? 'coördinator' : 'vrijwilliger'}
             </span>
-            <form method="post" action="/login">
-              <input type="hidden" name="actie" value="uitloggen" />
+            <form method="post" action="/uitloggen">
               <button
                 type="submit"
                 class="min-h-touch rounded-lg border border-line-strong px-3 text-sm font-bold text-paper hover:border-paper"

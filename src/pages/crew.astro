@@ -55,7 +55,7 @@ if (Astro.request.method === 'POST') {
   return Astro.redirect(`/crew?${params}`, 303);
 }
 
-const gebruiker = huidigeGebruiker(state === 'vrijwilliger' ? 'vrijwilliger' : 'coordinator');
+const gebruiker = Astro.locals.gebruiker!;
 const q = Astro.url.searchParams;
 
 // Filters (F-06). Onbekende waarden vallen terug op "alle".

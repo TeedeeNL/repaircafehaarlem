@@ -27,7 +27,7 @@ if (Astro.request.method === 'POST') {
   return Astro.redirect(`/beheer/sessies?aangemaakt=${encodeURIComponent(datum)}`, 303);
 }
 
-const gebruiker = huidigeGebruiker(state === 'geen-rechten' ? 'vrijwilliger' : 'coordinator');
+const gebruiker = Astro.locals.gebruiker!;
 const geenRechten = gebruiker.rol !== 'coordinator';
 if (geenRechten) Astro.response.status = 403;
 
