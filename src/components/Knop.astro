@@ -1,0 +1,37 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import Icon from './Icon.astro';
+
+/**
+ * Knop van de publieke kant (de crew gebruikt Button.astro).
+ * - primair: oranje · lijn: omlijnd inkt · licht: omlijnd op donker
+ * - uit: aria-disabled, blijft focusbaar zodat uitleg via aria-describedby voorgelezen wordt
+ * - bezig: disabled + aria-busy, tegen dubbel verzenden
+ */
+interface Props extends Omit<HTMLAttributes<'button'>, 'type'> {
+  variant?: 'primair' | 'lijn' | 'licht';
+  klein?: boolean;
+  breed?: boolean;
+  href?: string;
+  type?: 'button' | 'submit';
+  pijl?: boolean;
+  uit?: boolean;
+  class?: string;
+}
+const { variant = 'primair', klein = false, breed = false, href, type = 'button', pijl = false, uit = false, class: extra, ...rest } = Astro.props;
+const klassen = ['knop', `knop-${variant}`, klein && 'knop-klein', breed && 'w-full', extra];
+---
+
+{
+  href && !uit ? (
+    <a href={href} class:list={klassen} {...(rest as Record<string, unknown>)}>
+      <slot />
+      {pijl && <Icon naam="pijl-rechts" maat={18} class="knop-pijl" />}
+    </a>
+  ) : (
+    <button type={uit ? 'button' : type} class:list={klassen} aria-disabled={uit ? 'true' : undefined} {...rest}>
+      <slot />
+      {pijl && <Icon naam="pijl-rechts" maat={18} class="knop-pijl" />}
+    </button>
+  )
+}

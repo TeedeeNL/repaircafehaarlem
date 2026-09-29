@@ -3,7 +3,7 @@ import '../styles/global.css';
 import { Font } from 'astro:assets';
 import Header from './Header.astro';
 import Footer from './Footer.astro';
-import { hoofdmenu } from '../lib/menu';
+import { hoofdmenu, infoPaginas } from '../lib/menu';
 import type { Gebruiker } from '../lib/domein';
 
 interface Props {
@@ -22,6 +22,7 @@ const {
 } = Astro.props;
 
 const menu = variant === 'publiek' ? await hoofdmenu() : [];
+const info = variant === 'publiek' ? await infoPaginas() : [];
 const volledigeTitel = titel === 'Repair Cafe Haarlem' ? titel : `${titel} · Repair Cafe Haarlem`;
 ---
 
@@ -50,6 +51,6 @@ const volledigeTitel = titel === 'Repair Cafe Haarlem' ? titel : `${titel} · Re
     <main id="inhoud" tabindex="-1" class="flex-1 focus:outline-none">
       <slot />
     </main>
-    {variant === 'publiek' && <Footer />}
+    {variant === 'publiek' && <Footer info={info} />}
   </body>
 </html>

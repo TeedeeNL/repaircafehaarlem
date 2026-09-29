@@ -1,21 +1,22 @@
 ---
 import Logo from './Logo.astro';
+import Icon from './Icon.astro';
 import type { MenuItem } from '../lib/menu';
 import type { Gebruiker } from '../lib/domein';
 
 /**
- * Publiek: lichte balk, desktopmenu vanaf 1024px, daaronder een menuknop met donker paneel.
+ * Publiek: papieren balk met labelmerk, desktopmenu vanaf 1024px met inschuivende onderstreping,
+ * daaronder een menuknop (aria-expanded, focusbeheer) met donker paneel.
  * Crew: donkere balk met gebruiker en uitloggen, tabs Werklijst en (alleen coördinator) Sessies.
  */
 interface Props {
   variant: 'publiek' | 'crew';
   menu?: MenuItem[];
   pad?: string;
-  menuOpen?: boolean;
   gebruiker?: Gebruiker | null;
   tab?: 'werklijst' | 'sessies' | null;
 }
-const { variant, menu = [], pad = Astro.url.pathname, menuOpen = false, gebruiker = null, tab = null } = Astro.props;
+const { variant, menu = [], pad = Astro.url.pathname, gebruiker = null, tab = null } = Astro.props;
 // Bij prerenderen eindigt het pad op .html (build.format 'file'); vergelijk zonder extensie en slash.
 const schoon = pad.replace(/(\/index)?\.html$/, '').replace(/\/$/, '');
 const huidig = (href: string) => (schoon === href ? 'page' : undefined);
@@ -23,76 +24,67 @@ const huidig = (href: string) => (schoon === href ? 'page' : undefined);
 
 {
   variant === 'publiek' ? (
-    <header
-      data-menu
-      data-open={String(menuOpen)}
-      class="group sticky top-0 z-10 border-b border-line bg-paper data-[open=true]:border-ink-line data-[open=true]:bg-ink data-[open=true]:text-paper"
-    >
-      <div class="mx-auto flex max-w-page items-center justify-between gap-4 px-4 py-2.5 lg:py-3.5">
-        <a href="/" class="flex min-h-touch items-center gap-2.5 text-ink no-underline group-data-[open=true]:text-paper">
+    <header data-menu data-open="false" class="kop sticky top-0 z-30">
+      <div class="mx-auto flex h-16 max-w-page items-center justify-between gap-4 px-rand lg:h-[76px]">
+        <a href="/" class="kop-merk group flex min-h-touch items-center gap-3 no-underline">
           <Logo />
-          <span class="font-display text-lead leading-[1.05] font-extrabold lg:text-[19px]">
-            Repair Cafe{' '}
-            <br class="lg:hidden" />
-            <span class="text-sm font-semibold text-ink-muted group-data-[open=true]:text-line lg:text-[19px]">Haarlem</span>
+          <span class="leading-none">
+            <span class="block font-display text-[1.1875rem] font-extrabold tracking-[-0.01em]">Repair Cafe</span>
+            <span class="kop-merk-sub mt-1 block font-mono text-tiny font-semibold tracking-[.2em] uppercase">Haarlem</span>
           </span>
         </a>
 
-        <nav aria-label="Hoofdmenu" class="hidden items-center gap-1 text-small font-bold lg:flex">
+        <nav aria-label="Hoofdmenu" class="hidden items-center gap-1 lg:flex">
           {menu.map((m) => (
-            <a
-              href={m.href}
-              aria-current={huidig(m.href)}
-              class="flex min-h-touch items-center px-3 text-ink underline decoration-transparent decoration-3 underline-offset-8 hover:decoration-line-strong aria-[current=page]:decoration-rust"
-            >
+            <a href={m.href} aria-current={huidig(m.href)} class="navlink">
               {m.kort}
             </a>
           ))}
-          <a
-            href="/login"
-            class="ml-2 flex min-h-touch items-center rounded-lg border-thin border-ink px-3.5 text-ink no-underline hover:bg-surface"
-          >
-            Inloggen
-          </a>
         </nav>
 
-        <button
-          type="button"
-          data-menu-knop
-          aria-expanded={menuOpen}
-          aria-controls="mobiel-menu"
-          class="min-h-touch min-w-touch rounded-lg border-thin border-ink px-3.5 text-small font-bold group-data-[open=true]:border-paper group-data-[open=true]:text-paper lg:hidden"
-        >
-          {menuOpen ? 'Sluiten' : 'Menu'}
-        </button>
+        <div class="flex items-center gap-2">
+          <a href="/aanmelden" class="knop knop-primair knop-klein max-sm:hidden">
+            Apparaat aanmelden
+            <Icon naam="pijl-rechts" maat={18} class="knop-pijl" />
+          </a>
+          <button
+            type="button"
+            data-menu-knop
+            aria-expanded="false"
+            aria-controls="mobiel-menu"
+            class="knop knop-lijn knop-klein lg:hidden"
+          >
+            <Icon naam="menu" maat={20} class="menu-icoon-open" />
+            <Icon naam="sluiten" maat={20} class="menu-icoon-dicht" />
+            <span data-menu-tekst>Menu</span>
+          </button>
+        </div>
       </div>
 
-      <nav id="mobiel-menu" aria-label="Hoofdmenu" hidden={!menuOpen} class="bg-ink px-4 pb-6 text-paper lg:hidden">
-        <a
-          href="/"
-          aria-current={huidig('')}
-          class="flex min-h-row items-center border-b border-ink-line font-display text-2xl font-extrabold text-paper underline decoration-transparent decoration-3 underline-offset-6 aria-[current=page]:decoration-rust-300"
-        >
-          Home
-        </a>
-        {menu.map((m) => (
-          <a
-            href={m.href}
-            aria-current={huidig(m.href)}
-            class="flex min-h-row items-center border-b border-ink-line font-display text-2xl font-extrabold text-paper underline decoration-transparent decoration-3 underline-offset-6 aria-[current=page]:decoration-rust-300"
-          >
-            {m.label}
-          </a>
-        ))}
-        <a
-          href="/aanmelden"
-          class="mt-4 flex min-h-btn-lg items-center justify-center rounded-lg bg-rust text-lead font-bold text-surface no-underline hover:bg-rust-700 hover:text-surface"
-        >
-          Apparaat aanmelden
-        </a>
-        <a href="/login" class="flex min-h-btn items-center justify-center font-bold text-paper hover:text-line">
-          Inloggen vrijwilligers
-        </a>
+      <nav id="mobiel-menu" aria-label="Hoofdmenu" hidden class="menu-paneel lg:hidden">
+        <ul class="mx-auto flex max-w-page flex-col px-rand pt-2 pb-8">
+          <li class="menu-regel" style="--i: 0">
+            <a href="/" aria-current={huidig('')} class="menu-link">
+              Home
+            </a>
+          </li>
+          {menu.map((m, i) => (
+            <li class="menu-regel" style={`--i: ${i + 1}`}>
+              <a href={m.href} aria-current={huidig(m.href)} class="menu-link">
+                {m.label}
+              </a>
+            </li>
+          ))}
+          <li class="menu-regel mt-6 flex flex-col gap-2" style={`--i: ${menu.length + 1}`}>
+            <a href="/aanmelden" class="knop knop-primair w-full">
+              Apparaat aanmelden
+              <Icon naam="pijl-rechts" maat={18} class="knop-pijl" />
+            </a>
+            <a href="/login" class="knop knop-licht w-full">
+              Inloggen vrijwilligers
+            </a>
+          </li>
+        </ul>
       </nav>
     </header>
   ) : (
@@ -147,22 +139,28 @@ const huidig = (href: string) => (schoon === href ? 'page' : undefined);
 }
 
 <script>
+  // Mobiel menu: echte knop met aria-expanded, focus naar de eerste link bij openen,
+  // terug naar de knop bij sluiten (Escape of knop), en dicht zodra de focus het menu verlaat.
   const header = document.querySelector<HTMLElement>('[data-menu]');
   const knop = header?.querySelector<HTMLButtonElement>('[data-menu-knop]');
+  const tekst = header?.querySelector<HTMLElement>('[data-menu-tekst]');
   const paneel = document.getElementById('mobiel-menu');
   if (header && knop && paneel) {
-    const zet = (open: boolean) => {
+    const zet = (open: boolean, focusTerug = false) => {
       header.dataset.open = String(open);
       knop.setAttribute('aria-expanded', String(open));
-      knop.textContent = open ? 'Sluiten' : 'Menu';
+      if (tekst) tekst.textContent = open ? 'Sluiten' : 'Menu';
       paneel.hidden = !open;
+      document.documentElement.classList.toggle('menu-open', open);
+      if (open) paneel.querySelector<HTMLAnchorElement>('a')?.focus();
+      else if (focusTerug) knop.focus();
     };
     knop.addEventListener('click', () => zet(paneel.hidden !== false));
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !paneel.hidden) {
-        zet(false);
-        knop.focus();
-      }
+      if (e.key === 'Escape' && !paneel.hidden) zet(false, true);
+    });
+    header.addEventListener('focusout', (e) => {
+      if (!paneel.hidden && e.relatedTarget instanceof Node && !header.contains(e.relatedTarget)) zet(false);
     });
     matchMedia('(min-width: 1024px)').addEventListener('change', (e) => e.matches && zet(false));
   }

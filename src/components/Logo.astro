@@ -1,4 +1,5 @@
 ---
+// Beeldmerk: een klein reparatielabel met gaatje. Hangt licht scheef en zwaait recht bij hover van de link (.group).
 interface Props {
   maat?: 'publiek' | 'crew';
 }
@@ -8,7 +9,34 @@ const { maat = 'publiek' } = Astro.props;
 <span
   aria-hidden="true"
   class:list={[
-    'grid flex-none place-items-center rounded-full bg-rust font-display font-extrabold text-surface',
-    maat === 'crew' ? 'size-7 text-xs' : 'size-8 text-meta lg:size-9',
+    'logo-label relative inline-grid flex-none place-items-center bg-rust font-display font-extrabold text-surface',
+    maat === 'crew' ? 'h-7 w-9 pl-2 text-xs' : 'h-9 w-12 pl-2.5 text-meta lg:h-10 lg:w-[3.25rem]',
   ]}>RC</span
 >
+
+<style>
+  .logo-label {
+    /* Labelvorm: links afgeschuinde hoeken, rechts afgerond */
+    clip-path: polygon(22% 0, 100% 0, 100% 100%, 22% 100%, 0 50%);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    transform: rotate(-8deg);
+    transform-origin: 12% 50%;
+    transition: transform var(--duur-traag) var(--ease-veer);
+  }
+  .logo-label::before {
+    /* het gaatje */
+    content: '';
+    position: absolute;
+    left: 16%;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    margin-top: -2.5px;
+    border-radius: 50%;
+    background: var(--kleur-papier);
+  }
+  :global(.group:hover) .logo-label,
+  :global(.group:focus-visible) .logo-label {
+    transform: rotate(0deg);
+  }
+</style>

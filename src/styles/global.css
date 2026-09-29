@@ -148,3 +148,236 @@
     @apply block text-lead;
   }
 }
+
+/* ==========================================================================
+   Componenten van de publieke kant (de crew-pagina's gebruiken alleen de tokens)
+   ========================================================================== */
+@layer components {
+  /* Knoppen: drukken licht in, pijl schuift mee */
+  .knop {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 52px;
+    padding: 0 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: var(--tekst-lg);
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    transition:
+      transform var(--duur-snel) var(--ease-uit),
+      box-shadow var(--duur-snel) var(--ease-uit),
+      background-color var(--duur-basis) var(--ease-uit),
+      color var(--duur-basis) var(--ease-uit);
+  }
+  .knop:active:not([aria-disabled='true']):not(:disabled) {
+    transform: translateY(2px);
+  }
+  .knop-klein {
+    min-height: 44px;
+    padding: 0 1rem;
+    font-size: var(--tekst-sm);
+  }
+  .knop-primair {
+    background: var(--kleur-oranje);
+    color: var(--kleur-vlak);
+    box-shadow: 0 3px 0 var(--kleur-oranje-diep);
+  }
+  .knop-primair:hover {
+    background: var(--kleur-oranje-diep);
+    color: var(--kleur-vlak);
+  }
+  .knop-primair:active {
+    box-shadow: 0 1px 0 var(--kleur-oranje-diep);
+  }
+  .knop-lijn {
+    border: 1.5px solid var(--kleur-inkt);
+    color: var(--kleur-inkt);
+    background: transparent;
+    box-shadow: 0 3px 0 var(--kleur-inkt);
+  }
+  .knop-lijn:hover {
+    background: var(--kleur-vlak);
+    color: var(--kleur-inkt);
+  }
+  .knop-lijn:active {
+    box-shadow: 0 1px 0 var(--kleur-inkt);
+  }
+  .knop-licht {
+    border: 1.5px solid var(--kleur-papier);
+    color: var(--kleur-papier);
+    background: transparent;
+  }
+  .knop-licht:hover {
+    background: var(--kleur-inkt-lijn);
+    color: var(--kleur-papier);
+  }
+  .knop[aria-disabled='true'] {
+    background: var(--kleur-uit);
+    color: var(--kleur-inkt-zacht);
+    box-shadow: none;
+    border-color: transparent;
+    cursor: not-allowed;
+  }
+  .knop-pijl {
+    transition: transform var(--duur-basis) var(--ease-veer);
+  }
+  .knop:hover .knop-pijl {
+    transform: translateX(3px);
+  }
+
+  /* Kopbalk */
+  .kop {
+    background: var(--kleur-papier);
+    border-bottom: 1.5px dashed var(--kleur-lijn-sterk);
+    transition: background-color var(--duur-basis) var(--ease-uit);
+  }
+  .kop[data-open='true'] {
+    background: var(--kleur-inkt);
+    border-bottom-color: var(--kleur-inkt-lijn);
+  }
+  .kop-merk,
+  .kop-merk:hover {
+    color: var(--kleur-inkt);
+  }
+  .kop-merk-sub {
+    color: var(--kleur-inkt-zacht);
+  }
+  .kop[data-open='true'] .kop-merk,
+  .kop[data-open='true'] .knop-lijn {
+    color: var(--kleur-papier);
+  }
+  .kop[data-open='true'] .kop-merk-sub {
+    color: var(--kleur-inkt-licht);
+  }
+  .kop[data-open='true'] .knop-lijn {
+    border-color: var(--kleur-papier);
+    box-shadow: none;
+    background: transparent;
+  }
+  .menu-icoon-dicht,
+  .kop[data-open='true'] .menu-icoon-open {
+    display: none;
+  }
+  .kop[data-open='true'] .menu-icoon-dicht {
+    display: block;
+  }
+
+  /* Hoofdmenu (desktop): onderstreping schuift in */
+  .navlink {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 0.8rem;
+    font-weight: 700;
+    font-size: var(--tekst-sm);
+    color: var(--kleur-inkt);
+    text-decoration: none;
+  }
+  .navlink:hover {
+    color: var(--kleur-inkt);
+  }
+  .navlink::after {
+    content: '';
+    position: absolute;
+    left: 0.8rem;
+    right: 0.8rem;
+    bottom: 8px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--kleur-signaal);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duur-basis) var(--ease-uit);
+  }
+  .navlink:hover::after,
+  .navlink[aria-current='page']::after {
+    transform: scaleX(1);
+  }
+
+  /* Mobiel menupaneel */
+  .menu-paneel {
+    background: var(--kleur-inkt);
+    color: var(--kleur-papier);
+    max-height: calc(100dvh - 4rem);
+    overflow-y: auto;
+  }
+  .menu-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 56px;
+    border-bottom: 1px solid var(--kleur-inkt-lijn);
+    font-family: var(--font-rc-display);
+    font-weight: 800;
+    font-size: 1.625rem;
+    color: var(--kleur-papier);
+    text-decoration: none;
+  }
+  .menu-link:hover {
+    color: var(--kleur-papier);
+  }
+  .menu-link[aria-current='page'] {
+    color: var(--kleur-signaal); /* 26px vet: grote tekst, 3:1 volstaat */
+  }
+  .menu-regel {
+    transition:
+      opacity var(--duur-basis) var(--ease-uit),
+      transform var(--duur-basis) var(--ease-uit);
+    transition-delay: calc(var(--i, 0) * 45ms);
+  }
+  @starting-style {
+    .menu-paneel .menu-regel {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  /* Links met inschuivende onderstreping (footer en losse navigatie) */
+  .link-schuif {
+    text-decoration: none;
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1.5px no-repeat;
+    transition: background-size var(--duur-basis) var(--ease-uit);
+    padding-bottom: 1px;
+  }
+  .link-schuif:hover,
+  .link-schuif:focus-visible,
+  .link-schuif[aria-current='page'] {
+    background-size: 100% 1.5px;
+  }
+
+  /* Icoon dat draait bij hover van de ouder (.draai-ouder) */
+  .icoon-draai {
+    transition: transform var(--duur-traag) var(--ease-veer);
+  }
+  .draai-ouder:hover .icoon-draai {
+    transform: rotate(75deg);
+  }
+}
+
+html.menu-open {
+  overflow: hidden;
+}
+@media (min-width: 1024px) {
+  html.menu-open {
+    overflow: auto;
+  }
+}
+
+/* Minder beweging: alles direct, geen transities of animaties */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
