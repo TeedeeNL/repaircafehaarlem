@@ -15,6 +15,7 @@ export function bevestigingsmail(g: {
   return {
     aan: g.email,
     onderwerp: `Je aanmelding ${g.referentie} bij Repair Cafe Haarlem`,
+    sleutel: `bevestiging/${g.referentie}`,
     tekst: [
       'Hallo,',
       '',

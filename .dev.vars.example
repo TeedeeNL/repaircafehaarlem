@@ -3,5 +3,9 @@
 # 2x0000000000000000000000000000000AA = mislukt altijd
 TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
 
-# console = bevestigingsmail naar de terminal, uit = mail mislukt (test de variant "mail volgt later")
+# console = bevestigingsmail naar de terminal, uit = mail mislukt (test de variant "mail volgt later"),
+# resend = echt versturen; vul dan ook RESEND_API_KEY en MAIL_AFZENDER in.
+# Zonder eigen domein kan MAIL_AFZENDER="Repair Cafe <onboarding@resend.dev>"; Resend bezorgt dan alleen
+# bij het e-mailadres van je eigen Resend-account.
 MAIL_MODUS=console
+RESEND_API_KEY=

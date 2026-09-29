@@ -5,8 +5,12 @@ compatibility_date = "2026-09-26"
 [vars]
 # Officiële Turnstile-testsleutel (slaagt altijd). Vervang in productie via het dashboard.
 TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
-# uit = geen provider: mail mislukt, aanmelding blijft staan. In dev zet .dev.vars dit op "console".
-MAIL_MODUS = "uit"
+# resend = bevestigingsmail via Resend (secret RESEND_API_KEY), console = naar de log, uit = mail mislukt.
+# Mislukte mail laat de aanmelding altijd staan (S3 toont "mail volgt later").
+MAIL_MODUS = "resend"
+# Afzender op een bij Resend geverifieerd domein, bijv. "Repair Cafe Haarlem <aanmelding@send.jouwdomein.nl>".
+# Leeg = versturen mislukt met "MAIL_AFZENDER ontbreekt" in de log.
+MAIL_AFZENDER = ""
 
 [[d1_databases]]
 binding = "DB"

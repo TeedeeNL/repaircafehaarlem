@@ -65,8 +65,11 @@ if (Astro.request.method === 'POST') {
             }),
           );
           mailVerstuurd = true;
-        } catch {
-          console.error('Bevestigingsmail niet verstuurd', { referentie: res.referentie });
+        } catch (e) {
+          console.error('Bevestigingsmail niet verstuurd', {
+            referentie: res.referentie,
+            reden: e instanceof Error ? e.message : 'onbekend',
+          });
         }
         onthoudBevestiging(Astro.cookies, { referentie: res.referentie, email: check.data.email, mailVerstuurd });
         return Astro.redirect('/aanmelden/bevestiging', 303);
