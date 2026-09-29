@@ -38,31 +38,39 @@ export const uitMailer: Mailer = {
 };
 
 /**
- * Resend (https://resend.com/docs/api-reference/emails/send-email).
- * Ontbreekt de sleutel of de afzender, dan mislukt het versturen hoorbaar in plaats van stil.
+ * EUSEND, EU-native transactionele mail (https://eusend.dev, OpenAPI: https://eusend.dev/openapi.json).
+ * Verwerking en opslag binnen de EU. Ontbreekt de sleutel of de afzender, dan mislukt het versturen
+ * hoorbaar in plaats van stil. Open- en kliktracking staan uit: dit is een bevestiging, geen nieuwsbrief.
  */
-export function resendMailer(apiKey: string | undefined, afzender: string | undefined): Mailer {
+export function eusendMailer(apiKey: string | undefined, afzender: string | undefined): Mailer {
   return {
     async verstuur(b) {
-      if (!apiKey) throw new Error('RESEND_API_KEY ontbreekt');
+      if (!apiKey) throw new Error('EUSEND_API_KEY ontbreekt');
       if (!afzender) throw new Error('MAIL_AFZENDER ontbreekt');
-      const res = await fetch('https://api.resend.com/emails', {
+      const res = await fetch('https://api.eusend.dev/emails', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
           ...(b.sleutel ? { 'Idempotency-Key': b.sleutel } : {}),
         },
-        body: JSON.stringify({ from: afzender, to: [b.aan], subject: b.onderwerp, text: b.tekst }),
+        body: JSON.stringify({
+          from: afzender,
+          to: b.aan,
+          subject: b.onderwerp,
+          text: b.tekst,
+          track_opens: false,
+          track_clicks: false,
+        }),
         signal: AbortSignal.timeout(8000),
       });
       if (!res.ok) {
-        // Alleen status en fouttype van Resend; de volledige melding kan het adres bevatten.
-        const soort = await res
+        // Alleen status en de stabiele foutcode; de leesbare melding kan het adres bevatten.
+        const code = await res
           .json()
-          .then((d) => (d as { name?: string }).name ?? 'onbekend')
-          .catch(() => 'onbekend');
-        throw new Error(`Resend weigerde de mail: HTTP ${res.status} (${soort})`);
+          .then((d) => (d as { code?: string }).code ?? 'ONBEKEND')
+          .catch(() => 'ONBEKEND');
+        throw new Error(`EUSEND weigerde de mail: HTTP ${res.status} (${code})`);
       }
     },
   };
@@ -70,8 +78,8 @@ export function resendMailer(apiKey: string | undefined, afzender: string | unde
 
 export function mailer(): Mailer {
   switch (env.MAIL_MODUS) {
-    case 'resend':
-      return resendMailer(env.RESEND_API_KEY, env.MAIL_AFZENDER);
+    case 'eusend':
+      return eusendMailer(env.EUSEND_API_KEY, env.MAIL_AFZENDER);
     case 'console':
       return consoleMailer;
     default:

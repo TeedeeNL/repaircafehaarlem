@@ -37,7 +37,7 @@ Statusopvraag proberen: `RC-2026-0009` met `sanne@voorbeeld.nl`.
 - `src/lib/schemas/` Zod-schema per formulier, fouten als `{ veld: melding }`
 - `src/lib/auth/` PBKDF2-wachtwoorden, sessiecookie en rate limiting
 - `src/middleware.ts` beschermt `/crew` en `/beheer` (302 naar login, 403 zonder coördinatorrol)
-- `src/lib/mail/` mailer-interface: `resend` (productie), `console` (dev) of `uit`; een mislukte mail laat de aanmelding staan
+- `src/lib/mail/` mailer-interface: `eusend` (productie), `console` (dev) of `uit`; een mislukte mail laat de aanmelding staan
 - `src/content/info/` informatiepagina's in Markdown (`titel`, `volgorde`, `in_menu`)
 - `tailwind.config.mjs` alle design tokens
 
@@ -47,5 +47,5 @@ Statusopvraag proberen: `RC-2026-0009` met `sanne@voorbeeld.nl`.
 2. `npx wrangler d1 migrations apply DB --remote` (nooit `seed.sql` op productie).
 3. Echte Turnstile-sleutels: `TURNSTILE_SITE_KEY` in `wrangler.toml` en `npx wrangler secret put TURNSTILE_SECRET_KEY`.
 4. Accounts aanmaken met `npm run hash -- <wachtwoord>` en een `INSERT INTO vrijwilliger` via `wrangler d1 execute DB --remote`.
-5. Mail via Resend: verifieer een (sub)domein in Resend, zet `MAIL_AFZENDER` in `wrangler.toml` (bijv. `Repair Cafe Haarlem <aanmelding@send.jouwdomein.nl>`) en `npx wrangler secret put RESEND_API_KEY`. Ontbreekt een van beide of weigert Resend de mail, dan blijft de aanmelding staan, toont S3 "de mail volgt later" en staat de reden (zonder e-mailadres) in de Worker-log.
+5. Mail via [EUSEND](https://eusend.dev) (verwerking en opslag in de EU): verifieer een (sub)domein in het EUSEND-dashboard (DNS-records publiceren), zet `MAIL_AFZENDER` in `wrangler.toml` (bijv. `Repair Cafe Haarlem <aanmelding@send.jouwdomein.nl>`) en `npx wrangler secret put EUSEND_API_KEY` (een `eu_live_`-sleutel; `eu_test_` bezorgt niets). Ontbreekt een van beide of weigert EUSEND de mail, dan blijft de aanmelding staan, toont S3 "de mail volgt later" en staat de reden (zonder e-mailadres) in de Worker-log.
 6. `/statistiek` wordt tijdens de build uit D1 gevuld. Lokaal is dat de database in `.wrangler/`; laat de productiebuild de remote database lezen (bijvoorbeeld `remote = true` op de D1-binding tijdens de build), anders klopt de pagina niet of stopt de build.
