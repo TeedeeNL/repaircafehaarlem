@@ -11,9 +11,9 @@ TURNSTILE_HOSTNAMES = "repaircafehaarlem.timduinker10.workers.dev"
 # eusend = bevestigingsmail via EUSEND (secret EUSEND_API_KEY), console = naar de log, uit = mail mislukt.
 # Mislukte mail laat de aanmelding altijd staan (S3 toont "mail volgt later").
 MAIL_MODUS = "eusend"
-# Afzender op een bij EUSEND geverifieerd domein, bijv. "Repair Cafe Haarlem <aanmelding@send.jouwdomein.nl>".
-# Leeg = versturen mislukt met "MAIL_AFZENDER ontbreekt" in de log.
-MAIL_AFZENDER = ""
+# Afzender op een bij EUSEND geverifieerd (sub)domein. De site zelf draait op workers.dev (schoolproject,
+# geen eigen domein); voor mail gebruiken we een subdomein van timwebsites.nl.
+MAIL_AFZENDER = "Repair Cafe Haarlem <aanmelding@repaircafe.timwebsites.nl>"
 
 [[d1_databases]]
 binding = "DB"
