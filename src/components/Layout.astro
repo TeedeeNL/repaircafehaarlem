@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { Font } from 'astro:assets';
 import Header from './Header.astro';
 import Footer from './Footer.astro';
 import { hoofdmenu } from '../lib/menu';
@@ -33,12 +34,9 @@ const volledigeTitel = titel === 'Repair Cafe Haarlem' ? titel : `${titel} · Re
     {variant === 'crew' && <meta name="robots" content="noindex" />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@500;600&display=swap"
-      rel="stylesheet"
-    />
+    <Font cssVariable="--font-rc-display" preload />
+    <Font cssVariable="--font-rc-tekst" preload />
+    <Font cssVariable="--font-rc-mono" />
     <title>{volledigeTitel}</title>
   </head>
   <body class:list={['flex min-h-dvh flex-col', variant === 'crew' ? 'bg-surface' : 'bg-paper']}>

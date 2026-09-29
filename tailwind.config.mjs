@@ -1,79 +1,96 @@
 /**
- * Design tokens uit de Claude Design-export (Repair Cafe Haarlem UI-ontwerp v1).
- * Dit is de enige plek met kleurwaarden; componenten gebruiken alleen deze namen.
+ * Tailwind verwijst alleen naar de design tokens in src/styles/global.css (:root).
+ * Waarden wijzigen doe je daar; hier staan alleen de namen. Geen kleurwaarden in componenten.
  *
  * @type {import('tailwindcss').Config}
  */
+const v = (naam) => `var(--${naam})`;
+
 export default {
   theme: {
     extend: {
       colors: {
-        paper: '#F6F1E7', // achtergrond publiek
-        surface: '#FFFDF9', // kaarten, velden, crew
+        paper: { DEFAULT: v('kleur-papier'), deep: v('kleur-papier-diep') },
+        kraft: v('kleur-kraft'),
+        surface: v('kleur-vlak'),
         ink: {
-          DEFAULT: '#231F1A', // tekst, crew-knoppen
-          muted: '#5F5549', // hulptekst (6,4:1 op paper)
-          line: '#4A423A', // scheidingslijn op donker (menu)
+          DEFAULT: v('kleur-inkt'),
+          muted: v('kleur-inkt-zacht'),
+          line: v('kleur-inkt-lijn'),
+          licht: v('kleur-inkt-licht'),
         },
-        line: {
-          DEFAULT: '#D8CCB8', // scheiding
-          strong: '#8C7F6E', // veldrand (3,9:1)
-        },
-        sand: {
-          DEFAULT: '#EFE7DA', // neutrale badge, info-melding
-          light: '#EFE9DE', // uitgeschakelde sessiekaart
-        },
-        off: '#E4DBCC', // uitgeschakelde knop
+        line: { DEFAULT: v('kleur-lijn'), strong: v('kleur-lijn-sterk') },
+        sand: { DEFAULT: v('kleur-zand'), light: v('kleur-zand-licht') },
+        off: v('kleur-uit'),
+        // "rust" = het oranje. DEFAULT is de donkere tint voor knoppen en links (contrast >= 4.5:1),
+        // signaal (#E0561F) alleen voor decoratie, grote koppen en de focusring.
         rust: {
-          DEFAULT: '#B4441A', // primaire actie (5,5:1 met wit)
-          300: '#E08A5F', // actieve onderstreping op donker
-          700: '#8F3413', // links, schaduw, bezig-knop
-          50: '#F7E3D6', // gekozen sessie, open rij
+          DEFAULT: v('kleur-oranje'),
+          700: v('kleur-oranje-diep'),
+          300: v('kleur-signaal'),
+          50: v('kleur-oranje-zacht'),
         },
-        ok: { DEFAULT: '#2E6B4F', 50: '#E2EEE6' },
-        warn: { DEFAULT: '#7A4E00', 50: '#FCF0D6' },
-        error: { DEFAULT: '#A3261B', 50: '#FBEAE5' },
+        signaal: v('kleur-signaal'),
+        ok: { DEFAULT: v('kleur-ok'), 50: v('kleur-ok-zacht') },
+        warn: { DEFAULT: v('kleur-let-op'), 50: v('kleur-let-op-zacht') },
+        error: { DEFAULT: v('kleur-fout'), 50: v('kleur-fout-zacht') },
       },
       fontFamily: {
-        display: ['"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
-        sans: ['"Atkinson Hyperlegible"', 'system-ui', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+        display: [v('font-rc-display')],
+        sans: [v('font-rc-tekst')],
+        mono: [v('font-rc-mono')],
       },
       fontSize: {
-        tiny: ['11px', '1.4'], // crew-badge
-        meta: ['13px', '1.4'], // crew-labels, mono-kopjes
-        small: ['15px', '1.5'], // tussenmaat publiek
-        lead: ['17px', '1.5'], // grote knoppen, intro mobiel
+        tiny: [v('tekst-2xs'), '1.4'],
+        meta: [v('tekst-xs'), '1.4'],
+        small: [v('tekst-sm'), '1.5'],
+        lead: [v('tekst-lg'), '1.5'],
+        'kop-1': [v('tekst-kop-1'), '0.98'],
+        'kop-2': [v('tekst-kop-2'), '1.05'],
+        'kop-3': [v('tekst-kop-3'), '1.15'],
+      },
+      spacing: {
+        rand: v('ruimte-rand'),
+        sectie: v('ruimte-sectie'),
       },
       borderRadius: {
-        lg: '8px', // knop, veld
-        tag: '10px', // referentielabel
-        xl: '12px', // kaart
+        lg: v('radius-md'),
+        tag: v('radius-label'),
+        xl: v('radius-lg'),
       },
       borderWidth: {
         thin: '1.5px',
       },
       minHeight: {
-        touch: '44px', // minimum doelgrootte, crew-knoppen
-        btn: '48px', // publieke velden en knoppen
-        'btn-lg': '52px', // primaire publieke knop
-        row: '56px', // menu-items, crew-balk
-        card: '60px', // sessiekaart
+        touch: '44px',
+        btn: '48px',
+        'btn-lg': '52px',
+        row: '56px',
+        card: '60px',
       },
       minWidth: {
         touch: '44px',
       },
       boxShadow: {
-        btn: '0 2px 0 #8F3413',
-        card: '4px 4px 0 #D8CCB8',
-        tag: '3px 4px 0 #D8CCB8',
+        btn: v('schaduw-knop'),
+        card: v('schaduw-kaart'),
+        tag: v('schaduw-label'),
       },
       backgroundImage: {
-        stripes: 'repeating-linear-gradient(135deg, #E9E0D0 0 8px, #F1EADD 8px 16px)',
-        'stripes-sm': 'repeating-linear-gradient(135deg, #EFE9DE 0 6px, #F6F1E7 6px 12px)',
+        stripes: v('patroon-strepen'),
+        'stripes-sm': v('patroon-strepen-fijn'),
       },
       maxWidth: {
-        page: '1080px',
+        page: v('breedte-pagina'),
+      },
+      transitionTimingFunction: {
+        uit: v('ease-uit'),
+        veer: v('ease-veer'),
+      },
+      transitionDuration: {
+        snel: v('duur-snel'),
+        basis: v('duur-basis'),
+        traag: v('duur-traag'),
       },
     },
   },

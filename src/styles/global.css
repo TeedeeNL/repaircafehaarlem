@@ -1,26 +1,116 @@
 @import 'tailwindcss';
 @config '../../tailwind.config.mjs';
 
+/* ==========================================================================
+   Design tokens: "de werkbank". Alle kleuren, maten en bewegingen staan hier.
+   Contrast (WCAG): tekstkleuren halen minimaal 4.5:1 op hun achtergrond;
+   --kleur-signaal (3.3:1 op papier) alleen voor decoratie en koppen >= 24px.
+   ========================================================================== */
+:root {
+  /* Kleur: papier en karton */
+  --kleur-papier: #f3eee4;
+  --kleur-papier-diep: #e8dfce;
+  --kleur-kraft: #d6c4a3;
+  --kleur-vlak: #fbf8f2;
+  --kleur-zand: #eae2d2;
+  --kleur-zand-licht: #efe8db;
+  --kleur-uit: #e2d9c8;
+  --kleur-lijn: #d2c7b3;
+  --kleur-lijn-sterk: #857c69; /* veldrand, 3.9:1 */
+
+  /* Kleur: inkt (groenzwart) */
+  --kleur-inkt: #1e2a24; /* 12.9:1 op papier */
+  --kleur-inkt-zacht: #4e5a53; /* hulptekst, 6.2:1 op papier */
+  --kleur-inkt-lijn: #34443c; /* lijnen op donker */
+  --kleur-inkt-licht: #c9d1c9; /* hulptekst op donker, 9.5:1 */
+
+  /* Kleur: oranje */
+  --kleur-signaal: #e0561f; /* accent, decoratie, focus */
+  --kleur-oranje: #b8431a; /* knoppen en links, 4.7:1 op papier, wit erop 5.1:1 */
+  --kleur-oranje-diep: #96360f; /* hover, ingedrukt */
+  --kleur-oranje-zacht: #f7ddcd;
+
+  /* Kleur: status */
+  --kleur-ok: #2e6b4f;
+  --kleur-ok-zacht: #e0ede4;
+  --kleur-let-op: #7a4e00;
+  --kleur-let-op-zacht: #fbefd4;
+  --kleur-fout: #a3261b;
+  --kleur-fout-zacht: #fae7e2;
+
+  /* Typografie */
+  --tekst-2xs: 0.6875rem; /* 11 */
+  --tekst-xs: 0.8125rem; /* 13 */
+  --tekst-sm: 0.9375rem; /* 15 */
+  --tekst-lg: 1.0625rem; /* 17 */
+  --tekst-kop-3: clamp(1.375rem, 1.1rem + 1vw, 1.75rem);
+  --tekst-kop-2: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+  --tekst-kop-1: clamp(2.75rem, 1.6rem + 5.2vw, 5.25rem);
+
+  /* Ruimte (4px-basis via Tailwind; dit zijn de vaste maten per laag) */
+  --ruimte-rand: 1rem;
+  --ruimte-sectie: clamp(3.5rem, 2.5rem + 4vw, 6.5rem);
+  --breedte-pagina: 72rem;
+
+  /* Vorm */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-label: 10px;
+  --radius-lg: 14px;
+  --schaduw-knop: 0 3px 0 var(--kleur-oranje-diep);
+  --schaduw-kaart: 5px 5px 0 var(--kleur-kraft);
+  --schaduw-label: 3px 4px 0 var(--kleur-kraft);
+
+  /* Patronen */
+  --patroon-strepen: repeating-linear-gradient(135deg, #e6dcc9 0 9px, #efe7d8 9px 18px);
+  --patroon-strepen-fijn: repeating-linear-gradient(135deg, #ebe3d4 0 6px, #f3eee4 6px 12px);
+  --korrel: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='k'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .12 0 0 0 0 .1 0 0 0 0 .07 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23k)'/%3E%3C/svg%3E");
+
+  /* Beweging */
+  --duur-snel: 150ms;
+  --duur-basis: 280ms;
+  --duur-traag: 650ms;
+  --ease-uit: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-veer: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --afstand-reveal: 18px;
+}
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
   }
   body {
     @apply bg-paper text-ink font-sans text-base antialiased;
-    line-height: 1.5;
+    line-height: 1.55;
+    /* Papierkorrel: vaste, kleine SVG-ruis, geen afbeelding om te laden */
+    background-image: var(--korrel);
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
   }
   a {
-    @apply text-rust-700 underline-offset-[3px] hover:text-ink;
+    @apply text-rust underline-offset-[3px] hover:text-rust-700;
   }
   :focus-visible {
-    @apply outline-3 outline-offset-2 outline-rust;
+    @apply outline-3 outline-offset-2 outline-signaal;
   }
   button:not(:disabled),
-  [role='button'] {
+  [role='button'],
+  summary {
     cursor: pointer;
   }
   [hidden] {
     display: none !important;
+  }
+  ::selection {
+    background: var(--kleur-oranje-zacht);
+    color: var(--kleur-inkt);
   }
 }
 
