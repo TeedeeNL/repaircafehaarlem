@@ -31,7 +31,7 @@ if (Astro.request.method === 'POST') {
   const token = form.get('cf-turnstile-response');
   const [check, mens] = await Promise.all([
     Promise.resolve(valideer(aanmeldingSchema, waarden)),
-    verifieerTurnstile(typeof token === 'string' ? token : '', Astro.clientAddress),
+    verifieerTurnstile(typeof token === 'string' ? token : '', Astro.clientAddress, 'aanmelden'),
   ]);
 
   if (!check.succes) fouten = { ...check.fouten };
@@ -255,7 +255,7 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
           fouten.turnstile ? 'border-2 border-error bg-stripes-sm' : 'border border-line bg-stripes-sm',
         ]}
       >
-        <div class="cf-turnstile" data-sitekey={siteKey} data-language="nl" data-theme="light" data-size="flexible"></div>
+        <div class="cf-turnstile" data-sitekey={siteKey} data-action="aanmelden" data-language="nl" data-theme="light" data-size="flexible"></div>
         <noscript>
           <span class="text-sm">Zet JavaScript aan om de controle tegen spam te laten werken.</span>
         </noscript>

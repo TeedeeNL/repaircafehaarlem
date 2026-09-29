@@ -1,7 +1,10 @@
-# Kopieer naar .dev.vars (niet committen). Officiële Turnstile-testsleutels:
-# 1x0000000000000000000000000000000AA = slaagt altijd
-# 2x0000000000000000000000000000000AA = mislukt altijd
+# Kopieer naar .dev.vars (niet committen). Lokaal de publieke Turnstile-testsleutels:
+# site key 1x00000000000000000000AA met secret 1x0000000000000000000000000000000AA = slaagt altijd
+# secret 2x0000000000000000000000000000000AA = mislukt altijd
+TURNSTILE_SITE_KEY=1x00000000000000000000AA
 TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+# Uitslagen van testsleutels accepteren. Nooit in productie zetten.
+TURNSTILE_TESTMODUS=aan
 
 # console = bevestigingsmail naar de terminal, uit = mail mislukt (test de variant "mail volgt later"),
 # eusend = via EUSEND; vul dan ook EUSEND_API_KEY en MAIL_AFZENDER in (domein geverifieerd bij EUSEND).
