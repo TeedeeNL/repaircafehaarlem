@@ -1,4 +1,4 @@
-name = "repair-cafe-haarlem"
+name = "repaircafehaarlem"
 main = "@astrojs/cloudflare/entrypoints/server"
 compatibility_date = "2026-09-26"
 
@@ -7,7 +7,7 @@ compatibility_date = "2026-09-26"
 # Lokaal overschrijft .dev.vars dit met de publieke testsleutel.
 TURNSTILE_SITE_KEY = "0x4AAAAAAFI9uyD4KOXaC8Lq"
 # Hostnames waarop een token geldig is (komma-gescheiden). Nooit localhost in productie.
-TURNSTILE_HOSTNAMES = "repair-cafe-haarlem.timduinker10.workers.dev"
+TURNSTILE_HOSTNAMES = "repaircafehaarlem.timduinker10.workers.dev"
 # eusend = bevestigingsmail via EUSEND (secret EUSEND_API_KEY), console = naar de log, uit = mail mislukt.
 # Mislukte mail laat de aanmelding altijd staan (S3 toont "mail volgt later").
 MAIL_MODUS = "eusend"
