@@ -9,6 +9,8 @@ export default defineConfig({
   adapter: cloudflare({ imageService: 'compile' }),
   // Sessies (KV) komen pas met de backend; nu uit zodat er geen KV-binding nodig is.
   session: false,
+  // /info/huisregels als huisregels.html, zodat de links zonder slash geen extra redirect geven.
+  build: { format: 'file' },
   vite: {
     plugins: [tailwindcss()],
   },
