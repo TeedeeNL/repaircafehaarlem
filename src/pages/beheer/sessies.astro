@@ -1,5 +1,5 @@
 ---
-// S7 Sessiebeheer (W7, F-08). Alleen voor de coördinator.
+// S7 Sessiebeheer (W7, F-08). Alleen de coördinator: de middleware geeft anderen een 403, ook bij POST.
 export const prerender = false;
 
 import Layout from '../../components/Layout.astro';
@@ -8,172 +8,155 @@ import Button from '../../components/Button.astro';
 import FormField from '../../components/FormField.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
 import Table from '../../components/Table.astro';
-import { SESSIES, VANDAAG, bezet, huidigeGebruiker } from '../../lib/mock';
+import { alleSessies, maakSessie } from '../../lib/db/sessie';
+import { SESSIE_VELDEN, sessieSchema } from '../../lib/schemas/sessie';
+import { leesFormulier, valideer, type Fouten } from '../../lib/schemas/formulier';
 import { datumKort, datumLang } from '../../lib/format';
-import { leesState } from '../../lib/state';
-
-const STATES = [
-  { key: 'aangemaakt', label: 'Sessie aangemaakt' },
-  { key: 'fouten', label: 'S7b Dubbele datum + te veel plekken' },
-  { key: 'datum-verleden', label: 'S7b Datum in het verleden' },
-  { key: 'geen-rechten', label: 'S7c Geen rechten (403)' },
-] as const;
-const state = leesState(Astro.url, STATES);
-
-// Mock: sessie aanmaken. Straks: Zod-validatie, rolcontrole in middleware en insert in sessie.
-if (Astro.request.method === 'POST') {
-  const form = await Astro.request.formData();
-  const datum = String(form.get('datum') ?? '');
-  return Astro.redirect(`/beheer/sessies?aangemaakt=${encodeURIComponent(datum)}`, 303);
-}
+import { isGeldigeDatum, vandaag } from '../../lib/tijd';
 
 const gebruiker = Astro.locals.gebruiker!;
-const geenRechten = gebruiker.rol !== 'coordinator';
-if (geenRechten) Astro.response.status = 403;
+const nu = vandaag();
+
+let invoer: Record<string, string> = { datum: '', starttijd: '10:00', max_plekken: '12' };
+let fouten: Fouten = {};
+let systeemfout = false;
+
+if (Astro.request.method === 'POST') {
+  const check = valideer(sessieSchema(nu), leesFormulier(await Astro.request.formData(), SESSIE_VELDEN));
+  if (check.succes) {
+    try {
+      const res = await maakSessie(check.data);
+      if (res.soort === 'ok') return Astro.redirect(`/beheer/sessies?aangemaakt=${check.data.datum}`, 303);
+      fouten = { datum: 'Er bestaat al een sessie op deze datum.' };
+      Astro.response.status = 409;
+    } catch (e) {
+      console.error('Sessie aanmaken mislukt', { fout: e instanceof Error ? e.name : 'onbekend' });
+      systeemfout = true;
+      Astro.response.status = 500;
+    }
+    invoer = { datum: check.data.datum, starttijd: check.data.starttijd, max_plekken: String(check.data.max_plekken) };
+  } else {
+    fouten = check.fouten;
+    invoer = check.waarden;
+    Astro.response.status = 400;
+  }
+}
 
 const aangemaaktParam = Astro.url.searchParams.get('aangemaakt');
-const aangemaakt = state === 'aangemaakt' ? '2027-02-06' : aangemaaktParam && /^\d{4}-\d{2}-\d{2}$/.test(aangemaaktParam) ? aangemaaktParam : null;
+const aangemaakt = aangemaaktParam && isGeldigeDatum(aangemaaktParam) ? aangemaaktParam : null;
+const eersteFout = SESSIE_VELDEN.find((k) => fouten[k]);
 
-let invoer = { datum: '', starttijd: '10:00', max_plekken: '12' };
-let fouten: { datum?: string; starttijd?: string; max_plekken?: string } = {};
-if (state === 'fouten') {
-  invoer = { datum: '2026-12-05', starttijd: '10:00', max_plekken: '60' };
-  fouten = { datum: 'Er bestaat al een sessie op deze datum.', max_plekken: 'Aantal plekken: kies 1 tot en met 40.' };
-}
-if (state === 'datum-verleden') {
-  invoer = { datum: '2026-09-01', starttijd: '10:00', max_plekken: '12' };
-  fouten = { datum: 'Kies een datum van vandaag of later.' };
-}
-if (Object.keys(fouten).length) Astro.response.status = 400;
-const eersteFout = (['datum', 'starttijd', 'max_plekken'] as const).find((k) => fouten[k]);
-
-const rijen = [...SESSIES]
-  .sort((a, b) => b.datum.localeCompare(a.datum))
-  .map((s) => {
-    const b = bezet(s.id);
-    const voorbij = s.status === 'gesloten' || s.datum < VANDAAG;
-    const vol = !voorbij && b >= s.max_plekken;
-    return {
-      ...s,
-      bezet: b,
-      pct: Math.min(100, Math.round((b / s.max_plekken) * 100)),
-      badge: voorbij ? ('gesloten' as const) : vol ? ('vol' as const) : ('open' as const),
-      voorbij,
-    };
-  });
+const rijen = (await alleSessies()).map((s) => {
+  const voorbij = s.status === 'gesloten' || s.datum < nu;
+  const vol = !voorbij && s.bezet >= s.max_plekken;
+  return {
+    ...s,
+    pct: Math.min(100, Math.round((s.bezet / s.max_plekken) * 100)),
+    badge: voorbij ? ('gesloten' as const) : vol ? ('vol' as const) : ('open' as const),
+    voorbij,
+  };
+});
 const cel = 'px-3 py-2 align-middle max-md:block max-md:p-0';
 ---
 
-{
-  geenRechten ? (
-    <Layout titel="Geen toegang" variant="crew" gebruiker={gebruiker} tab="sessies" states={STATES} state={state}>
-      <div class="mx-auto flex max-w-[520px] flex-col gap-3.5 px-4 pt-8 pb-14 md:pt-10">
-        <p class="font-mono text-5xl leading-none font-semibold text-rust">403</p>
-        <h1 class="font-display text-2xl leading-[1.1] font-extrabold md:text-[26px]">Je hebt geen toegang tot deze pagina.</h1>
-        <p class="text-small text-ink-muted">
-          Sessiebeheer is alleen voor de coördinator. Klopt dit niet? Vraag de coördinator je rol aan te passen.
-        </p>
-        <Button href="/crew" variant="crew" maat="crew" class="sm:max-w-[240px]">
-          Naar de werklijst
-        </Button>
-      </div>
-    </Layout>
-  ) : (
-    <Layout titel="Sessies" variant="crew" gebruiker={gebruiker} tab="sessies" states={STATES} state={state}>
-      <div class="mx-auto flex max-w-page flex-col gap-4 px-4 pt-4 pb-14 md:flex-row md:items-start md:gap-6 md:pt-5">
-        <div class="flex min-w-0 flex-col gap-3 md:flex-[2]">
-          <h1 class="font-display text-xl font-extrabold md:text-2xl">Sessies</h1>
-          {aangemaakt && (
-            <Alert soort="ok" compact>
-              Sessie op {datumLang(aangemaakt)} aangemaakt. Hij staat nu in het aanmeldformulier.
-            </Alert>
-          )}
-          <Table
-            stapel
-            bijschrift="Alle sessies, nieuwste eerst"
-            kolommen={[{ label: 'Datum en tijd' }, { label: 'Bezetting' }, { label: 'Status', class: 'text-right' }]}
+<Layout titel="Sessies" variant="crew" gebruiker={gebruiker} tab="sessies">
+  <div class="mx-auto flex max-w-page flex-col gap-4 px-4 pt-4 pb-14 md:flex-row md:items-start md:gap-6 md:pt-5">
+    <div class="flex min-w-0 flex-col gap-3 md:flex-[2]">
+      <h1 class="font-display text-xl font-extrabold md:text-2xl">Sessies</h1>
+      {systeemfout && (
+        <Alert soort="error" compact titel="Opslaan is niet gelukt, probeer opnieuw.">
+          Je invoer staat er nog.
+        </Alert>
+      )}
+      {aangemaakt && (
+        <Alert soort="ok" compact>
+          Sessie op {datumLang(aangemaakt)} aangemaakt. Hij staat nu in het aanmeldformulier.
+        </Alert>
+      )}
+      <Table
+        stapel
+        bijschrift="Alle sessies, nieuwste eerst"
+        kolommen={[{ label: 'Datum en tijd' }, { label: 'Bezetting' }, { label: 'Status', class: 'text-right' }]}
+      >
+        {rijen.map((s) => (
+          <tr
+            class:list={[
+              'border-b border-line max-md:grid max-md:grid-cols-[1fr_auto] max-md:items-center max-md:gap-x-3 max-md:gap-y-1 max-md:py-2.5',
+              s.voorbij && 'text-ink-muted',
+            ]}
           >
-            {rijen.map((s) => (
-              <tr
-                class:list={[
-                  'border-b border-line max-md:grid max-md:grid-cols-[1fr_auto] max-md:items-center max-md:gap-x-3 max-md:gap-y-1 max-md:py-2.5',
-                  s.voorbij && 'text-ink-muted',
-                ]}
-              >
-                <td class:list={[cel, 'text-small font-bold md:pl-4 lg:pl-6']}>
-                  {datumKort(s.datum, true)} · {s.starttijd}
-                </td>
-                <td class:list={[cel, 'max-md:col-span-2 max-md:row-start-2']}>
-                  <div class="flex items-center gap-2 text-sm">
-                    <span aria-hidden="true" class="h-2 w-24 flex-none overflow-hidden rounded-full bg-sand">
-                      <span class="block h-full bg-ink" style={`width: ${s.pct}%`} />
-                    </span>
-                    <span class:list={[!s.voorbij && 'text-ink-muted']}>
-                      {s.bezet} van {s.max_plekken} {s.voorbij ? '· afgerond' : 'bezet'}
-                    </span>
-                  </div>
-                </td>
-                <td class:list={[cel, 'text-right max-md:col-start-2 max-md:row-start-1 md:pr-4 lg:pr-6']}>
-                  <StatusBadge status={s.badge} maat="sm" />
-                </td>
-              </tr>
-            ))}
-          </Table>
-        </div>
+            <td class:list={[cel, 'text-small font-bold md:pl-4 lg:pl-6']}>
+              {datumKort(s.datum, true)} · {s.starttijd}
+            </td>
+            <td class:list={[cel, 'max-md:col-span-2 max-md:row-start-2']}>
+              <div class="flex items-center gap-2 text-sm">
+                <span aria-hidden="true" class="h-2 w-24 flex-none overflow-hidden rounded-full bg-sand">
+                  <span class="block h-full bg-ink" style={`width: ${s.pct}%`} />
+                </span>
+                <span class:list={[!s.voorbij && 'text-ink-muted']}>
+                  {s.bezet} van {s.max_plekken} {s.voorbij ? '· afgerond' : 'bezet'}
+                </span>
+              </div>
+            </td>
+            <td class:list={[cel, 'text-right max-md:col-start-2 max-md:row-start-1 md:pr-4 lg:pr-6']}>
+              <StatusBadge status={s.badge} maat="sm" />
+            </td>
+          </tr>
+        ))}
+      </Table>
+    </div>
 
-        <form
-          method="post"
-          action="/beheer/sessies"
-          novalidate
-          aria-labelledby="nieuwe-sessie"
-          class="flex flex-col gap-3 rounded-xl border border-line bg-paper p-3.5 md:flex-1 md:p-4"
-        >
-          <h2 id="nieuwe-sessie" class="font-display text-lead font-extrabold md:text-lg">
-            Nieuwe sessie
-          </h2>
-          <div class="grid grid-cols-[1.4fr_1fr] gap-2 md:grid-cols-1 md:gap-3">
-            <FormField
-              id="n-datum"
-              name="datum"
-              label="Datum"
-              type="date"
-              min={VANDAAG}
-              maat="crew"
-              value={invoer.datum}
-              error={fouten.datum}
-              autofocus={eersteFout === 'datum'}
-              required
-            />
-            <FormField
-              id="n-starttijd"
-              name="starttijd"
-              label="Starttijd"
-              type="time"
-              maat="crew"
-              value={invoer.starttijd}
-              error={fouten.starttijd}
-              autofocus={eersteFout === 'starttijd'}
-              required
-            />
-          </div>
-          <FormField
-            id="n-max_plekken"
-            name="max_plekken"
-            label="Max. plekken"
-            inputmode="numeric"
-            hint="1 tot en met 40"
-            maat="crew"
-            veldClass="max-w-[120px]"
-            value={invoer.max_plekken}
-            error={fouten.max_plekken}
-            autofocus={eersteFout === 'max_plekken'}
-            required
-          />
-          <Button type="submit" variant="crew" maat="crew" breed>
-            Sessie aanmaken
-          </Button>
-        </form>
+    <form
+      method="post"
+      action="/beheer/sessies"
+      novalidate
+      aria-labelledby="nieuwe-sessie"
+      class="flex flex-col gap-3 rounded-xl border border-line bg-paper p-3.5 md:flex-1 md:p-4"
+    >
+      <h2 id="nieuwe-sessie" class="font-display text-lead font-extrabold md:text-lg">
+        Nieuwe sessie
+      </h2>
+      <div class="grid grid-cols-[1.4fr_1fr] gap-2 md:grid-cols-1 md:gap-3">
+        <FormField
+          id="n-datum"
+          name="datum"
+          label="Datum"
+          type="date"
+          min={nu}
+          maat="crew"
+          value={invoer.datum}
+          error={fouten.datum}
+          autofocus={eersteFout === 'datum'}
+          required
+        />
+        <FormField
+          id="n-starttijd"
+          name="starttijd"
+          label="Starttijd"
+          type="time"
+          maat="crew"
+          value={invoer.starttijd}
+          error={fouten.starttijd}
+          autofocus={eersteFout === 'starttijd'}
+          required
+        />
       </div>
-    </Layout>
-  )
-}
+      <FormField
+        id="n-max_plekken"
+        name="max_plekken"
+        label="Max. plekken"
+        inputmode="numeric"
+        hint="1 tot en met 40"
+        maat="crew"
+        veldClass="max-w-[120px]"
+        value={invoer.max_plekken}
+        error={fouten.max_plekken}
+        autofocus={eersteFout === 'max_plekken'}
+        required
+      />
+      <Button type="submit" variant="crew" maat="crew" breed>
+        Sessie aanmaken
+      </Button>
+    </form>
+  </div>
+</Layout>

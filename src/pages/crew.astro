@@ -1,5 +1,5 @@
 ---
-// S6 Werklijst + uitkomstformulier (W6, F-06, F-07).
+// S6 Werklijst + uitkomstformulier (W6, F-06, F-07). Alleen ingelogd (middleware).
 export const prerender = false;
 
 import Layout from '../components/Layout.astro';
@@ -10,116 +10,91 @@ import FieldError from '../components/FieldError.astro';
 import FormField from '../components/FormField.astro';
 import StatusBadge from '../components/StatusBadge.astro';
 import Table from '../components/Table.astro';
-import {
-  AANMELDING_STATUSSEN,
-  AANMELDINGEN,
-  CATEGORIEEN,
-  SESSIES,
-  UITKOMSTEN,
-  VANDAAG,
-  aanmeldingenVoorSessie,
-  huidigeGebruiker,
-  reparatieVoor,
-  sessieById,
-  type Aanmelding,
-  type Reparatie,
-} from '../lib/mock';
+import { AANMELDING_STATUSSEN, CATEGORIEEN, UITKOMSTEN } from '../lib/domein';
+import { alleSessies, sessieOpId, standaardWerklijstSessie } from '../lib/db/sessie';
+import { werklijst, type WerklijstRij } from '../lib/db/aanmelding';
+import { slaUitkomstOp } from '../lib/db/reparatie';
+import { UITKOMST_VELDEN, uitkomstSchema } from '../lib/schemas/uitkomst';
+import { leesFormulier, valideer, type Fouten } from '../lib/schemas/formulier';
 import { datumKort } from '../lib/format';
-import { leesState } from '../lib/state';
-
-const STATES = [
-  { key: 'opgeslagen', label: 'S6a Uitkomst opgeslagen' },
-  { key: 'gefilterd', label: 'S6a Gefilterd' },
-  { key: 'uitkomst', label: 'Uitkomstformulier open' },
-  { key: 'bijwerken', label: 'Bestaande uitkomst bijwerken' },
-  { key: 'opslaan-mislukt', label: 'S6b Opslaan mislukt' },
-  { key: 'veldfout', label: 'Uitkomst met veldfouten' },
-  { key: 'leeg', label: 'S6c Leeg' },
-  { key: 'filter-leeg', label: 'S6d Filterresultaat leeg' },
-  { key: 'vrijwilliger', label: 'Ingelogd als vrijwilliger' },
-  { key: 'niet-ingelogd', label: 'Niet ingelogd (302 naar login)' },
-] as const;
-const state = leesState(Astro.url, STATES);
-
-if (state === 'niet-ingelogd') return Astro.redirect('/login?terug=/crew', 302);
-
-// Mock: uitkomst opslaan. Straks: validatie met Zod, insert of update in reparatie, status naar afgerond.
-if (Astro.request.method === 'POST') {
-  const form = await Astro.request.formData();
-  const a = AANMELDINGEN.find((x) => String(x.id) === form.get('aanmelding_id'));
-  const params = new URLSearchParams();
-  if (a) {
-    params.set('sessie', String(a.sessie_id));
-    params.set('opgeslagen', a.referentie);
-  }
-  return Astro.redirect(`/crew?${params}`, 303);
-}
+import { vandaag } from '../lib/tijd';
 
 const gebruiker = Astro.locals.gebruiker!;
 const q = Astro.url.searchParams;
 
 // Filters (F-06). Onbekende waarden vallen terug op "alle".
-const standaardSessie = SESSIES.find((s) => s.datum >= VANDAAG) ?? SESSIES[SESSIES.length - 1]!;
-let sessieId = Number(q.get('sessie')) || standaardSessie.id;
-let categorie = CATEGORIEEN.find((c) => c === q.get('categorie')) ?? 'alle';
-let status = AANMELDING_STATUSSEN.find((s) => s.value === q.get('status'))?.value ?? 'alle';
-let openRef = q.get('open');
-let opgeslagen = q.get('opgeslagen');
+const gekozen = /^\d{1,9}$/.test(q.get('sessie') ?? '') ? await sessieOpId(Number(q.get('sessie'))) : null;
+const sessie = gekozen ?? (await standaardWerklijstSessie(vandaag()));
+const categorie = CATEGORIEEN.find((c) => c === q.get('categorie')) ?? null;
+const status = AANMELDING_STATUSSEN.find((s) => s.value === q.get('status'))?.value ?? null;
+const opgeslagenParam = q.get('opgeslagen');
+const opgeslagen = opgeslagenParam && /^RC-\d{4}-\d{4}$/.test(opgeslagenParam) ? opgeslagenParam : null;
 
-if (state === 'leeg') sessieId = 4;
-if (state === 'gefilterd' || state === 'opgeslagen') {
-  categorie = 'Klein huishoudelijk';
-  status = 'aangemeld';
-}
-if (state === 'opgeslagen') opgeslagen = 'RC-2026-0005';
-if (state === 'filter-leeg') {
-  categorie = 'Fiets';
-  status = 'afgerond';
-}
-if (state === 'uitkomst' || state === 'opslaan-mislukt' || state === 'veldfout') openRef = 'RC-2026-0007';
-if (state === 'bijwerken') openRef = 'RC-2026-0013';
-
-const sessie = sessieById(sessieId) ?? standaardSessie;
-const inSessie = aanmeldingenVoorSessie(sessie.id);
-const rijen = inSessie.filter(
-  (a) => (categorie === 'alle' || a.categorie === categorie) && (status === 'alle' || a.status === status),
-);
-const filterActief = categorie !== 'alle' || status !== 'alle';
-
-// Formulierwaarden per rij: bestaande reparatie voorgevuld, of de state uit de export.
-interface Invoer {
-  uitkomst: string;
-  minuten: string;
-  notitie: string;
-}
-function invoerVoor(a: Aanmelding, r: Reparatie | undefined): Invoer {
-  if (a.referentie === openRef && state === 'opslaan-mislukt')
-    return { uitkomst: 'gerepareerd', minuten: '35', notitie: 'Snoer vervangen, thermische zekering was ok.' };
-  if (a.referentie === openRef && state === 'veldfout') return { uitkomst: '', minuten: '0', notitie: '' };
-  return r ? { uitkomst: r.uitkomst, minuten: String(r.minuten), notitie: r.notitie } : { uitkomst: '', minuten: '', notitie: '' };
-}
-const formFouten = state === 'veldfout' ? { uitkomst: 'Kies een uitkomst.', minuten: 'Vul een tijd in van 1 tot en met 480 minuten.' } : {};
-if (state === 'veldfout') Astro.response.status = 400;
-if (state === 'opslaan-mislukt') Astro.response.status = 500;
-
-const telling = `${inSessie.length} ${inSessie.length === 1 ? 'aanmelding' : 'aanmeldingen'}`;
-const filterUrl = (extra: Record<string, string>) => {
-  const p = new URLSearchParams({ sessie: String(sessie.id) });
-  if (categorie !== 'alle') p.set('categorie', categorie);
-  if (status !== 'alle') p.set('status', status);
+const filterUrl = (extra: Record<string, string> = {}) => {
+  const p = new URLSearchParams();
+  if (sessie) p.set('sessie', String(sessie.id));
+  if (categorie) p.set('categorie', categorie);
+  if (status) p.set('status', status);
   for (const [k, v] of Object.entries(extra)) p.set(k, v);
-  return `/crew?${p}`;
+  const s = p.toString();
+  return s ? `/crew?${s}` : '/crew';
 };
 
+// F-07: uitkomst vastleggen. Bij een fout blijft het formulier open en ingevuld.
+let openId: number | null = null;
+let postWaarden: Record<string, string> | null = null;
+let formFouten: Fouten = {};
+let opslaanMislukt = false;
+
+if (Astro.request.method === 'POST') {
+  const check = valideer(uitkomstSchema, leesFormulier(await Astro.request.formData(), UITKOMST_VELDEN));
+  if (check.succes) {
+    try {
+      const referentie = await slaUitkomstOp(check.data, gebruiker.id);
+      if (referentie) return Astro.redirect(filterUrl({ opgeslagen: referentie }), 303);
+      formFouten = { uitkomst: 'Deze aanmelding bestaat niet (meer) of is geannuleerd.' };
+      Astro.response.status = 404;
+    } catch (e) {
+      console.error('Uitkomst opslaan mislukt', { aanmelding: check.data.aanmelding_id, fout: e instanceof Error ? e.name : 'onbekend' });
+      opslaanMislukt = true;
+      Astro.response.status = 500;
+    }
+    openId = check.data.aanmelding_id;
+  } else {
+    formFouten = check.fouten;
+    openId = Number(check.waarden.aanmelding_id) || null;
+    Astro.response.status = 400;
+  }
+  postWaarden = check.succes
+    ? { uitkomst: check.data.uitkomst, minuten: String(check.data.minuten), notitie: check.data.notitie }
+    : check.waarden;
+}
+
+const sessies = await alleSessies();
+const { totaal, rijen } = sessie ? await werklijst(sessie.id, { categorie, status }) : { totaal: 0, rijen: [] as WerklijstRij[] };
+const filterActief = categorie !== null || status !== null;
+const openRef = q.get('open');
+
+const isOpen = (a: WerklijstRij) => (openId !== null ? a.id === openId : a.referentie === openRef);
+
+// Formulierwaarden per rij: na een mislukte POST de ingevulde waarden, anders een bestaande reparatie.
+function invoerVoor(a: WerklijstRij) {
+  if (postWaarden && a.id === openId) return { uitkomst: postWaarden.uitkomst ?? '', minuten: postWaarden.minuten ?? '', notitie: postWaarden.notitie ?? '' };
+  return a.uitkomst
+    ? { uitkomst: a.uitkomst, minuten: String(a.minuten ?? ''), notitie: a.notitie ?? '' }
+    : { uitkomst: '', minuten: '', notitie: '' };
+}
+
+const telling = `${totaal} ${totaal === 1 ? 'aanmelding' : 'aanmeldingen'}`;
 const cel = 'px-3 py-1.5 align-middle max-md:block max-md:p-0';
 ---
 
-<Layout titel="Werklijst" variant="crew" gebruiker={gebruiker} tab="werklijst" states={STATES} state={state}>
+<Layout titel="Werklijst" variant="crew" gebruiker={gebruiker} tab="werklijst">
   <div class="mx-auto flex max-w-page flex-col gap-3.5 px-4 pt-4 pb-14 md:pt-5">
     <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
       <div class="flex flex-col gap-0.5">
         <h1 class="font-display text-xl font-extrabold md:text-2xl">
-          <span class="max-md:sr-only">Werklijst · </span>{datumKort(sessie.datum, true)}
+          <span class="max-md:sr-only">Werklijst · </span>{sessie ? datumKort(sessie.datum, true) : 'Nog geen sessies'}
         </h1>
         <p class="text-sm text-ink-muted">
           {telling}
@@ -140,10 +115,8 @@ const cel = 'px-3 py-1.5 align-middle max-md:block max-md:p-0';
           <div class="relative">
             <select id="w-sessie" name="sessie" class="min-h-touch w-full appearance-none rounded-lg border-thin border-line-strong bg-surface pr-7 pl-2.5 text-sm">
               {
-                [...SESSIES]
-                  .sort((a, b) => b.datum.localeCompare(a.datum))
-                  .map((s) => (
-                    <option value={s.id} selected={s.id === sessie.id}>
+                sessies.map((s) => (
+                    <option value={s.id} selected={s.id === sessie?.id}>
                       {datumKort(s.datum, true)}
                     </option>
                   ))
@@ -160,7 +133,7 @@ const cel = 'px-3 py-1.5 align-middle max-md:block max-md:p-0';
               name="categorie"
               class:list={[
                 'min-h-touch w-full appearance-none rounded-lg border-thin bg-surface pr-7 pl-2.5 text-sm',
-                categorie !== 'alle' ? 'border-ink' : 'border-line-strong',
+                categorie ? 'border-ink' : 'border-line-strong',
               ]}
             >
               <option value="alle">Alle categorieën</option>
@@ -177,7 +150,7 @@ const cel = 'px-3 py-1.5 align-middle max-md:block max-md:p-0';
               name="status"
               class:list={[
                 'min-h-touch w-full appearance-none rounded-lg border-thin bg-surface pr-7 pl-2.5 text-sm',
-                status !== 'alle' ? 'border-ink' : 'border-line-strong',
+                status ? 'border-ink' : 'border-line-strong',
               ]}
             >
               <option value="alle">Alle statussen</option>
@@ -201,18 +174,18 @@ const cel = 'px-3 py-1.5 align-middle max-md:block max-md:p-0';
     }
 
     {
-      inSessie.length === 0 ? (
+      !sessie || totaal === 0 ? (
         <EmptyState titel="Er zijn nog geen aanmeldingen voor deze sessie." tekst="Nieuwe aanmeldingen verschijnen hier vanzelf." />
       ) : rijen.length === 0 ? (
         <EmptyState titel="Geen aanmeldingen die aan het filter voldoen.">
-          <Button slot="actie" href={`/crew?sessie=${sessie.id}`} variant="secundair" maat="crew">
+          <Button slot="actie" href={`/crew?sessie=${sessie?.id ?? ''}`} variant="secundair" maat="crew">
             Filter wissen
           </Button>
         </EmptyState>
       ) : (
         <Table
           stapel
-          bijschrift={`Aanmeldingen voor ${datumKort(sessie.datum, true)}`}
+          bijschrift={`Aanmeldingen voor ${sessie ? datumKort(sessie.datum, true) : ''}`}
           kolommen={[
             { label: 'Referentie' },
             { label: 'Categorie' },
@@ -223,10 +196,10 @@ const cel = 'px-3 py-1.5 align-middle max-md:block max-md:p-0';
           ]}
         >
           {rijen.map((a) => {
-            const r = reparatieVoor(a.id);
-            const open = a.referentie === openRef;
-            const inv = invoerVoor(a, r);
-            const fouten: { uitkomst?: string; minuten?: string } = open ? formFouten : {};
+            const r = a.uitkomst;
+            const open = isOpen(a);
+            const inv = invoerVoor(a);
+            const fouten: Fouten = open ? formFouten : {};
             const pre = `o-${a.id}`;
             return (
               <>
@@ -249,12 +222,12 @@ const cel = 'px-3 py-1.5 align-middle max-md:block max-md:p-0';
                   </td>
                   <td class:list={[cel, 'text-ink-muted max-md:col-span-2']}>{a.defect}</td>
                   <td class:list={[cel, 'max-md:col-start-2 max-md:row-start-1 max-md:justify-self-end']}>
-                    <StatusBadge status={r ? r.uitkomst : a.status} maat="sm" />
+                    <StatusBadge status={r ?? a.status} maat="sm" />
                   </td>
                   <td class:list={[cel, 'text-right max-md:col-span-2 md:pr-4 lg:pr-6']}>
                     {a.status !== 'geannuleerd' && (
                     <a
-                      href={open ? filterUrl({}) : `${filterUrl({ open: a.referentie })}#rij-${a.referentie}`}
+                      href={open ? filterUrl() : `${filterUrl({ open: a.referentie })}#rij-${a.referentie}`}
                       data-toggle={`${pre}-rij`}
                       aria-expanded={open}
                       aria-controls={`${pre}-rij`}
@@ -274,13 +247,13 @@ const cel = 'px-3 py-1.5 align-middle max-md:block max-md:p-0';
                   <td colspan="6" class="px-4 pt-1 pb-4 max-md:block max-md:p-0 lg:px-6">
                     <form
                       method="post"
-                      action="/crew"
+                      action={filterUrl()}
                       novalidate
                       aria-label={`Uitkomst vastleggen voor ${a.referentie}`}
                       class="grid gap-3.5 rounded-xl border-thin border-ink bg-surface p-3.5 md:grid-cols-[minmax(0,auto)_180px_minmax(0,1fr)] md:items-start"
                     >
                       <input type="hidden" name="aanmelding_id" value={a.id} />
-                      {open && state === 'opslaan-mislukt' && (
+                      {open && opslaanMislukt && (
                         <Alert soort="error" compact class="md:col-span-3">
                           <strong class="text-error">Opslaan is niet gelukt, probeer opnieuw.</strong> Je invoer staat er nog.
                         </Alert>
@@ -346,12 +319,13 @@ const cel = 'px-3 py-1.5 align-middle max-md:block max-md:p-0';
                         teller={300}
                         maat="compact"
                         value={inv.notitie}
+                        error={fouten.notitie}
                       />
                       <div class="flex flex-wrap gap-2 md:col-span-3">
                         <Button type="submit" variant="crew" maat="crew" class="max-md:flex-1">
-                          {open && state === 'opslaan-mislukt' ? 'Opnieuw opslaan' : r ? 'Bijwerken' : 'Opslaan'}
+                          {open && opslaanMislukt ? 'Opnieuw opslaan' : r ? 'Bijwerken' : 'Opslaan'}
                         </Button>
-                        <Button href={filterUrl({})} variant="crew-secundair" maat="crew" data-sluit={`${pre}-rij`}>
+                        <Button href={filterUrl()} variant="crew-secundair" maat="crew" data-sluit={`${pre}-rij`}>
                           Annuleren
                         </Button>
                       </div>
