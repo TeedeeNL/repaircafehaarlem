@@ -15,8 +15,8 @@ MAIL_AFZENDER = ""
 [[d1_databases]]
 binding = "DB"
 database_name = "repair-cafe"
-# Lokaal werkt elke waarde. Voor productie: `wrangler d1 create repair-cafe` en het id hier invullen.
-database_id = "00000000-0000-0000-0000-000000000000"
+# Productie-D1 (EU-jurisdictie), aangemaakt met: wrangler d1 create repair-cafe --jurisdiction eu
+database_id = "55b14bab-7ad6-4350-b28f-d458484e0eed"
 migrations_dir = "migrations"
 # Alleen genummerde bestanden zijn migraties; seed.sql wordt nooit automatisch uitgevoerd.
 migrations_pattern = "migrations/[0-9][0-9][0-9][0-9]_*.sql"
