@@ -1,0 +1,86 @@
+---
+// Reparatielabel: kaartje met gaatje en touwtje dat licht scheef hangt en bij hover naar de andere kant zwaait.
+// Het motief van de site: stappen op home, bevestiging met referentienummer, statusresultaat.
+interface Props {
+  as?: 'article' | 'div' | 'li' | 'section';
+  /** Scheefstand in graden; negatief = naar links. */
+  kantel?: number;
+  /** Kleur van het kaartje. */
+  variant?: 'papier' | 'kraft' | 'oranje';
+  /** Touwtje boven het gaatje tonen. */
+  touw?: boolean;
+  /** Zwaaien bij hover. */
+  zwaai?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+const { as: Tag = 'article', kantel = -1.5, variant = 'papier', touw = true, zwaai = true, class: extra, ...rest } = Astro.props;
+---
+
+<Tag
+  class:list={['label', `label-${variant}`, touw && 'label-met-touw', zwaai && 'label-zwaai', extra]}
+  style={`--kantel: ${kantel}deg`}
+  {...rest}
+>
+  <span class="label-gat" aria-hidden="true"></span>
+  <slot />
+</Tag>
+
+<style>
+  .label {
+    position: relative;
+    padding: 2.4rem 1.25rem 1.35rem;
+    border: 1.5px solid var(--kleur-inkt);
+    border-radius: var(--radius-label);
+    box-shadow: var(--schaduw-label);
+    transform: rotate(var(--kantel));
+    transform-origin: 50% 0;
+    transition: transform var(--duur-traag) var(--ease-veer);
+  }
+  .label-papier {
+    background: var(--kleur-vlak);
+    color: var(--kleur-inkt);
+  }
+  .label-kraft {
+    background: var(--kleur-kraft);
+    color: var(--kleur-inkt);
+  }
+  .label-oranje {
+    background: var(--kleur-oranje);
+    color: var(--kleur-vlak);
+    border-color: var(--kleur-oranje-diep);
+  }
+  .label-zwaai:hover {
+    transform: rotate(calc(var(--kantel) * -1.4));
+  }
+  .label-gat {
+    position: absolute;
+    top: 0.85rem;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    margin-left: -7px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    background: var(--kleur-papier);
+  }
+  .label-met-touw::before {
+    /* touwtje dat van het gaatje omhoog loopt */
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% - 1.3rem);
+    width: 1.5px;
+    height: 2.4rem;
+    margin-left: -0.75px;
+    background: var(--kleur-lijn-sterk);
+    transform-origin: bottom;
+  }
+  /* Scheurlijn in een label: <hr class="scheur"> */
+  .label :global(.scheur) {
+    border: 0;
+    border-top: 1.5px dashed currentColor;
+    opacity: 0.5;
+    margin: 0.9rem -1.25rem;
+  }
+</style>

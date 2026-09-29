@@ -1,0 +1,71 @@
+---
+import Icon from './Icon.astro';
+
+// Veelgestelde vragen als toegankelijke uitklaplijst met <details>/<summary>: werkt zonder JavaScript,
+// wordt als knop voorgelezen en is met toetsenbord te bedienen.
+interface Props {
+  vragen: { vraag: string; antwoord: string }[];
+}
+const { vragen } = Astro.props;
+---
+
+<div class="flex flex-col gap-3">
+  {
+    vragen.map((v, i) => (
+      <details class="faq group" data-reveal style={`--i: ${i}`}>
+        <summary class="flex min-h-[64px] items-center justify-between gap-4 px-5 py-3 font-display text-xl font-bold">
+          <span>{v.vraag}</span>
+          <span class="faq-plus grid size-9 flex-none place-items-center rounded-full border-thin border-ink">
+            <Icon naam="plus" maat={18} />
+          </span>
+        </summary>
+        <div class="faq-antwoord px-5 pb-5 text-ink-muted">
+          <p class="max-w-[60ch]">{v.antwoord}</p>
+        </div>
+      </details>
+    ))
+  }
+</div>
+
+<style>
+  .faq {
+    border: 1.5px solid var(--kleur-inkt);
+    border-radius: var(--radius-lg);
+    background: var(--kleur-vlak);
+    transition: box-shadow var(--duur-basis) var(--ease-uit);
+  }
+  .faq[open] {
+    box-shadow: var(--schaduw-kaart);
+  }
+  .faq summary {
+    list-style: none;
+    border-radius: var(--radius-lg);
+  }
+  .faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq-plus {
+    transition:
+      transform var(--duur-basis) var(--ease-veer),
+      background-color var(--duur-basis) var(--ease-uit);
+  }
+  .faq summary:hover .faq-plus {
+    background: var(--kleur-oranje-zacht);
+  }
+  .faq[open] .faq-plus {
+    transform: rotate(45deg);
+    background: var(--kleur-inkt);
+    color: var(--kleur-vlak);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .faq[open] .faq-antwoord {
+      animation: antwoord var(--duur-basis) var(--ease-uit);
+    }
+  }
+  @keyframes antwoord {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+</style>

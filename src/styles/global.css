@@ -350,6 +350,25 @@
     background-size: 100% 1.5px;
   }
 
+  /* Kaart met icoonrondje (Over ons, info-pagina's) */
+  .kaart {
+    height: 100%;
+    padding: 1.5rem;
+    background: var(--kleur-vlak);
+    border: 1.5px solid var(--kleur-inkt);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--schaduw-kaart);
+  }
+  .kaart-icoon {
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 50%;
+    background: var(--kleur-oranje-zacht);
+    color: var(--kleur-oranje-diep);
+  }
+
   /* Icoon dat draait bij hover van de ouder (.draai-ouder) */
   .icoon-draai {
     transition: transform var(--duur-traag) var(--ease-veer);

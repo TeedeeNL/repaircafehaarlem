@@ -1,28 +1,136 @@
 ---
 // S1d Informatiepagina (W1, F-11). Prerendered uit de content collection src/content/info/.
+// De inhoud komt uit de frontmatter (punten, regels, vragen) en wordt als kaarten/labels getoond.
 export const prerender = true;
 
 import type { GetStaticPaths } from 'astro';
 import { getCollection, render } from 'astro:content';
 import Layout from '../../components/Layout.astro';
-import Button from '../../components/Button.astro';
+import Faq from '../../components/Faq.astro';
+import Icon, { type IconNaam } from '../../components/Icon.astro';
+import Knop from '../../components/Knop.astro';
+import Label from '../../components/Label.astro';
 
 export const getStaticPaths = (async () => {
   const paginas = await getCollection('info');
-  return paginas.map((pagina) => ({ params: { slug: pagina.id }, props: { pagina } }));
+  return paginas.map((pagina) => ({ params: { slug: pagina.id }, props: { pagina, alle: paginas } }));
 }) satisfies GetStaticPaths;
 
-const { pagina } = Astro.props;
+const { pagina, alle } = Astro.props;
 const { Content } = await render(pagina);
+const { titel, intro, punten, regels, vragen, samenvatting } = pagina.data;
+const heeftBody = Boolean(pagina.body?.trim());
+
+const iconen: Record<string, IconNaam> = { 'over-ons': 'persoon', huisregels: 'label', 'veelgestelde-vragen': 'info' };
+const puntIcoon: IconNaam[] = ['persoon', 'moersleutel', 'label', 'tandwiel'];
+const anderen = alle.filter((p) => p.id !== pagina.id && p.data.in_menu).sort((a, b) => a.data.volgorde - b.data.volgorde);
+const kantel = [-1.5, 1.2, -0.8, 1.6, -1.2];
 ---
 
-<Layout titel={pagina.data.titel} beschrijving={pagina.data.samenvatting}>
-  <article class="mx-auto flex max-w-[680px] flex-col gap-4 px-4 pt-7 pb-14 lg:pt-10">
-    <h1 class="font-display text-[32px] leading-[1.05] font-extrabold lg:text-[44px]">{pagina.data.titel}</h1>
-    <div class="info-body">
-      <Content />
+<Layout titel={titel} beschrijving={samenvatting}>
+  <header class="paginakop relative overflow-hidden border-b-thin border-dashed border-line-strong bg-paper-deep">
+    <div class="mx-auto flex max-w-page items-end justify-between gap-8 px-rand pt-12 pb-12 md:pt-20 md:pb-16">
+      <div class="flex max-w-[44rem] flex-col gap-4">
+        <p class="hero-in font-mono text-meta font-semibold tracking-[.16em] text-rust uppercase" style="--i: 0">Goed om te weten</p>
+        <h1 class="hero-in font-display text-kop-1 font-extrabold tracking-[-0.03em]" style="--i: 1">{titel}</h1>
+        {intro && <p class="hero-in text-lead text-ink-muted md:text-xl" style="--i: 2">{intro}</p>}
+      </div>
+      <span class="hero-in draai-ouder hidden size-36 flex-none place-items-center rounded-full border-thin border-ink bg-surface md:grid" style="--i: 3" aria-hidden="true">
+        <Icon naam={iconen[pagina.id] ?? 'moersleutel'} maat={64} class="icoon-draai text-rust" />
+      </span>
     </div>
+  </header>
+
+  <div class="mx-auto flex max-w-page flex-col gap-14 px-rand py-sectie">
+    {
+      punten && punten.length > 0 && (
+        <div class="grid gap-5 md:grid-cols-3">
+          {punten.map((p, i) => (
+            <article class="kaart draai-ouder" data-reveal style={`--i: ${i}`}>
+              <span class="kaart-icoon">
+                <Icon naam={puntIcoon[i] ?? 'moersleutel'} maat={28} class="icoon-draai" />
+              </span>
+              <h2 class="mt-5 font-display text-kop-3 font-extrabold">{p.titel}</h2>
+              <p class="mt-2 text-ink-muted">{p.tekst}</p>
+            </article>
+          ))}
+        </div>
+      )
+    }
+
+    {
+      regels && regels.length > 0 && (
+        <ol class="grid gap-12 pt-6 sm:grid-cols-2 lg:grid-cols-3">
+          {regels.map((r, i) => (
+            <li data-reveal style={`--i: ${i}`}>
+              <Label as="div" kantel={kantel[i % kantel.length]} class="h-full">
+                <p class="font-mono text-meta font-semibold tracking-[.12em] text-rust" aria-hidden="true">
+                  REGEL {String(i + 1).padStart(2, '0')}
+                </p>
+                <hr class="scheur" />
+                <p class="font-display text-xl leading-snug font-bold">{r}</p>
+              </Label>
+            </li>
+          ))}
+        </ol>
+      )
+    }
+
+    {vragen && vragen.length > 0 && <div class="max-w-[48rem]"><Faq vragen={vragen} /></div>}
+
+    {
+      heeftBody && (
+        <div class="info-body max-w-[44rem]">
+          <Content />
+        </div>
+      )
+    }
+
     <!-- Afsluitende actie hoort bij de layout, niet bij de Markdown. -->
-    <Button href="/aanmelden" breed class="mt-2 sm:max-w-[360px]">Apparaat aanmelden</Button>
-  </article>
+    <div class="flex flex-wrap items-center gap-4" data-reveal>
+      <Knop href="/aanmelden" pijl>Apparaat aanmelden</Knop>
+      <Knop href="/status" variant="lijn">Status opvragen</Knop>
+    </div>
+  </div>
+
+  {
+    anderen.length > 0 && (
+      <section aria-labelledby="meer-info" class="border-t-thin border-dashed border-line-strong bg-paper-deep py-sectie">
+        <div class="mx-auto max-w-page px-rand">
+          <h2 id="meer-info" class="mb-6 font-mono text-meta font-semibold tracking-[.16em] text-ink-muted uppercase">
+            Ook goed om te weten
+          </h2>
+          <ul class="grid gap-4 md:grid-cols-2">
+            {anderen.map((p, i) => (
+              <li data-reveal style={`--i: ${i}`}>
+                <a href={`/info/${p.id}`} class="doorlink group flex min-h-[88px] items-center justify-between gap-4 rounded-xl border-thin border-ink bg-surface p-5 text-ink no-underline hover:text-ink">
+                  <span>
+                    <span class="block font-display text-kop-3 font-extrabold">{p.data.titel}</span>
+                    {p.data.samenvatting && <span class="text-small text-ink-muted">{p.data.samenvatting}</span>}
+                  </span>
+                  <Icon naam="pijl-rechts" maat={24} class="knop-pijl text-rust" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
 </Layout>
+
+<style>
+  .doorlink {
+    box-shadow: 0 3px 0 var(--kleur-inkt);
+    transition:
+      transform var(--duur-snel) var(--ease-uit),
+      box-shadow var(--duur-snel) var(--ease-uit);
+  }
+  .doorlink:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 0 var(--kleur-inkt);
+  }
+  .doorlink:hover :global(.knop-pijl) {
+    transform: translateX(4px);
+  }
+</style>
