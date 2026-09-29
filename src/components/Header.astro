@@ -1,7 +1,7 @@
 ---
 import Logo from './Logo.astro';
 import type { MenuItem } from '../lib/menu';
-import type { Vrijwilliger } from '../lib/mock';
+import type { Gebruiker } from '../lib/domein';
 
 /**
  * Publiek: lichte balk, desktopmenu vanaf 1024px, daaronder een menuknop met donker paneel.
@@ -12,7 +12,7 @@ interface Props {
   menu?: MenuItem[];
   pad?: string;
   menuOpen?: boolean;
-  gebruiker?: Vrijwilliger | null;
+  gebruiker?: Gebruiker | null;
   tab?: 'werklijst' | 'sessies' | null;
 }
 const { variant, menu = [], pad = Astro.url.pathname, menuOpen = false, gebruiker = null, tab = null } = Astro.props;

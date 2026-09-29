@@ -2,30 +2,22 @@
 import '../styles/global.css';
 import Header from './Header.astro';
 import Footer from './Footer.astro';
-import DevStates from './DevStates.astro';
 import { hoofdmenu } from '../lib/menu';
-import type { StateOptie } from '../lib/state';
-import type { Vrijwilliger } from '../lib/mock';
+import type { Gebruiker } from '../lib/domein';
 
 interface Props {
   titel: string;
   beschrijving?: string;
   variant?: 'publiek' | 'crew';
-  menuOpen?: boolean;
-  gebruiker?: Vrijwilliger | null;
+  gebruiker?: Gebruiker | null;
   tab?: 'werklijst' | 'sessies' | null;
-  states?: readonly StateOptie<string>[];
-  state?: string | null;
 }
 const {
   titel,
   beschrijving = 'Repair Cafe Haarlem: elke eerste zaterdag van de maand repareren vrijwilligers gratis je apparaat.',
   variant = 'publiek',
-  menuOpen = false,
   gebruiker = null,
   tab = null,
-  states = [],
-  state = null,
 } = Astro.props;
 
 const menu = variant === 'publiek' ? await hoofdmenu() : [];
@@ -56,11 +48,10 @@ const volledigeTitel = titel === 'Repair Cafe Haarlem' ? titel : `${titel} · Re
     >
       Naar de inhoud
     </a>
-    <Header variant={variant} menu={menu} menuOpen={menuOpen} gebruiker={gebruiker} tab={tab} />
+    <Header variant={variant} menu={menu} gebruiker={gebruiker} tab={tab} />
     <main id="inhoud" tabindex="-1" class="flex-1 focus:outline-none">
       <slot />
     </main>
     {variant === 'publiek' && <Footer />}
-    <DevStates opties={states} huidig={state} />
   </body>
 </html>

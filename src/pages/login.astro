@@ -15,7 +15,7 @@ import { leesFormulier, valideer, type Fouten } from '../lib/schemas/formulier';
 
 // Alleen interne paden als terugsprong, nooit een externe URL.
 const veiligDoel = (pad: unknown) =>
-  typeof pad === 'string' && /^\/(crew|beheer)(\/[a-z-]*)?$/.test(pad) ? pad : '/crew';
+  typeof pad === 'string' && /^\/(crew|beheer)(\/[a-z-]+)?(\?[\w=&%.+-]*)?$/.test(pad) ? pad : '/crew';
 
 const terugParam = Astro.url.searchParams.get('terug');
 if (Astro.locals.gebruiker && Astro.request.method === 'GET') return Astro.redirect(veiligDoel(terugParam), 302);

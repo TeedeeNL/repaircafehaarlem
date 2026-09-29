@@ -20,7 +20,8 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   if (!beschermd) return next();
 
   if (!ctx.locals.gebruiker) {
-    return ctx.redirect(`/login?terug=${encodeURIComponent(pad)}`, 302);
+    const terug = ctx.request.method === 'GET' ? pad + ctx.url.search : pad;
+    return ctx.redirect(`/login?terug=${encodeURIComponent(terug)}`, 302);
   }
 
   if (COORDINATOR.test(pad) && ctx.locals.gebruiker.rol !== 'coordinator') {
