@@ -31,3 +31,4 @@ pnpm-debug.log*
 
 # gegenereerd door wrangler types
 worker-configuration.d.ts
+.tmp/

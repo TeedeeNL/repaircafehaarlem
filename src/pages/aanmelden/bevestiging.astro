@@ -7,26 +7,19 @@ import Alert from '../../components/Alert.astro';
 import Button from '../../components/Button.astro';
 import Marker from '../../components/Marker.astro';
 import RefLabel from '../../components/RefLabel.astro';
-import { LAATSTE_AANMELDING, sessieById } from '../../lib/mock';
+import { aanmeldingVoorOpvraag } from '../../lib/db/aanmelding';
+import { leesBevestiging } from '../../lib/bevestiging';
 import { datumLang } from '../../lib/format';
-import { leesState } from '../../lib/state';
 
-const STATES = [
-  { key: 'mail-mislukt', label: 'S3b Mail niet verstuurd' },
-  { key: 'leeg', label: 'Geen aanmelding om te tonen' },
-] as const;
-const state = leesState(Astro.url, STATES);
-
-// Mock: de laatste aanmelding. Straks komt die uit de server-sessie na het POST-verzoek.
-const aanmelding = state === 'leeg' ? null : LAATSTE_AANMELDING;
-const sessie = aanmelding ? sessieById(aanmelding.sessie_id) : undefined;
-const mailMislukt = state === 'mail-mislukt';
+const bevestiging = leesBevestiging(Astro.cookies);
+const aanmelding = bevestiging ? await aanmeldingVoorOpvraag(bevestiging.referentie, bevestiging.email) : null;
+const mailMislukt = bevestiging ? !bevestiging.mailVerstuurd : false;
 ---
 
-<Layout titel="Aanmelding gelukt" states={STATES} state={state}>
+<Layout titel={aanmelding ? 'Aanmelding gelukt' : 'Geen aanmelding'}>
   <div class="mx-auto flex max-w-[560px] flex-col gap-5 px-4 pt-7 pb-14 lg:pt-8">
     {
-      aanmelding && sessie ? (
+      aanmelding ? (
         <>
           <div class="flex flex-col gap-2.5">
             <Marker soort="ok" maat="xl" />
@@ -40,9 +33,9 @@ const mailMislukt = state === 'mail-mislukt';
           )}
 
           <RefLabel referentie={aanmelding.referentie} groot={mailMislukt}>
-            <p class="font-bold">{datumLang(sessie.datum)}</p>
+            <p class="font-bold">{datumLang(aanmelding.datum)}</p>
             <p>
-              {sessie.starttijd} uur · {aanmelding.merk_type}
+              {aanmelding.starttijd} uur · {aanmelding.merk_type}
             </p>
           </RefLabel>
 

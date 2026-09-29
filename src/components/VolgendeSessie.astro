@@ -1,0 +1,55 @@
+---
+// Kaart "Eerstvolgende sessie" op de homepage. Wordt als server island geladen,
+// zodat de homepage statisch blijft en de vrije plekken toch actueel zijn.
+import Button from './Button.astro';
+import Marker from './Marker.astro';
+import PlekkenMeter from './PlekkenMeter.astro';
+import { eerstvolgendeSessieMetPlek } from '../lib/db/sessie';
+import { datumLang } from '../lib/format';
+import { vandaag } from '../lib/tijd';
+
+const sessie = await eerstvolgendeSessieMetPlek(vandaag());
+---
+
+{
+  sessie ? (
+    <section
+      aria-labelledby="volgende-sessie"
+      class="flex flex-col gap-3 rounded-xl border-thin border-ink bg-surface p-4 shadow-card lg:max-w-[460px]"
+    >
+      <h2 id="volgende-sessie" class="font-mono text-xs font-semibold tracking-[.06em] text-ink-muted uppercase">
+        Eerstvolgende sessie
+      </h2>
+      <div>
+        <p class="font-display text-2xl leading-[1.1] font-extrabold">{datumLang(sessie.datum, false)}</p>
+        <p class="text-ink-muted">vanaf {sessie.starttijd} uur</p>
+      </div>
+      <PlekkenMeter bezet={sessie.bezet} max={sessie.max_plekken} />
+      <Button href="/aanmelden" breed>
+        Apparaat aanmelden
+      </Button>
+      <a href="/status" class="flex min-h-touch items-center self-center text-small font-bold">
+        Status van je aanmelding bekijken
+      </a>
+    </section>
+  ) : (
+    <section
+      aria-labelledby="volgende-sessie"
+      class="flex flex-col gap-3 rounded-xl border-thin border-dashed border-line-strong bg-surface p-4 lg:max-w-[460px]"
+    >
+      <h2 id="volgende-sessie" class="font-mono text-xs font-semibold tracking-[.06em] text-ink-muted uppercase">
+        Eerstvolgende sessie
+      </h2>
+      <p class="flex items-start gap-2.5 text-lead font-bold">
+        <Marker soort="info" maat="lg" class="mt-0.5" />
+        De volgende datum wordt binnenkort bekend.
+      </p>
+      <Button uit breed aria-describedby="geen-sessie-uitleg">
+        Apparaat aanmelden
+      </Button>
+      <p id="geen-sessie-uitleg" class="text-sm text-ink-muted">
+        Aanmelden kan zodra de coördinator een nieuwe sessie heeft geopend.
+      </p>
+    </section>
+  )
+}

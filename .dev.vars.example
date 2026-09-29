@@ -2,3 +2,6 @@
 # 1x0000000000000000000000000000000AA = slaagt altijd
 # 2x0000000000000000000000000000000AA = mislukt altijd
 TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+
+# console = bevestigingsmail naar de terminal, uit = mail mislukt (test de variant "mail volgt later")
+MAIL_MODUS=console

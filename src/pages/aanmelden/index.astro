@@ -1,5 +1,5 @@
 ---
-// S2 Aanmeldformulier (W2, F-01 t/m F-03, TE-05).
+// S2 Aanmeldformulier (W2, F-01 t/m F-04, TE-03, TE-05).
 export const prerender = false;
 
 import Layout from '../../components/Layout.astro';
@@ -7,76 +7,105 @@ import Alert from '../../components/Alert.astro';
 import Button from '../../components/Button.astro';
 import FieldError from '../../components/FieldError.astro';
 import FormField from '../../components/FormField.astro';
-import Marker from '../../components/Marker.astro';
-import { CATEGORIEEN, komendeSessies, vrijePlekken, LAATSTE_AANMELDING } from '../../lib/mock';
+import { CATEGORIEEN } from '../../lib/domein';
+import { komendeSessies } from '../../lib/db/sessie';
+import { maakAanmelding } from '../../lib/db/aanmelding';
+import { AANMELDING_VELDEN, aanmeldingSchema } from '../../lib/schemas/aanmelding';
+import { leesFormulier, valideer, type Fouten } from '../../lib/schemas/formulier';
+import { turnstileSiteKey, verifieerTurnstile } from '../../lib/turnstile';
+import { mailer } from '../../lib/mail';
+import { bevestigingsmail } from '../../lib/mail/bevestiging';
+import { onthoudBevestiging } from '../../lib/bevestiging';
 import { datumKort, plekken } from '../../lib/format';
-import { leesState } from '../../lib/state';
+import { huidigJaar, vandaag } from '../../lib/tijd';
 
-// Mock: tot de API er is, gaat een verzonden formulier door naar de bevestiging.
+type Veld = (typeof AANMELDING_VELDEN)[number];
+
+let waarden: Record<string, string> = {};
+let fouten: Fouten = {};
+let systeemfout = false;
+
 if (Astro.request.method === 'POST') {
-  return Astro.redirect('/aanmelden/bevestiging', 303);
+  const form = await Astro.request.formData();
+  waarden = leesFormulier(form, AANMELDING_VELDEN);
+  const token = form.get('cf-turnstile-response');
+  const [check, mens] = await Promise.all([
+    Promise.resolve(valideer(aanmeldingSchema, waarden)),
+    verifieerTurnstile(typeof token === 'string' ? token : '', Astro.clientAddress),
+  ]);
+
+  if (!check.succes) fouten = { ...check.fouten };
+  if (!mens) fouten.turnstile = 'De controle is mislukt, probeer het opnieuw.';
+
+  if (check.succes && mens) {
+    try {
+      const res = await maakAanmelding(check.data, huidigJaar(), vandaag());
+      if (res.soort === 'vol') {
+        // F-03: tussen laden en verzenden vol geraakt. Keuze leegmaken, rest blijft staan.
+        fouten.sessie_id = 'Deze sessie is inmiddels vol, kies een andere datum.';
+        waarden.sessie_id = '';
+        Astro.response.status = 409;
+      } else if (res.soort === 'ongeldige_sessie') {
+        fouten.sessie_id = 'Kies een sessie.';
+        waarden.sessie_id = '';
+        Astro.response.status = 400;
+      } else {
+        const sessie = (await komendeSessies(vandaag())).find((s) => s.id === check.data.sessie_id);
+        // F-04: mail is niet leidend. Mislukt hij, dan blijft de aanmelding staan.
+        let mailVerstuurd = false;
+        try {
+          await mailer().verstuur(
+            bevestigingsmail({
+              email: check.data.email,
+              referentie: res.referentie,
+              datum: sessie?.datum ?? '',
+              starttijd: sessie?.starttijd ?? '',
+              merk_type: check.data.merk_type,
+              basisUrl: Astro.url.origin,
+            }),
+          );
+          mailVerstuurd = true;
+        } catch {
+          console.error('Bevestigingsmail niet verstuurd', { referentie: res.referentie });
+        }
+        onthoudBevestiging(Astro.cookies, { referentie: res.referentie, email: check.data.email, mailVerstuurd });
+        return Astro.redirect('/aanmelden/bevestiging', 303);
+      }
+    } catch (e) {
+      // Geen persoonsgegevens in de log: alleen het soort fout.
+      console.error('Aanmelding opslaan mislukt', { fout: e instanceof Error ? e.name : 'onbekend' });
+      systeemfout = true;
+      Astro.response.status = 500;
+    }
+  } else {
+    Astro.response.status = 400;
+  }
 }
 
-const STATES = [
-  { key: 'ingevuld', label: 'S2a Ingevuld' },
-  { key: 'fouten', label: 'S2b Veldfouten + sessie vol (400/409)' },
-  { key: 'systeemfout', label: 'S2c Systeemfout (500)' },
-  { key: 'controle-mislukt', label: 'S2c Controle mislukt (400)' },
-  { key: 'bezig', label: 'S2d Bezig met verzenden' },
-  { key: 'geen-sessie', label: 'Geen open sessie' },
-] as const;
-const state = leesState(Astro.url, STATES);
+const sessies = await komendeSessies(vandaag());
+const siteKey = turnstileSiteKey();
 
-if (state === 'fouten' || state === 'controle-mislukt') Astro.response.status = 400;
-if (state === 'systeemfout') Astro.response.status = 500;
-
-type Veld = 'voornaam' | 'email' | 'categorie' | 'merk_type' | 'defect' | 'sessie_id';
-const ingevuld = state !== null && state !== 'geen-sessie';
-const voorbeeld = LAATSTE_AANMELDING;
-
-const waarden: Partial<Record<Veld, string>> = ingevuld
-  ? {
-      voornaam: voorbeeld.voornaam,
-      email: state === 'fouten' ? 'test@' : voorbeeld.email,
-      categorie: voorbeeld.categorie,
-      merk_type: voorbeeld.merk_type,
-      defect: state === 'fouten' ? 'Doet het niet' : voorbeeld.defect,
-      // Bij een 409 wordt de keuze leeggemaakt.
-      sessie_id: state === 'fouten' ? '' : String(voorbeeld.sessie_id),
-    }
-  : {};
-
-const fouten: Partial<Record<Veld, string>> =
-  state === 'fouten'
-    ? {
-        email: 'Vul een geldig e-mailadres in, bijvoorbeeld naam@voorbeeld.nl',
-        defect: `Beschrijf het defect in minimaal 20 tekens (nog ${20 - 'Doet het niet'.length}).`,
-        sessie_id: 'Deze sessie is inmiddels vol, kies een andere datum.',
-      }
-    : {};
-
-const labels: Record<Veld, string> = {
+const labels: Record<Veld | 'turnstile', string> = {
   voornaam: 'Voornaam',
   email: 'E-mailadres',
   categorie: 'Categorie',
   merk_type: 'Merk en type',
   defect: 'Wat is er kapot?',
   sessie_id: 'Sessie',
+  turnstile: 'Controle',
 };
-const volgorde: Veld[] = ['voornaam', 'email', 'categorie', 'merk_type', 'defect', 'sessie_id'];
+const volgorde = [...AANMELDING_VELDEN, 'turnstile'] as const;
 const foutLijst = volgorde.filter((v) => fouten[v]);
 const eersteFout = foutLijst[0];
-
-const sessies = state === 'geen-sessie' ? [] : komendeSessies();
-// In S2b is de gekozen sessie tussen laden en verzenden vol geraakt.
-const isVol = (id: number, vrij: number) => vrij <= 0 || (state === 'fouten' && id === voorbeeld.sessie_id);
+const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
 ---
 
-<Layout titel="Apparaat aanmelden" states={STATES} state={state}>
+<Layout titel="Apparaat aanmelden">
   <form
     method="post"
     action="/aanmelden"
     novalidate
+    data-aanmelden
     class="mx-auto flex max-w-[560px] flex-col gap-5 px-4 pt-6 pb-14 lg:pt-8"
   >
     <div class="flex flex-col gap-1.5">
@@ -85,7 +114,7 @@ const isVol = (id: number, vrij: number) => vrij <= 0 || (state === 'fouten' && 
     </div>
 
     {
-      state === 'systeemfout' && (
+      systeemfout && (
         <Alert soort="error" titel="Er ging iets mis, probeer het opnieuw.">
           Je ingevulde gegevens staan er nog. Er is niets opgeslagen.
         </Alert>
@@ -98,7 +127,7 @@ const isVol = (id: number, vrij: number) => vrij <= 0 || (state === 'fouten' && 
           <ul class="list-disc pl-[18px]">
             {foutLijst.map((v) => (
               <li>
-                <a href={`#f-${v}`} class="font-bold">
+                <a href={`#${ankers[v] ?? `f-${v}`}`} class="font-bold">
                   {labels[v]}
                 </a>
               </li>
@@ -182,14 +211,12 @@ const isVol = (id: number, vrij: number) => vrij <= 0 || (state === 'fouten' && 
           </Alert>
         ) : (
           sessies.map((s) => {
-            const vrij = vrijePlekken(s);
-            const vol = isVol(s.id, vrij);
-            const label = `${datumKort(s.datum)}`;
-            return vol ? (
+            const vrij = Math.max(0, s.max_plekken - s.bezet);
+            return vrij === 0 ? (
               <label class="flex min-h-card cursor-not-allowed items-center gap-3 rounded-xl border-thin border-dashed border-line-strong bg-sand-light px-3.5 py-2.5 text-ink-muted">
                 <input type="radio" name="sessie_id" value={s.id} disabled class="m-0 size-[22px] flex-none" />
                 <span class="flex-1">
-                  <strong>{label}</strong>, {s.starttijd}
+                  <strong>{datumKort(s.datum)}</strong>, {s.starttijd}
                   <br />
                   <span class="text-sm">Vol, niet te kiezen</span>
                 </span>
@@ -202,11 +229,12 @@ const isVol = (id: number, vrij: number) => vrij <= 0 || (state === 'fouten' && 
                   name="sessie_id"
                   value={s.id}
                   checked={waarden.sessie_id === String(s.id)}
+                  autofocus={(eersteFout === 'sessie_id' && s === sessies.find((x) => x.max_plekken > x.bezet)) || undefined}
                   required
                   class="m-0 size-[22px] flex-none accent-rust"
                 />
                 <span class="flex-1">
-                  <strong>{label}</strong>, {s.starttijd}
+                  <strong>{datumKort(s.datum)}</strong>, {s.starttijd}
                   <br />
                   <span class="text-sm">{plekken(vrij)} vrij</span>
                 </span>
@@ -217,45 +245,29 @@ const isVol = (id: number, vrij: number) => vrij <= 0 || (state === 'fouten' && 
       }
     </fieldset>
 
-    <div id="f-turnstile" class="flex flex-col gap-2">
-      {
-        state === 'bezig' ? (
-          <div role="status" class="flex min-h-[68px] items-center gap-2.5 rounded-lg border border-line bg-surface px-4">
-            <Marker soort="ok" maat="lg" />
-            <span class="text-small">Controle geslaagd</span>
-          </div>
-        ) : (
-          <div
-            class:list={[
-              'grid min-h-[68px] place-items-center rounded-lg bg-stripes-sm px-4 text-center',
-              state === 'controle-mislukt' ? 'border-2 border-error' : 'border border-line',
-            ]}
-          >
-            <span class="font-mono text-xs text-ink-muted">
-              {state === 'controle-mislukt' ? 'Nieuwe controle (Turnstile)' : 'Controle tegen spam (Turnstile)'}
-            </span>
-            <noscript>
-              <span class="text-sm">Zet JavaScript aan om de controle te laten werken.</span>
-            </noscript>
-          </div>
-        )
-      }
-      <input type="hidden" name="cf-turnstile-response" value="" />
-      {state === 'controle-mislukt' && <FieldError>De controle is mislukt, probeer het opnieuw.</FieldError>}
+    <div id="f-turnstile" tabindex="-1" class="flex flex-col gap-2">
+      <div
+        class:list={[
+          'grid min-h-[68px] place-items-center rounded-lg px-1 text-center',
+          fouten.turnstile ? 'border-2 border-error bg-stripes-sm' : 'border border-line bg-stripes-sm',
+        ]}
+      >
+        <div class="cf-turnstile" data-sitekey={siteKey} data-language="nl" data-theme="light" data-size="flexible"></div>
+        <noscript>
+          <span class="text-sm">Zet JavaScript aan om de controle tegen spam te laten werken.</span>
+        </noscript>
+      </div>
+      {fouten.turnstile && <FieldError id="f-turnstile-fout">{fouten.turnstile}</FieldError>}
     </div>
 
     {
-      state === 'bezig' ? (
-        <Button bezig breed>
-          Bezig met verzenden…
-        </Button>
-      ) : sessies.length === 0 ? (
+      sessies.length === 0 ? (
         <Button uit breed aria-describedby="geen-sessie-uitleg">
           Aanmelden
         </Button>
       ) : (
-        <Button type="submit" breed>
-          {state === 'systeemfout' || state === 'controle-mislukt' ? 'Opnieuw aanmelden' : 'Aanmelden'}
+        <Button type="submit" breed data-verzend>
+          {systeemfout || fouten.turnstile ? 'Opnieuw aanmelden' : 'Aanmelden'}
         </Button>
       )
     }
@@ -265,3 +277,17 @@ const isVol = (id: number, vrij: number) => vrij <= 0 || (state === 'fouten' && 
     </p>
   </form>
 </Layout>
+
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script>
+  // S2d: knop uit en "Bezig met verzenden…" tegen dubbel verzenden.
+  const form = document.querySelector<HTMLFormElement>('[data-aanmelden]');
+  const knop = form?.querySelector<HTMLButtonElement>('[data-verzend]');
+  form?.addEventListener('submit', () => {
+    if (!knop) return;
+    knop.disabled = true;
+    knop.setAttribute('aria-busy', 'true');
+    knop.classList.add('bg-rust-700', 'cursor-progress');
+    knop.textContent = 'Bezig met verzenden…';
+  });
+</script>

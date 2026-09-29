@@ -5,8 +5,8 @@ compatibility_date = "2026-09-26"
 [vars]
 # Officiële Turnstile-testsleutel (slaagt altijd). Vervang in productie via het dashboard.
 TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
-# console = mail naar de log (dev), uit = mail altijd mislukt (aanmelding blijft staan)
-MAIL_MODUS = "console"
+# uit = geen provider: mail mislukt, aanmelding blijft staan. In dev zet .dev.vars dit op "console".
+MAIL_MODUS = "uit"
 
 [[d1_databases]]
 binding = "DB"

@@ -1,97 +1,41 @@
 ---
-// S1 Home (W1, F-11). Prerendered.
+// S1 Home (W1, F-11). Prerendered; de sessiekaart is een server island met actuele plekken.
 export const prerender = true;
 
 import Layout from '../components/Layout.astro';
-import Button from '../components/Button.astro';
-import Marker from '../components/Marker.astro';
-import PlekkenMeter from '../components/PlekkenMeter.astro';
+import VolgendeSessie from '../components/VolgendeSessie.astro';
 import { infoPaginas } from '../lib/menu';
-import { bezet, eerstvolgendeSessie } from '../lib/mock';
-import { datumLang } from '../lib/format';
-import { leesState } from '../lib/state';
 
-const STATES = [
-  { key: 'geen-sessie', label: 'S1b Geen open sessie' },
-  { key: 'menu-open', label: 'S1c Menu open (mobiel)' },
-] as const;
-const state = leesState(Astro.url, STATES);
-
-const sessie = state === 'geen-sessie' ? null : eerstvolgendeSessie();
 const paginas = await infoPaginas();
 ---
 
-<Layout titel="Repair Cafe Haarlem" menuOpen={state === 'menu-open'} states={STATES} state={state}>
+<Layout titel="Repair Cafe Haarlem">
   <div class="mx-auto flex max-w-page flex-col gap-12 px-4 pt-7 pb-14 lg:pt-14">
-    <div class:list={['flex flex-col gap-3 lg:grid lg:items-center lg:gap-12', sessie && 'lg:grid-cols-[1.05fr_1fr]']}>
+    <div class="flex flex-col gap-3 lg:grid lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-12">
       <div class="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-5">
-        {
-          sessie && (
-            <p class="font-mono text-meta font-semibold tracking-[.06em] text-rust-700 uppercase">Elke eerste zaterdag</p>
-          )
-        }
+        <p class="font-mono text-meta font-semibold tracking-[.06em] text-rust-700 uppercase">Elke eerste zaterdag</p>
         <h1 class="font-display text-4xl leading-[1.02] font-extrabold tracking-[-.02em] text-balance lg:text-6xl lg:leading-[.98]">
           Kapot? Gooi het niet weg.
         </h1>
-        {
-          sessie && (
-            <p class="text-lead text-pretty lg:max-w-[420px] lg:text-[19px]">
-              Vrijwilligers repareren gratis je apparaat. Jij kijkt mee en leert hoe het werkt.
-            </p>
-          )
-        }
+        <p class="text-lead text-pretty lg:max-w-[420px] lg:text-[19px]">
+          Vrijwilligers repareren gratis je apparaat. Jij kijkt mee en leert hoe het werkt.
+        </p>
 
-        {
-          sessie ? (
-            <section
-              aria-labelledby="volgende-sessie"
-              class="order-last mt-2 flex flex-col gap-3 rounded-xl border-thin border-ink bg-surface p-4 shadow-card lg:order-none lg:mt-0 lg:max-w-[460px]"
+        <div class="order-last mt-2 lg:order-none lg:mt-0">
+          <VolgendeSessie server:defer>
+            <div
+              slot="fallback"
+              aria-hidden="true"
+              class="h-[248px] rounded-xl border-thin border-line bg-surface lg:max-w-[460px]"
             >
-              <h2 id="volgende-sessie" class="font-mono text-xs font-semibold tracking-[.06em] text-ink-muted uppercase">
-                Eerstvolgende sessie
-              </h2>
-              <div>
-                <p class="font-display text-2xl leading-[1.1] font-extrabold">{datumLang(sessie.datum, false)}</p>
-                <p class="text-ink-muted">vanaf {sessie.starttijd} uur</p>
-              </div>
-              <PlekkenMeter bezet={bezet(sessie.id)} max={sessie.max_plekken} />
-              <Button href="/aanmelden" breed>
-                Apparaat aanmelden
-              </Button>
-              <a href="/status" class="flex min-h-touch items-center self-center text-small font-bold">
-                Status van je aanmelding bekijken
-              </a>
-            </section>
-          ) : (
-            <section
-              aria-labelledby="volgende-sessie"
-              class="mt-2 flex flex-col gap-3 rounded-xl border-thin border-dashed border-line-strong bg-surface p-4 lg:max-w-[460px]"
-            >
-              <h2 id="volgende-sessie" class="font-mono text-xs font-semibold tracking-[.06em] text-ink-muted uppercase">
-                Eerstvolgende sessie
-              </h2>
-              <p class="flex items-start gap-2.5 text-lead font-bold">
-                <Marker soort="info" maat="lg" class="mt-0.5" />
-                De volgende datum wordt binnenkort bekend.
-              </p>
-              <Button uit breed aria-describedby="geen-sessie-uitleg">
-                Apparaat aanmelden
-              </Button>
-              <p id="geen-sessie-uitleg" class="text-sm text-ink-muted">
-                Aanmelden kan zodra de coördinator een nieuwe sessie heeft geopend.
-              </p>
-            </section>
-          )
-        }
+            </div>
+          </VolgendeSessie>
+        </div>
       </div>
 
-      {
-        sessie && (
-          <div class="mt-3 grid h-[168px] place-items-center rounded-xl border border-line bg-stripes lg:mt-0 lg:aspect-[4/3] lg:h-auto">
-            <span class="font-mono text-xs text-ink-muted">foto: vrijwilliger aan de werkbank</span>
-          </div>
-        )
-      }
+      <div class="mt-3 grid h-[168px] place-items-center rounded-xl border border-line bg-stripes lg:mt-0 lg:aspect-[4/3] lg:h-auto">
+        <span class="font-mono text-xs text-ink-muted">foto: vrijwilliger aan de werkbank</span>
+      </div>
     </div>
 
     <section aria-labelledby="goed-om-te-weten" class="flex flex-col">
