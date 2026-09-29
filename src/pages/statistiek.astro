@@ -1,20 +1,31 @@
 ---
-// S8 Statistiek (W8, F-10, K7). Prerendered: de cijfers worden tijdens de build uit D1 gehaald.
-// Een mislukte query laat de build stoppen, zodat er nooit een pagina met verkeerde cijfers live komt.
-export const prerender = true;
+// S8 Statistiek (W8, F-10). Afwijking van K7: on-demand in plaats van prerendered.
+// De build op Cloudflare (Workers Builds) heeft geen productie-D1, dus de cijfers worden per verzoek
+// gelezen en een uur gecachet. Mislukt de query, dan geen cijfers maar een melding (nooit verkeerde cijfers).
+export const prerender = false;
 
 import Layout from '../components/Layout.astro';
+import Alert from '../components/Alert.astro';
 import Button from '../components/Button.astro';
 import EmptyState from '../components/EmptyState.astro';
 import Marker from '../components/Marker.astro';
-import { statistiek } from '../lib/db/reparatie';
+import { statistiek, type StatRij } from '../lib/db/reparatie';
 import { datum } from '../lib/format';
 import { vandaag } from '../lib/tijd';
 
 const bijgewerktOp = vandaag();
-const stat = await statistiek(bijgewerktOp);
-const totaal = stat.rijen.reduce((t, r) => t + r.aantal, 0);
-const geslaagd = stat.rijen.reduce((t, r) => t + r.geslaagd, 0);
+let stat: { sessies: number; rijen: StatRij[] } | null = null;
+try {
+  stat = await statistiek(bijgewerktOp);
+  Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=3600');
+} catch (e) {
+  console.error('Statistiek ophalen mislukt', { fout: e instanceof Error ? e.name : 'onbekend' });
+  Astro.response.status = 503;
+  Astro.response.headers.set('Cache-Control', 'no-store');
+}
+const rijen = stat?.rijen ?? [];
+const totaal = rijen.reduce((t, r) => t + r.aantal, 0);
+const geslaagd = rijen.reduce((t, r) => t + r.geslaagd, 0);
 const pct = (deel: number, geheel: number) => (geheel ? Math.round((deel / geheel) * 100) : 0);
 ---
 
@@ -30,7 +41,7 @@ const pct = (deel: number, geheel: number) => (geheel ? Math.round((deel / gehee
     </div>
 
     {
-      totaal > 0 && stat.sessies < 6 && (
+      stat && totaal > 0 && stat.sessies < 6 && (
         <p class="flex items-start gap-2.5 rounded-lg border-thin border-line-strong bg-surface px-3 py-2.5 text-small">
           <Marker soort="info" />
           <span>
@@ -42,7 +53,11 @@ const pct = (deel: number, geheel: number) => (geheel ? Math.round((deel / gehee
     }
 
     {
-      totaal > 0 ? (
+      !stat ? (
+        <Alert soort="warn" titel="De cijfers zijn nu niet beschikbaar.">
+          Probeer het later nog eens.
+        </Alert>
+      ) : totaal > 0 ? (
         <>
           <div class="grid grid-cols-2 gap-2">
             <div class="rounded-xl border-thin border-ink bg-surface p-3.5 lg:p-4">
@@ -56,7 +71,7 @@ const pct = (deel: number, geheel: number) => (geheel ? Math.round((deel / gehee
           </div>
 
           <ul class="flex flex-col gap-3.5 lg:gap-4" aria-label="Per categorie">
-            {stat.rijen.map((r) => {
+            {rijen.map((r) => {
               const p = pct(r.geslaagd, r.aantal);
               return (
                 <li class="flex flex-col gap-1.5">

@@ -23,7 +23,7 @@ Statusopvraag proberen: `RC-2026-0009` met `sanne@voorbeeld.nl`.
 | Commando             | Wat                                                              |
 | :------------------- | :--------------------------------------------------------------- |
 | `npm run dev`        | Dev-server met lokale D1 en bindings                              |
-| `npm run build`      | Productiebuild naar `./dist/` (leest D1 voor `/statistiek`)       |
+| `npm run build`      | Productiebuild naar `./dist/` (heeft geen database nodig)         |
 | `npm run check`      | Typecontrole (`astro check`)                                      |
 | `npm run db:migrate` | Migraties uit `migrations/0001_*.sql` op de lokale D1             |
 | `npm run db:seed`    | Testdata laden (wist eerst alle tabellen)                         |
@@ -48,4 +48,4 @@ Statusopvraag proberen: `RC-2026-0009` met `sanne@voorbeeld.nl`.
 3. Echte Turnstile-sleutels: `TURNSTILE_SITE_KEY` in `wrangler.toml` en `npx wrangler secret put TURNSTILE_SECRET_KEY`.
 4. Accounts aanmaken met `npm run hash -- <wachtwoord>` en een `INSERT INTO vrijwilliger` via `wrangler d1 execute DB --remote`.
 5. Mail via [EUSEND](https://eusend.dev) (verwerking en opslag in de EU): verifieer een (sub)domein in het EUSEND-dashboard (DNS-records publiceren), zet `MAIL_AFZENDER` in `wrangler.toml` (bijv. `Repair Cafe Haarlem <aanmelding@send.jouwdomein.nl>`) en `npx wrangler secret put EUSEND_API_KEY` (een `eu_live_`-sleutel; `eu_test_` bezorgt niets). Ontbreekt een van beide of weigert EUSEND de mail, dan blijft de aanmelding staan, toont S3 "de mail volgt later" en staat de reden (zonder e-mailadres) in de Worker-log.
-6. `/statistiek` wordt tijdens de build uit D1 gevuld. Lokaal is dat de database in `.wrangler/`; laat de productiebuild de remote database lezen (bijvoorbeeld `remote = true` op de D1-binding tijdens de build), anders klopt de pagina niet of stopt de build.
+6. `/statistiek` wordt per verzoek uit D1 gelezen (`Cache-Control: s-maxage=3600`). Dat wijkt af van ontwerpkeuze K7 (statisch), omdat de build op Cloudflare geen toegang heeft tot de productiedatabase.
