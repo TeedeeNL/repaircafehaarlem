@@ -1,0 +1,90 @@
+---
+// S3 Bevestiging (W3, F-01, F-04).
+export const prerender = false;
+
+import Layout from '../../components/Layout.astro';
+import Alert from '../../components/Alert.astro';
+import Button from '../../components/Button.astro';
+import Marker from '../../components/Marker.astro';
+import RefLabel from '../../components/RefLabel.astro';
+import { LAATSTE_AANMELDING, sessieById } from '../../lib/mock';
+import { datumLang } from '../../lib/format';
+import { leesState } from '../../lib/state';
+
+const STATES = [
+  { key: 'mail-mislukt', label: 'S3b Mail niet verstuurd' },
+  { key: 'leeg', label: 'Geen aanmelding om te tonen' },
+] as const;
+const state = leesState(Astro.url, STATES);
+
+// Mock: de laatste aanmelding. Straks komt die uit de server-sessie na het POST-verzoek.
+const aanmelding = state === 'leeg' ? null : LAATSTE_AANMELDING;
+const sessie = aanmelding ? sessieById(aanmelding.sessie_id) : undefined;
+const mailMislukt = state === 'mail-mislukt';
+---
+
+<Layout titel="Aanmelding gelukt" states={STATES} state={state}>
+  <div class="mx-auto flex max-w-[560px] flex-col gap-5 px-4 pt-7 pb-14 lg:pt-8">
+    {
+      aanmelding && sessie ? (
+        <>
+          <div class="flex flex-col gap-2.5">
+            <Marker soort="ok" maat="xl" />
+            <h1 class="font-display text-[30px] leading-[1.05] font-extrabold lg:text-[40px]">Je aanmelding is gelukt</h1>
+          </div>
+
+          {mailMislukt && (
+            <Alert soort="warn" role="status" titel="De bevestigingsmail kon nu niet worden verstuurd.">
+              Je aanmelding staat wél genoteerd. Noteer je referentienummer; de mail volgt later.
+            </Alert>
+          )}
+
+          <RefLabel referentie={aanmelding.referentie} groot={mailMislukt}>
+            <p class="font-bold">{datumLang(sessie.datum)}</p>
+            <p>
+              {sessie.starttijd} uur · {aanmelding.merk_type}
+            </p>
+          </RefLabel>
+
+          <section aria-labelledby="neem-mee" class="flex flex-col gap-2">
+            <h2 id="neem-mee" class="font-display text-xl font-extrabold">
+              Neem mee
+            </h2>
+            <ul class="flex list-disc flex-col gap-1 pl-5">
+              <li>het apparaat</li>
+              <li>de stekker, het snoer of de oplader</li>
+              <li>dit referentienummer</li>
+            </ul>
+            <p class="text-small text-ink-muted">Maximaal één apparaat per persoon, en je blijft erbij.</p>
+          </section>
+
+          {mailMislukt ? (
+            <p class="text-small text-ink-muted">Tip: maak een screenshot van dit scherm.</p>
+          ) : (
+            <p class="flex items-start gap-2.5 rounded-lg bg-ok-50 p-3 text-small">
+              <Marker soort="ok" />
+              <span>
+                Bevestiging verstuurd naar <strong class="break-all">{aanmelding.email}</strong>
+              </span>
+            </p>
+          )}
+
+          <Button href="/status" variant="secundair" breed>
+            Status van je aanmelding bekijken
+          </Button>
+        </>
+      ) : (
+        <>
+          <h1 class="font-display text-[32px] leading-[1.05] font-extrabold">Geen aanmelding om te tonen</h1>
+          <p>Heb je je al aangemeld? Bekijk dan de status met je referentienummer.</p>
+          <div class="flex flex-wrap gap-3">
+            <Button href="/status" variant="secundair">
+              Status opvragen
+            </Button>
+            <Button href="/aanmelden">Apparaat aanmelden</Button>
+          </div>
+        </>
+      )
+    }
+  </div>
+</Layout>

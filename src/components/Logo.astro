@@ -1,0 +1,14 @@
+---
+interface Props {
+  maat?: 'publiek' | 'crew';
+}
+const { maat = 'publiek' } = Astro.props;
+---
+
+<span
+  aria-hidden="true"
+  class:list={[
+    'grid flex-none place-items-center rounded-full bg-rust font-display font-extrabold text-surface',
+    maat === 'crew' ? 'size-7 text-xs' : 'size-8 text-meta lg:size-9',
+  ]}>RC</span
+>

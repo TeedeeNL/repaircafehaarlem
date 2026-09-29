@@ -1,0 +1,144 @@
+---
+// S4 Statusopvraag (W4, F-09).
+export const prerender = false;
+
+import Layout from '../components/Layout.astro';
+import Alert from '../components/Alert.astro';
+import Button from '../components/Button.astro';
+import FormField from '../components/FormField.astro';
+import StatusBadge from '../components/StatusBadge.astro';
+import { AANMELDINGEN, aanmeldingByRef, reparatieVoor, sessieById, type Aanmelding } from '../lib/mock';
+import { datum } from '../lib/format';
+import { leesState, STATES_AAN } from '../lib/state';
+
+const STATES = [
+  { key: 'gevonden', label: 'S4b Gevonden (na de sessie)' },
+  { key: 'gevonden-open', label: 'S4b Gevonden (vóór de sessie)' },
+  { key: 'niet-gevonden', label: 'S4c Niet gevonden' },
+  { key: 'geblokkeerd', label: 'S4d Te veel pogingen (429)' },
+] as const;
+const state = leesState(Astro.url, STATES);
+
+let invoer = { referentie: '', email: '' };
+let gevonden: Aanmelding | undefined;
+let nietGevonden = state === 'niet-gevonden';
+const geblokkeerd = state === 'geblokkeerd';
+
+if (state === 'gevonden') gevonden = aanmeldingByRef('RC-2026-0001');
+if (state === 'gevonden-open') gevonden = aanmeldingByRef('RC-2026-0009');
+if (nietGevonden) invoer = { referentie: 'RC-2026-0090', email: 'sanne@voorbeeld.nl' };
+
+// Mock-opvraag: zoekt in de mock-data. Straks doet de API dit, met rate limiting per IP.
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  invoer = {
+    referentie: String(form.get('referentie') ?? '').trim().toUpperCase(),
+    email: String(form.get('email') ?? '').trim().toLowerCase(),
+  };
+  gevonden = AANMELDINGEN.find((a) => a.referentie === invoer.referentie && a.email === invoer.email);
+  nietGevonden = !gevonden;
+}
+
+if (nietGevonden) Astro.response.status = 404;
+if (geblokkeerd) Astro.response.status = 429;
+
+const sessie = gevonden ? sessieById(gevonden.sessie_id) : undefined;
+const reparatie = gevonden ? reparatieVoor(gevonden.id) : undefined;
+---
+
+<Layout titel="Status opvragen" states={STATES} state={state}>
+  <div class="mx-auto flex max-w-[560px] flex-col gap-5 px-4 pt-7 pb-14 lg:pt-8">
+    {
+      gevonden && sessie ? (
+        <>
+          <h1 class="font-display text-[30px] leading-[1.05] font-extrabold lg:text-[40px]">Je aanmelding</h1>
+          <section aria-label={`Aanmelding ${gevonden.referentie}`} class="overflow-hidden rounded-xl border-thin border-ink bg-surface">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b-thin border-dashed border-line-strong px-4 py-3.5">
+              <span class="font-mono text-lg font-semibold">{gevonden.referentie}</span>
+              <StatusBadge status={gevonden.status} />
+            </div>
+            <dl class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 px-4 pt-1 pb-2 text-small">
+              <dt class="py-2 text-ink-muted">Sessie</dt>
+              <dd class="py-2 font-bold">{datum(sessie.datum)}</dd>
+              <dt class="border-t border-line py-2 text-ink-muted">Apparaat</dt>
+              <dd class="border-t border-line py-2 font-bold">{gevonden.merk_type}</dd>
+              {reparatie && (
+                <>
+                  <dt class="border-t border-line py-2 text-ink-muted">Uitkomst</dt>
+                  <dd class="border-t border-line py-2">
+                    <StatusBadge status={reparatie.uitkomst} />
+                  </dd>
+                  <dt class="border-t border-line py-2 text-ink-muted">Notitie</dt>
+                  <dd class="border-t border-line py-2">{reparatie.notitie || 'Geen notitie'}</dd>
+                  <dt class="border-t border-line py-2 text-ink-muted">Bestede tijd</dt>
+                  <dd class="border-t border-line py-2">{reparatie.minuten} minuten</dd>
+                </>
+              )}
+            </dl>
+            {!reparatie && <p class="px-4 pb-3.5 text-small text-ink-muted">De uitkomst verschijnt hier na de sessie.</p>}
+          </section>
+          <a href="/status" class="flex min-h-touch items-center self-start font-bold">
+            Andere aanmelding opvragen
+          </a>
+        </>
+      ) : (
+        <form method="post" action="/status" novalidate class="flex flex-col gap-5">
+          <div class="flex flex-col gap-1.5">
+            <h1 class="font-display text-[30px] leading-[1.05] font-extrabold lg:text-[40px]">Status opvragen</h1>
+            <p class="text-ink-muted">Hoe staat het met je apparaat?</p>
+          </div>
+
+          {nietGevonden && (
+            <Alert soort="error" titel="Geen aanmelding gevonden.">
+              Controleer het nummer en het e-mailadres en probeer het opnieuw.
+            </Alert>
+          )}
+          {geblokkeerd && (
+            <Alert soort="warn" titel="Te veel pogingen." id="geblokkeerd">
+              Probeer het over een kwartier opnieuw.
+            </Alert>
+          )}
+
+          <FormField
+            id="s-referentie"
+            name="referentie"
+            label="Referentienummer"
+            placeholder="RC-2026-0000"
+            hint="Staat in je bevestigingsmail."
+            autocapitalize="characters"
+            autocomplete="off"
+            mono
+            value={invoer.referentie}
+            required
+          />
+          <FormField
+            id="s-email"
+            name="email"
+            label="E-mailadres van je aanmelding"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            value={invoer.email}
+            required
+          />
+
+          {geblokkeerd ? (
+            <Button uit breed aria-describedby="geblokkeerd">
+              Bekijken
+            </Button>
+          ) : (
+            <Button type="submit" breed>
+              Bekijken
+            </Button>
+          )}
+
+          {STATES_AAN && (
+          <p class="rounded-lg border border-dashed border-line-strong bg-surface px-3 py-2.5 text-sm text-ink-muted">
+            Demo: probeer <strong class="font-mono text-ink">RC-2026-0009</strong> met sanne@voorbeeld.nl
+          </p>
+          )}
+        </form>
+      )
+    }
+  </div>
+</Layout>

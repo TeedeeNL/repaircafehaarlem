@@ -1,0 +1,16 @@
+---
+import Marker from './Marker.astro';
+
+// Foutmelding bij een veld: rode tekst + pictogram. Koppel via aria-describedby aan het veld.
+interface Props {
+  id?: string;
+  maat?: 'publiek' | 'crew';
+  class?: string;
+}
+const { id, maat = 'publiek', class: extra } = Astro.props;
+---
+
+<p id={id} class:list={['flex items-start gap-2 text-sm font-bold text-error', extra]}>
+  <Marker soort="error" maat={maat === 'crew' ? 'sm' : 'md'} class="mt-px" />
+  <span><slot /></span>
+</p>

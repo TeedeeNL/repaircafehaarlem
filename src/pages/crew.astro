@@ -1,0 +1,403 @@
+---
+// S6 Werklijst + uitkomstformulier (W6, F-06, F-07).
+export const prerender = false;
+
+import Layout from '../components/Layout.astro';
+import Alert from '../components/Alert.astro';
+import Button from '../components/Button.astro';
+import EmptyState from '../components/EmptyState.astro';
+import FieldError from '../components/FieldError.astro';
+import FormField from '../components/FormField.astro';
+import StatusBadge from '../components/StatusBadge.astro';
+import Table from '../components/Table.astro';
+import {
+  AANMELDING_STATUSSEN,
+  AANMELDINGEN,
+  CATEGORIEEN,
+  SESSIES,
+  UITKOMSTEN,
+  VANDAAG,
+  aanmeldingenVoorSessie,
+  huidigeGebruiker,
+  reparatieVoor,
+  sessieById,
+  type Aanmelding,
+  type Reparatie,
+} from '../lib/mock';
+import { datumKort } from '../lib/format';
+import { leesState } from '../lib/state';
+
+const STATES = [
+  { key: 'opgeslagen', label: 'S6a Uitkomst opgeslagen' },
+  { key: 'gefilterd', label: 'S6a Gefilterd' },
+  { key: 'uitkomst', label: 'Uitkomstformulier open' },
+  { key: 'bijwerken', label: 'Bestaande uitkomst bijwerken' },
+  { key: 'opslaan-mislukt', label: 'S6b Opslaan mislukt' },
+  { key: 'veldfout', label: 'Uitkomst met veldfouten' },
+  { key: 'leeg', label: 'S6c Leeg' },
+  { key: 'filter-leeg', label: 'S6d Filterresultaat leeg' },
+  { key: 'vrijwilliger', label: 'Ingelogd als vrijwilliger' },
+  { key: 'niet-ingelogd', label: 'Niet ingelogd (302 naar login)' },
+] as const;
+const state = leesState(Astro.url, STATES);
+
+if (state === 'niet-ingelogd') return Astro.redirect('/login?terug=/crew', 302);
+
+// Mock: uitkomst opslaan. Straks: validatie met Zod, insert of update in reparatie, status naar afgerond.
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const a = AANMELDINGEN.find((x) => String(x.id) === form.get('aanmelding_id'));
+  const params = new URLSearchParams();
+  if (a) {
+    params.set('sessie', String(a.sessie_id));
+    params.set('opgeslagen', a.referentie);
+  }
+  return Astro.redirect(`/crew?${params}`, 303);
+}
+
+const gebruiker = huidigeGebruiker(state === 'vrijwilliger' ? 'vrijwilliger' : 'coordinator');
+const q = Astro.url.searchParams;
+
+// Filters (F-06). Onbekende waarden vallen terug op "alle".
+const standaardSessie = SESSIES.find((s) => s.datum >= VANDAAG) ?? SESSIES[SESSIES.length - 1]!;
+let sessieId = Number(q.get('sessie')) || standaardSessie.id;
+let categorie = CATEGORIEEN.find((c) => c === q.get('categorie')) ?? 'alle';
+let status = AANMELDING_STATUSSEN.find((s) => s.value === q.get('status'))?.value ?? 'alle';
+let openRef = q.get('open');
+let opgeslagen = q.get('opgeslagen');
+
+if (state === 'leeg') sessieId = 4;
+if (state === 'gefilterd' || state === 'opgeslagen') {
+  categorie = 'Klein huishoudelijk';
+  status = 'aangemeld';
+}
+if (state === 'opgeslagen') opgeslagen = 'RC-2026-0005';
+if (state === 'filter-leeg') {
+  categorie = 'Fiets';
+  status = 'afgerond';
+}
+if (state === 'uitkomst' || state === 'opslaan-mislukt' || state === 'veldfout') openRef = 'RC-2026-0007';
+if (state === 'bijwerken') openRef = 'RC-2026-0013';
+
+const sessie = sessieById(sessieId) ?? standaardSessie;
+const inSessie = aanmeldingenVoorSessie(sessie.id);
+const rijen = inSessie.filter(
+  (a) => (categorie === 'alle' || a.categorie === categorie) && (status === 'alle' || a.status === status),
+);
+const filterActief = categorie !== 'alle' || status !== 'alle';
+
+// Formulierwaarden per rij: bestaande reparatie voorgevuld, of de state uit de export.
+interface Invoer {
+  uitkomst: string;
+  minuten: string;
+  notitie: string;
+}
+function invoerVoor(a: Aanmelding, r: Reparatie | undefined): Invoer {
+  if (a.referentie === openRef && state === 'opslaan-mislukt')
+    return { uitkomst: 'gerepareerd', minuten: '35', notitie: 'Snoer vervangen, thermische zekering was ok.' };
+  if (a.referentie === openRef && state === 'veldfout') return { uitkomst: '', minuten: '0', notitie: '' };
+  return r ? { uitkomst: r.uitkomst, minuten: String(r.minuten), notitie: r.notitie } : { uitkomst: '', minuten: '', notitie: '' };
+}
+const formFouten = state === 'veldfout' ? { uitkomst: 'Kies een uitkomst.', minuten: 'Vul een tijd in van 1 tot en met 480 minuten.' } : {};
+if (state === 'veldfout') Astro.response.status = 400;
+if (state === 'opslaan-mislukt') Astro.response.status = 500;
+
+const telling = `${inSessie.length} ${inSessie.length === 1 ? 'aanmelding' : 'aanmeldingen'}`;
+const filterUrl = (extra: Record<string, string>) => {
+  const p = new URLSearchParams({ sessie: String(sessie.id) });
+  if (categorie !== 'alle') p.set('categorie', categorie);
+  if (status !== 'alle') p.set('status', status);
+  for (const [k, v] of Object.entries(extra)) p.set(k, v);
+  return `/crew?${p}`;
+};
+
+const cel = 'px-3 py-1.5 align-middle max-md:block max-md:p-0';
+---
+
+<Layout titel="Werklijst" variant="crew" gebruiker={gebruiker} tab="werklijst" states={STATES} state={state}>
+  <div class="mx-auto flex max-w-page flex-col gap-3.5 px-4 pt-4 pb-14 md:pt-5">
+    <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+      <div class="flex flex-col gap-0.5">
+        <h1 class="font-display text-xl font-extrabold md:text-2xl">
+          <span class="max-md:sr-only">Werklijst · </span>{datumKort(sessie.datum, true)}
+        </h1>
+        <p class="text-sm text-ink-muted">
+          {telling}
+          {
+            filterActief && (
+              <>
+                {' · '}
+                <strong class="text-ink">{rijen.length} na filteren</strong>
+              </>
+            )
+          }
+        </p>
+      </div>
+
+      <form method="get" action="/crew" data-filter class="grid w-full grid-cols-2 items-end gap-2 md:flex md:w-auto md:flex-wrap">
+        <div class="col-span-2 flex flex-col gap-0.5 md:w-[190px]">
+          <label for="w-sessie" class="text-meta font-bold">Sessie</label>
+          <div class="relative">
+            <select id="w-sessie" name="sessie" class="min-h-touch w-full appearance-none rounded-lg border-thin border-line-strong bg-surface pr-7 pl-2.5 text-sm">
+              {
+                [...SESSIES]
+                  .sort((a, b) => b.datum.localeCompare(a.datum))
+                  .map((s) => (
+                    <option value={s.id} selected={s.id === sessie.id}>
+                      {datumKort(s.datum, true)}
+                    </option>
+                  ))
+              }
+            </select>
+            <span aria-hidden="true" class="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-sm">▾</span>
+          </div>
+        </div>
+        <div class="flex min-w-0 flex-col gap-0.5 md:w-[190px]">
+          <label for="w-categorie" class="text-meta font-bold">Categorie</label>
+          <div class="relative">
+            <select
+              id="w-categorie"
+              name="categorie"
+              class:list={[
+                'min-h-touch w-full appearance-none rounded-lg border-thin bg-surface pr-7 pl-2.5 text-sm',
+                categorie !== 'alle' ? 'border-ink' : 'border-line-strong',
+              ]}
+            >
+              <option value="alle">Alle categorieën</option>
+              {CATEGORIEEN.map((c) => <option selected={c === categorie}>{c}</option>)}
+            </select>
+            <span aria-hidden="true" class="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-sm">▾</span>
+          </div>
+        </div>
+        <div class="flex min-w-0 flex-col gap-0.5 md:w-[170px]">
+          <label for="w-status" class="text-meta font-bold">Status</label>
+          <div class="relative">
+            <select
+              id="w-status"
+              name="status"
+              class:list={[
+                'min-h-touch w-full appearance-none rounded-lg border-thin bg-surface pr-7 pl-2.5 text-sm',
+                status !== 'alle' ? 'border-ink' : 'border-line-strong',
+              ]}
+            >
+              <option value="alle">Alle statussen</option>
+              {AANMELDING_STATUSSEN.map((s) => <option value={s.value} selected={s.value === status}>{s.label}</option>)}
+            </select>
+            <span aria-hidden="true" class="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-sm">▾</span>
+          </div>
+        </div>
+        <noscript>
+          <button type="submit" class="min-h-touch rounded-lg bg-ink px-4 font-bold text-surface">Filteren</button>
+        </noscript>
+      </form>
+    </div>
+
+    {
+      opgeslagen && (
+        <Alert soort="ok" compact>
+          Uitkomst opgeslagen voor <strong class="font-mono">{opgeslagen}</strong>
+        </Alert>
+      )
+    }
+
+    {
+      inSessie.length === 0 ? (
+        <EmptyState titel="Er zijn nog geen aanmeldingen voor deze sessie." tekst="Nieuwe aanmeldingen verschijnen hier vanzelf." />
+      ) : rijen.length === 0 ? (
+        <EmptyState titel="Geen aanmeldingen die aan het filter voldoen.">
+          <Button slot="actie" href={`/crew?sessie=${sessie.id}`} variant="secundair" maat="crew">
+            Filter wissen
+          </Button>
+        </EmptyState>
+      ) : (
+        <Table
+          stapel
+          bijschrift={`Aanmeldingen voor ${datumKort(sessie.datum, true)}`}
+          kolommen={[
+            { label: 'Referentie' },
+            { label: 'Categorie' },
+            { label: 'Merk en type' },
+            { label: 'Defect' },
+            { label: 'Status' },
+            { label: 'Actie', class: 'text-right' },
+          ]}
+        >
+          {rijen.map((a) => {
+            const r = reparatieVoor(a.id);
+            const open = a.referentie === openRef;
+            const inv = invoerVoor(a, r);
+            const fouten: { uitkomst?: string; minuten?: string } = open ? formFouten : {};
+            const pre = `o-${a.id}`;
+            return (
+              <>
+                <tr
+                  id={`rij-${a.referentie}`}
+                  data-rij={a.id}
+                  class:list={[
+                    'border-b border-line max-md:grid max-md:grid-cols-[1fr_auto] max-md:gap-x-3 max-md:gap-y-1.5 max-md:py-2.5',
+                    open && 'bg-rust-50 max-md:border-b-0 max-md:px-2',
+                  ]}
+                >
+                  <td class:list={[cel, 'font-mono font-semibold whitespace-nowrap max-md:text-meta md:pl-4 lg:pl-6']}>{a.referentie}</td>
+                  <td class:list={[cel, 'max-md:hidden']}>{a.categorie}</td>
+                  <td class:list={[cel, 'font-bold max-md:col-span-2 max-md:text-small']}>
+                    {a.merk_type}
+                    <span class="font-normal md:hidden">
+                      {' · '}
+                      <span class="text-ink-muted">{a.categorie}</span>
+                    </span>
+                  </td>
+                  <td class:list={[cel, 'text-ink-muted max-md:col-span-2']}>{a.defect}</td>
+                  <td class:list={[cel, 'max-md:col-start-2 max-md:row-start-1 max-md:justify-self-end']}>
+                    <StatusBadge status={r ? r.uitkomst : a.status} maat="sm" />
+                  </td>
+                  <td class:list={[cel, 'text-right max-md:col-span-2 md:pr-4 lg:pr-6']}>
+                    {a.status !== 'geannuleerd' && (
+                    <a
+                      href={open ? filterUrl({}) : `${filterUrl({ open: a.referentie })}#rij-${a.referentie}`}
+                      data-toggle={`${pre}-rij`}
+                      aria-expanded={open}
+                      aria-controls={`${pre}-rij`}
+                      class="inline-flex min-h-touch items-center justify-center rounded-lg border-thin border-ink bg-surface px-3 text-sm font-bold whitespace-nowrap text-ink no-underline hover:bg-paper hover:text-ink max-md:w-full"
+                    >
+                      <span data-label-dicht hidden={open}>
+                        {r ? 'Bekijken' : 'Uitkomst vastleggen'}
+                      </span>
+                      <span data-label-open hidden={!open}>
+                        Sluiten
+                      </span>
+                    </a>
+                    )}
+                  </td>
+                </tr>
+                <tr id={`${pre}-rij`} hidden={!open} class="border-b border-line bg-rust-50 max-md:block max-md:px-2 max-md:pb-3">
+                  <td colspan="6" class="px-4 pt-1 pb-4 max-md:block max-md:p-0 lg:px-6">
+                    <form
+                      method="post"
+                      action="/crew"
+                      novalidate
+                      aria-label={`Uitkomst vastleggen voor ${a.referentie}`}
+                      class="grid gap-3.5 rounded-xl border-thin border-ink bg-surface p-3.5 md:grid-cols-[minmax(0,auto)_180px_minmax(0,1fr)] md:items-start"
+                    >
+                      <input type="hidden" name="aanmelding_id" value={a.id} />
+                      {open && state === 'opslaan-mislukt' && (
+                        <Alert soort="error" compact class="md:col-span-3">
+                          <strong class="text-error">Opslaan is niet gelukt, probeer opnieuw.</strong> Je invoer staat er nog.
+                        </Alert>
+                      )}
+                      <fieldset
+                        id={`${pre}-uitkomst`}
+                        tabindex="-1"
+                        aria-describedby={fouten.uitkomst ? `${pre}-uitkomst-fout` : undefined}
+                        class="min-w-0 border-0 p-0"
+                      >
+                        <legend class="mb-1 p-0 text-meta font-bold">Uitkomst</legend>
+                        <div
+                          class:list={[
+                            'grid grid-cols-3 overflow-hidden rounded-lg text-sm font-bold',
+                            fouten.uitkomst ? 'border-2 border-error' : 'border-thin border-ink',
+                          ]}
+                        >
+                          {UITKOMSTEN.map((u, i) => (
+                            <label
+                              class:list={[
+                                'group flex min-h-touch cursor-pointer items-center justify-center px-2 text-center has-checked:bg-ink has-checked:text-surface has-focus-visible:outline-3 has-focus-visible:-outline-offset-4 has-focus-visible:outline-rust',
+                                i > 0 && 'border-l-thin border-ink',
+                              ]}
+                            >
+                              <input
+                                type="radio"
+                                name="uitkomst"
+                                value={u.value}
+                                checked={inv.uitkomst === u.value}
+                                autofocus={(i === 0 && Boolean(fouten.uitkomst)) || undefined}
+                                class="sr-only"
+                              />
+                              <span aria-hidden="true" class="hidden group-has-checked:inline">
+                                ✓&nbsp;
+                              </span>
+                              {u.label}
+                            </label>
+                          ))}
+                        </div>
+                        {fouten.uitkomst && (
+                          <FieldError id={`${pre}-uitkomst-fout`} maat="crew" class="mt-1">
+                            {fouten.uitkomst}
+                          </FieldError>
+                        )}
+                      </fieldset>
+                      <FormField
+                        id={`${pre}-minuten`}
+                        name="minuten"
+                        label="Bestede tijd (minuten)"
+                        inputmode="numeric"
+                        maat="compact"
+                        veldClass="max-md:w-[120px]"
+                        value={inv.minuten}
+                        error={fouten.minuten}
+                        required
+                      />
+                      <FormField
+                        id={`${pre}-notitie`}
+                        name="notitie"
+                        label="Notitie"
+                        as="textarea"
+                        rows={2}
+                        teller={300}
+                        maat="compact"
+                        value={inv.notitie}
+                      />
+                      <div class="flex flex-wrap gap-2 md:col-span-3">
+                        <Button type="submit" variant="crew" maat="crew" class="max-md:flex-1">
+                          {open && state === 'opslaan-mislukt' ? 'Opnieuw opslaan' : r ? 'Bijwerken' : 'Opslaan'}
+                        </Button>
+                        <Button href={filterUrl({})} variant="crew-secundair" maat="crew" data-sluit={`${pre}-rij`}>
+                          Annuleren
+                        </Button>
+                      </div>
+                    </form>
+                  </td>
+                </tr>
+              </>
+            );
+          })}
+        </Table>
+      )
+    }
+  </div>
+</Layout>
+
+<script>
+  // Filters direct toepassen bij wijzigen.
+  const filter = document.querySelector<HTMLFormElement>('[data-filter]');
+  filter?.addEventListener('change', () => filter.requestSubmit());
+
+  // Uitkomstformulier in- en uitklappen zonder herladen. Zonder JS werken de links via ?open=.
+  function zet(knop: HTMLElement, open: boolean) {
+    const rij = document.getElementById(knop.dataset.toggle!);
+    if (!rij) return;
+    rij.hidden = !open;
+    knop.setAttribute('aria-expanded', String(open));
+    knop.querySelector<HTMLElement>('[data-label-dicht]')!.hidden = open;
+    knop.querySelector<HTMLElement>('[data-label-open]')!.hidden = !open;
+    const hoofdrij = knop.closest('tr');
+    hoofdrij?.classList.toggle('bg-rust-50', open);
+    if (open) rij.querySelector<HTMLInputElement>('input[name="uitkomst"]:checked, input[name="uitkomst"]')?.focus();
+  }
+  for (const knop of document.querySelectorAll<HTMLAnchorElement>('[data-toggle]')) {
+    knop.setAttribute('role', 'button');
+    knop.addEventListener('click', (e) => {
+      e.preventDefault();
+      zet(knop, knop.getAttribute('aria-expanded') !== 'true');
+    });
+  }
+  for (const sluit of document.querySelectorAll<HTMLAnchorElement>('[data-sluit]')) {
+    sluit.addEventListener('click', (e) => {
+      const knop = document.querySelector<HTMLElement>(`[data-toggle="${sluit.dataset.sluit}"]`);
+      if (!knop) return;
+      e.preventDefault();
+      zet(knop, false);
+      knop.focus();
+    });
+  }
+</script>

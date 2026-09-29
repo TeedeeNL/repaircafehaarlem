@@ -1,0 +1,21 @@
+---
+// Lege state: gestippelde kader met uitleg en eventueel een actie in de slot "actie".
+interface Props {
+  titel: string;
+  tekst?: string;
+  maat?: 'publiek' | 'crew';
+  class?: string;
+}
+const { titel, tekst, maat = 'crew', class: extra } = Astro.props;
+---
+
+<div
+  class:list={[
+    'flex flex-col items-center gap-1.5 rounded-xl border-thin border-dashed border-line-strong px-4 py-7 text-center',
+    extra,
+  ]}
+>
+  <p class:list={['font-bold', maat === 'publiek' && 'text-lead']}>{titel}</p>
+  {tekst && <p class:list={['text-ink-muted', maat === 'publiek' ? 'text-small' : 'text-sm']}>{tekst}</p>}
+  {Astro.slots.has('actie') && <div class="mt-2"><slot name="actie" /></div>}
+</div>

@@ -1,0 +1,83 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+/**
+ * Knop of link-als-knop.
+ * - primair: roest (publiek) · secundair: omlijnd · crew: inkt · crew-secundair: omlijnd grijs
+ * - maat: lg 52px, md 48px (publiek), crew 44px. Nooit kleiner dan 44px.
+ * - uit: aria-disabled, blijft focusbaar zodat uitleg via aria-describedby voorgelezen wordt.
+ * - bezig: disabled + aria-busy met spinner, tegen dubbel verzenden.
+ */
+type Variant = 'primair' | 'secundair' | 'crew' | 'crew-secundair' | 'licht' | 'link';
+interface Props extends Omit<HTMLAttributes<'button'>, 'type'> {
+  variant?: Variant;
+  maat?: 'lg' | 'md' | 'crew';
+  href?: string;
+  type?: 'button' | 'submit' | 'reset';
+  breed?: boolean;
+  uit?: boolean;
+  bezig?: boolean;
+  class?: string;
+}
+
+const {
+  variant = 'primair',
+  maat = 'lg',
+  href,
+  type = 'button',
+  breed = false,
+  uit = false,
+  bezig = false,
+  class: extra,
+  ...rest
+} = Astro.props;
+
+const basis =
+  'inline-flex items-center justify-center gap-2.5 rounded-lg font-bold no-underline text-center transition-colors';
+const maten = {
+  lg: 'min-h-btn-lg px-6 text-lead',
+  md: 'min-h-btn px-5',
+  crew: 'min-h-touch px-4 text-small',
+};
+const varianten: Record<Variant, string> = {
+  primair: 'bg-rust text-surface shadow-btn hover:bg-rust-700 hover:text-surface',
+  secundair: 'border-thin border-ink bg-transparent text-ink hover:bg-surface hover:text-ink',
+  crew: 'bg-ink text-surface hover:bg-ink-line hover:text-surface',
+  'crew-secundair': 'border-thin border-line-strong bg-transparent text-ink hover:border-ink hover:text-ink',
+  licht: 'border-thin border-paper bg-transparent text-paper hover:bg-ink-line hover:text-paper',
+  link: 'min-h-touch px-0 text-rust-700 underline underline-offset-[3px] hover:text-ink',
+};
+
+const klassen = [
+  basis,
+  variant !== 'link' && maten[maat],
+  uit ? 'bg-off text-ink-muted cursor-not-allowed shadow-none' : bezig ? 'bg-rust-700 text-surface cursor-progress' : varianten[variant],
+  breed && 'w-full',
+  extra,
+];
+---
+
+{
+  href && !uit ? (
+    <a href={href} class:list={klassen} {...(rest as Record<string, unknown>)}>
+      <slot />
+    </a>
+  ) : (
+    <button
+      type={uit || bezig ? 'button' : type}
+      class:list={klassen}
+      aria-disabled={uit ? 'true' : undefined}
+      disabled={bezig || undefined}
+      aria-busy={bezig ? 'true' : undefined}
+      {...rest}
+    >
+      {bezig && (
+        <span
+          aria-hidden="true"
+          class="size-[18px] animate-spin rounded-full border-[2.5px] border-surface/35 border-t-surface motion-reduce:animate-none"
+        />
+      )}
+      <slot />
+    </button>
+  )
+}

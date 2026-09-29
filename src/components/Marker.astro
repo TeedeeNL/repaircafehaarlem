@@ -1,0 +1,28 @@
+---
+// Rond pictogram (!, i, ✓) naast meldingen. Altijd decoratief: de tekst ernaast draagt de betekenis.
+interface Props {
+  soort: 'error' | 'warn' | 'info' | 'ok';
+  maat?: 'sm' | 'md' | 'lg' | 'xl';
+  class?: string;
+}
+const { soort, maat = 'md', class: extra } = Astro.props;
+
+const glyph = { error: '!', warn: '!', info: 'i', ok: '✓' }[soort];
+const kleur = {
+  error: 'bg-error',
+  warn: 'bg-warn',
+  info: 'bg-ink font-mono',
+  ok: 'bg-ok',
+}[soort];
+const grootte = {
+  sm: 'size-[18px] text-[11px]',
+  md: 'size-5 text-meta',
+  lg: 'size-[22px] text-meta',
+  xl: 'size-11 text-2xl',
+}[maat];
+---
+
+<span
+  aria-hidden="true"
+  class:list={['grid flex-none place-items-center rounded-full font-extrabold text-surface', kleur, grootte, extra]}
+>{glyph}</span>

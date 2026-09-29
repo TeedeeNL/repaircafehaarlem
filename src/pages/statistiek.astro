@@ -1,0 +1,93 @@
+---
+// S8 Statistiek (W8, F-10). Prerendered: straks opgehaald tijdens de build.
+export const prerender = true;
+
+import Layout from '../components/Layout.astro';
+import Button from '../components/Button.astro';
+import EmptyState from '../components/EmptyState.astro';
+import Marker from '../components/Marker.astro';
+import { STATISTIEK } from '../lib/mock';
+import { datum } from '../lib/format';
+import { leesState } from '../lib/state';
+
+const STATES = [
+  { key: 'weinig', label: 'S8b Minder dan zes sessies' },
+  { key: 'geen', label: 'S8c Nog geen gegevens' },
+] as const;
+const state = leesState(Astro.url, STATES);
+
+const stat = STATISTIEK[state ?? 'normaal'];
+const totaal = stat.rijen.reduce((t, r) => t + r.aantal, 0);
+const geslaagd = stat.rijen.reduce((t, r) => t + r.geslaagd, 0);
+const pct = (deel: number, geheel: number) => (geheel ? Math.round((deel / geheel) * 100) : 0);
+---
+
+<Layout titel="Statistieken" beschrijving="Wat Repair Cafe Haarlem de laatste zes sessies heeft gerepareerd." states={STATES} state={state}>
+  <div class="mx-auto flex max-w-[680px] flex-col gap-5 px-4 pt-7 pb-14 lg:pt-8">
+    <div class="flex flex-col gap-1.5">
+      <h1 class="font-display text-[30px] leading-[1.05] font-extrabold lg:text-[44px]">Wat hebben we gerepareerd?</h1>
+      {
+        totaal > 0 && (
+          <p class="text-small text-ink-muted">Laatste zes sessies · bijgewerkt op {datum(stat.bijgewerkt_op)}</p>
+        )
+      }
+    </div>
+
+    {
+      totaal > 0 && stat.sessies < 6 && (
+        <p class="flex items-start gap-2.5 rounded-lg border-thin border-line-strong bg-surface px-3 py-2.5 text-small">
+          <Marker soort="info" />
+          <span>
+            <strong>Gebaseerd op {stat.sessies} {stat.sessies === 1 ? 'sessie' : 'sessies'}.</strong> Zodra er zes zijn,
+            tonen we steeds de laatste zes.
+          </span>
+        </p>
+      )
+    }
+
+    {
+      totaal > 0 ? (
+        <>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="rounded-xl border-thin border-ink bg-surface p-3.5 lg:p-4">
+              <p class="font-display text-4xl leading-none font-extrabold lg:text-[40px]">{totaal}</p>
+              <p class="text-small">apparaten</p>
+            </div>
+            <div class="rounded-xl bg-ink p-3.5 text-paper lg:p-4">
+              <p class="font-display text-4xl leading-none font-extrabold lg:text-[40px]">{pct(geslaagd, totaal)}%</p>
+              <p class="text-small">weer heel</p>
+            </div>
+          </div>
+
+          <ul class="flex flex-col gap-3.5 lg:gap-4" aria-label="Per categorie">
+            {stat.rijen.map((r) => {
+              const p = pct(r.geslaagd, r.aantal);
+              return (
+                <li class="flex flex-col gap-1.5">
+                  <div class="flex flex-wrap justify-between gap-2 text-small">
+                    <strong>{r.categorie}</strong>
+                    <span>
+                      {r.aantal} stuks · <strong>{p}%</strong> geslaagd
+                    </span>
+                  </div>
+                  <div aria-hidden="true" class="h-3.5 overflow-hidden rounded-[4px] border-thin border-ink bg-surface">
+                    <div class="h-full bg-rust" style={`width: ${p}%`} />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          <p class="text-sm text-ink-muted">Geslaagd = gerepareerd of deels gerepareerd. Geen persoonsgegevens, alleen aantallen.</p>
+        </>
+      ) : (
+        <EmptyState
+          maat="publiek"
+          titel="Nog geen gegevens beschikbaar."
+          tekst="Na de eerste afgeronde sessie verschijnen hier de cijfers."
+        />
+      )
+    }
+
+    <Button href="/aanmelden" breed class="sm:max-w-[360px]">Apparaat aanmelden</Button>
+  </div>
+</Layout>

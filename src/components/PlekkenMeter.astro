@@ -1,0 +1,22 @@
+---
+import { plekken } from '../lib/format';
+
+// Bezet (gevuld) en vrij (omlijnd), dus ook zonder kleur te lezen. De tekst draagt de betekenis.
+interface Props {
+  bezet: number;
+  max: number;
+}
+const { bezet, max } = Astro.props;
+const vrij = Math.max(0, max - bezet);
+---
+
+<div class="flex flex-wrap items-center gap-2.5">
+  <div aria-hidden="true" class="flex flex-wrap gap-[3px]">
+    {
+      Array.from({ length: max }, (_, i) => (
+        <span class:list={['h-3.5 w-2.5 rounded-[2px]', i < bezet ? 'bg-ink' : 'border-thin border-line-strong']} />
+      ))
+    }
+  </div>
+  <span class="text-small font-bold">{plekken(vrij)} vrij</span>
+</div>

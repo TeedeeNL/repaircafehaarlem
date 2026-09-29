@@ -1,0 +1,38 @@
+---
+/**
+ * Tabel voor crew-schermen. Rijen komen via de slot (<tr>...</tr>).
+ * Met `stapel` wordt de tabel onder 768px een lijst van compacte kaarten:
+ * de kolomkoppen blijven voor schermlezers beschikbaar, de rijen bepalen zelf hun kaartindeling.
+ */
+interface Kolom {
+  label: string;
+  class?: string;
+  /** Visueel verborgen kop, bijvoorbeeld voor een actiekolom. */
+  verborgen?: boolean;
+}
+interface Props {
+  kolommen: Kolom[];
+  bijschrift: string;
+  stapel?: boolean;
+  class?: string;
+}
+const { kolommen, bijschrift, stapel = false, class: extra } = Astro.props;
+---
+
+<table class:list={['w-full border-collapse text-sm', stapel && 'max-md:block', extra]}>
+  <caption class="sr-only">{bijschrift}</caption>
+  <thead class:list={[stapel && 'max-md:sr-only']}>
+    <tr class="border-y border-line bg-paper text-left">
+      {
+        kolommen.map((k) => (
+          <th scope="col" class:list={['px-3 py-2.5 font-bold first:pl-4 last:pr-4 md:first:pl-6 md:last:pr-6', k.class]}>
+            {k.verborgen ? <span class="sr-only">{k.label}</span> : k.label}
+          </th>
+        ))
+      }
+    </tr>
+  </thead>
+  <tbody class:list={[stapel && 'max-md:block max-md:border-t max-md:border-line']}>
+    <slot />
+  </tbody>
+</table>

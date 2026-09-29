@@ -1,0 +1,199 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import FieldError from './FieldError.astro';
+
+/**
+ * Label + veld + hulptekst + foutmelding.
+ * - label is gekoppeld met for/id
+ * - hulptekst en fout via aria-describedby; bij fout ook aria-invalid en een rode rand van 2px
+ * - teller: toont "n / max" en werkt live bij (script onderaan)
+ * - toonKnop: wachtwoord tonen/verbergen
+ */
+interface Optie {
+  value: string;
+  label: string;
+}
+interface Props {
+  id: string;
+  name: string;
+  label: string;
+  as?: 'input' | 'textarea' | 'select';
+  type?: HTMLAttributes<'input'>['type'];
+  value?: string | number;
+  placeholder?: string;
+  hint?: string;
+  error?: string;
+  labelNote?: string;
+  options?: Optie[];
+  /** Eerste lege optie van een keuzelijst, bijvoorbeeld "Kies een categorie". */
+  leeg?: string;
+  rows?: number;
+  teller?: number;
+  autocomplete?: string;
+  inputmode?: 'text' | 'email' | 'numeric' | 'tel' | 'search' | 'url' | 'none' | 'decimal';
+  min?: string;
+  required?: boolean;
+  autofocus?: boolean;
+  toonKnop?: boolean;
+  mono?: boolean;
+  autocapitalize?: string;
+  maat?: 'publiek' | 'crew' | 'compact';
+  class?: string;
+  veldClass?: string;
+}
+
+const {
+  id,
+  name,
+  label,
+  as = 'input',
+  type = 'text',
+  value,
+  placeholder,
+  hint,
+  error,
+  labelNote,
+  options = [],
+  leeg,
+  rows = 3,
+  teller,
+  autocomplete,
+  inputmode,
+  min,
+  required = false,
+  autofocus = false,
+  toonKnop = false,
+  mono = false,
+  autocapitalize,
+  maat = 'publiek',
+  class: extra,
+  veldClass,
+} = Astro.props;
+
+const hulpId = hint || teller ? `${id}-hulp` : undefined;
+const foutId = error ? `${id}-fout` : undefined;
+const describedby = [hulpId, foutId].filter(Boolean).join(' ') || undefined;
+const lengte = value === undefined ? 0 : String(value).length;
+
+const crew = maat !== 'publiek';
+const labelKlas = maat === 'publiek' ? 'font-bold' : maat === 'crew' ? 'text-sm font-bold' : 'text-meta font-bold';
+const veldKlas = [
+  'w-full rounded-lg bg-surface text-base',
+  crew ? 'min-h-touch px-2.5' : 'min-h-btn px-3',
+  error ? 'border-2 border-error' : 'border-thin border-line-strong',
+  mono && 'font-mono',
+  veldClass,
+];
+const gedeeld = {
+  id,
+  name,
+  required: required || undefined,
+  autofocus: autofocus || undefined,
+  'aria-invalid': error ? ('true' as const) : undefined,
+  'aria-describedby': describedby,
+};
+---
+
+<div class:list={['flex flex-col', crew ? 'gap-1' : 'gap-1.5', extra]} data-veld>
+  <label for={id} class={labelKlas}>
+    {label}
+    {labelNote && <span class="font-normal text-ink-muted"> {labelNote}</span>}
+  </label>
+
+  {
+    as === 'textarea' ? (
+      <textarea
+        {...gedeeld}
+        rows={rows}
+        maxlength={teller}
+        placeholder={placeholder}
+        data-teller={teller ? `${id}-teller` : undefined}
+        class:list={[veldKlas, 'resize-y py-2.5']}
+      >{value}</textarea>
+    ) : as === 'select' ? (
+      <div class="relative">
+        <select {...gedeeld} class:list={[veldKlas, 'appearance-none pr-10', crew && 'text-sm']}>
+          {leeg && <option value="">{leeg}</option>}
+          {options.map((o) => (
+            <option value={o.value} selected={String(value ?? '') === o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <span aria-hidden="true" class:list={['pointer-events-none absolute top-1/2 -translate-y-1/2', crew ? 'right-2.5 text-sm' : 'right-3.5']}>
+          ▾
+        </span>
+      </div>
+    ) : toonKnop ? (
+      <div class="flex gap-1.5">
+        <input
+          {...gedeeld}
+          type={type}
+          value={value}
+          autocomplete={autocomplete}
+          placeholder={placeholder}
+          class:list={[veldKlas, 'min-w-0 flex-1']}
+        />
+        <button
+          type="button"
+          data-toon-voor={id}
+          aria-pressed="false"
+          aria-controls={id}
+          class="min-h-touch rounded-lg border-thin border-line-strong px-3 text-sm font-bold hover:border-ink"
+        >
+          Toon
+        </button>
+      </div>
+    ) : (
+      <input
+        {...gedeeld}
+        type={type}
+        value={value}
+        min={min}
+        maxlength={teller}
+        autocomplete={autocomplete}
+        inputmode={inputmode}
+        autocapitalize={autocapitalize}
+        placeholder={placeholder}
+        class:list={veldKlas}
+      />
+    )
+  }
+
+  {
+    (hint || teller) && (
+      <p id={hulpId} class:list={['flex justify-between gap-2 text-ink-muted', crew ? 'text-meta' : 'text-sm']}>
+        <span>{hint}</span>
+        {teller && (
+          <span id={`${id}-teller`} class="tabular-nums">
+            {lengte} / {teller}
+          </span>
+        )}
+      </p>
+    )
+  }
+
+  {error && <FieldError id={foutId} maat={crew ? 'crew' : 'publiek'}>{error}</FieldError>}
+</div>
+
+<script>
+  // Tekenteller en wachtwoord tonen. Zonder JS blijft alles bruikbaar.
+  for (const veld of document.querySelectorAll<HTMLTextAreaElement>('[data-teller]')) {
+    const teller = document.getElementById(veld.dataset.teller!);
+    if (!teller) continue;
+    const max = veld.maxLength;
+    veld.addEventListener('input', () => {
+      teller.textContent = `${veld.value.length} / ${max}`;
+    });
+  }
+  for (const knop of document.querySelectorAll<HTMLButtonElement>('[data-toon-voor]')) {
+    const veld = document.getElementById(knop.dataset.toonVoor!) as HTMLInputElement | null;
+    if (!veld) continue;
+    knop.addEventListener('click', () => {
+      const tonen = veld.type === 'password';
+      veld.type = tonen ? 'text' : 'password';
+      knop.textContent = tonen ? 'Verberg' : 'Toon';
+      knop.setAttribute('aria-pressed', String(tonen));
+    });
+  }
+</script>

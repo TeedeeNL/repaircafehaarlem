@@ -1,0 +1,53 @@
+---
+/**
+ * Statuslabel. Betekenis staat altijd in tekst (en bij uitkomsten ook in een teken),
+ * dus niet alleen in kleur.
+ */
+export type BadgeStatus =
+  | 'aangemeld'
+  | 'in_behandeling'
+  | 'afgerond'
+  | 'geannuleerd'
+  | 'gerepareerd'
+  | 'deels'
+  | 'niet_gelukt'
+  | 'open'
+  | 'vol'
+  | 'gesloten';
+
+interface Props {
+  status: BadgeStatus;
+  maat?: 'sm' | 'md';
+  class?: string;
+}
+const { status, maat = 'md', class: extra } = Astro.props;
+
+const neutraal = 'bg-sand text-ink border-line-strong';
+const ok = 'bg-ok-50 text-ok border-ok';
+const warn = 'bg-warn-50 text-warn border-warn';
+const fout = 'bg-error-50 text-error border-error';
+const omlijnd = 'bg-transparent text-ink-muted border-line-strong';
+
+const def: Record<BadgeStatus, [string, string]> = {
+  aangemeld: ['aangemeld', neutraal],
+  in_behandeling: ['in behandeling', warn],
+  afgerond: ['afgerond', neutraal],
+  geannuleerd: ['geannuleerd', omlijnd],
+  gerepareerd: ['✓ gerepareerd', ok],
+  deels: ['◐ deels', warn],
+  niet_gelukt: ['✕ niet gelukt', fout],
+  open: ['open', ok],
+  vol: ['vol', warn],
+  gesloten: ['gesloten', omlijnd],
+};
+const [label, kleur] = def[status];
+---
+
+<span
+  class:list={[
+    'inline-block whitespace-nowrap rounded-full border font-mono font-semibold uppercase tracking-[.04em]',
+    maat === 'sm' ? 'px-[7px] py-0.5 text-tiny' : 'px-2 py-[3px] text-xs',
+    kleur,
+    extra,
+  ]}>{label}</span
+>

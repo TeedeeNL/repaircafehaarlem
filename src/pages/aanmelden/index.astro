@@ -1,0 +1,267 @@
+---
+// S2 Aanmeldformulier (W2, F-01 t/m F-03, TE-05).
+export const prerender = false;
+
+import Layout from '../../components/Layout.astro';
+import Alert from '../../components/Alert.astro';
+import Button from '../../components/Button.astro';
+import FieldError from '../../components/FieldError.astro';
+import FormField from '../../components/FormField.astro';
+import Marker from '../../components/Marker.astro';
+import { CATEGORIEEN, komendeSessies, vrijePlekken, LAATSTE_AANMELDING } from '../../lib/mock';
+import { datumKort, plekken } from '../../lib/format';
+import { leesState } from '../../lib/state';
+
+// Mock: tot de API er is, gaat een verzonden formulier door naar de bevestiging.
+if (Astro.request.method === 'POST') {
+  return Astro.redirect('/aanmelden/bevestiging', 303);
+}
+
+const STATES = [
+  { key: 'ingevuld', label: 'S2a Ingevuld' },
+  { key: 'fouten', label: 'S2b Veldfouten + sessie vol (400/409)' },
+  { key: 'systeemfout', label: 'S2c Systeemfout (500)' },
+  { key: 'controle-mislukt', label: 'S2c Controle mislukt (400)' },
+  { key: 'bezig', label: 'S2d Bezig met verzenden' },
+  { key: 'geen-sessie', label: 'Geen open sessie' },
+] as const;
+const state = leesState(Astro.url, STATES);
+
+if (state === 'fouten' || state === 'controle-mislukt') Astro.response.status = 400;
+if (state === 'systeemfout') Astro.response.status = 500;
+
+type Veld = 'voornaam' | 'email' | 'categorie' | 'merk_type' | 'defect' | 'sessie_id';
+const ingevuld = state !== null && state !== 'geen-sessie';
+const voorbeeld = LAATSTE_AANMELDING;
+
+const waarden: Partial<Record<Veld, string>> = ingevuld
+  ? {
+      voornaam: voorbeeld.voornaam,
+      email: state === 'fouten' ? 'test@' : voorbeeld.email,
+      categorie: voorbeeld.categorie,
+      merk_type: voorbeeld.merk_type,
+      defect: state === 'fouten' ? 'Doet het niet' : voorbeeld.defect,
+      // Bij een 409 wordt de keuze leeggemaakt.
+      sessie_id: state === 'fouten' ? '' : String(voorbeeld.sessie_id),
+    }
+  : {};
+
+const fouten: Partial<Record<Veld, string>> =
+  state === 'fouten'
+    ? {
+        email: 'Vul een geldig e-mailadres in, bijvoorbeeld naam@voorbeeld.nl',
+        defect: `Beschrijf het defect in minimaal 20 tekens (nog ${20 - 'Doet het niet'.length}).`,
+        sessie_id: 'Deze sessie is inmiddels vol, kies een andere datum.',
+      }
+    : {};
+
+const labels: Record<Veld, string> = {
+  voornaam: 'Voornaam',
+  email: 'E-mailadres',
+  categorie: 'Categorie',
+  merk_type: 'Merk en type',
+  defect: 'Wat is er kapot?',
+  sessie_id: 'Sessie',
+};
+const volgorde: Veld[] = ['voornaam', 'email', 'categorie', 'merk_type', 'defect', 'sessie_id'];
+const foutLijst = volgorde.filter((v) => fouten[v]);
+const eersteFout = foutLijst[0];
+
+const sessies = state === 'geen-sessie' ? [] : komendeSessies();
+// In S2b is de gekozen sessie tussen laden en verzenden vol geraakt.
+const isVol = (id: number, vrij: number) => vrij <= 0 || (state === 'fouten' && id === voorbeeld.sessie_id);
+---
+
+<Layout titel="Apparaat aanmelden" states={STATES} state={state}>
+  <form
+    method="post"
+    action="/aanmelden"
+    novalidate
+    class="mx-auto flex max-w-[560px] flex-col gap-5 px-4 pt-6 pb-14 lg:pt-8"
+  >
+    <div class="flex flex-col gap-1.5">
+      <h1 class="font-display text-[30px] leading-[1.05] font-extrabold lg:text-[40px]">Meld je apparaat aan</h1>
+      <p class="text-ink-muted">Alle velden zijn verplicht. Duurt zo’n twee minuten.</p>
+    </div>
+
+    {
+      state === 'systeemfout' && (
+        <Alert soort="error" titel="Er ging iets mis, probeer het opnieuw.">
+          Je ingevulde gegevens staan er nog. Er is niets opgeslagen.
+        </Alert>
+      )
+    }
+
+    {
+      foutLijst.length > 0 && (
+        <Alert soort="error" titel={foutLijst.length === 1 ? 'Controleer 1 veld' : `Controleer ${foutLijst.length} velden`}>
+          <ul class="list-disc pl-[18px]">
+            {foutLijst.map((v) => (
+              <li>
+                <a href={`#f-${v}`} class="font-bold">
+                  {labels[v]}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </Alert>
+      )
+    }
+
+    <FormField
+      id="f-voornaam"
+      name="voornaam"
+      label="Voornaam"
+      autocomplete="given-name"
+      value={waarden.voornaam}
+      error={fouten.voornaam}
+      autofocus={eersteFout === 'voornaam'}
+      required
+    />
+    <FormField
+      id="f-email"
+      name="email"
+      label="E-mailadres"
+      type="email"
+      inputmode="email"
+      autocomplete="email"
+      value={waarden.email}
+      error={fouten.email}
+      autofocus={eersteFout === 'email'}
+      required
+    />
+    <FormField
+      id="f-categorie"
+      name="categorie"
+      label="Categorie"
+      as="select"
+      leeg="Kies een categorie"
+      options={CATEGORIEEN.map((c) => ({ value: c, label: c }))}
+      value={waarden.categorie}
+      error={fouten.categorie}
+      autofocus={eersteFout === 'categorie'}
+      required
+    />
+    <FormField
+      id="f-merk_type"
+      name="merk_type"
+      label="Merk en type"
+      hint="Staat meestal op een sticker aan de onderkant."
+      value={waarden.merk_type}
+      error={fouten.merk_type}
+      autofocus={eersteFout === 'merk_type'}
+      required
+    />
+    <FormField
+      id="f-defect"
+      name="defect"
+      label="Wat is er kapot?"
+      as="textarea"
+      rows={4}
+      hint="Minimaal 20 tekens"
+      teller={500}
+      value={waarden.defect}
+      error={fouten.defect}
+      autofocus={eersteFout === 'defect'}
+      required
+    />
+
+    <fieldset
+      id="f-sessie_id"
+      tabindex="-1"
+      aria-describedby={fouten.sessie_id ? 'f-sessie_id-fout' : undefined}
+      class="flex min-w-0 flex-col gap-2 border-0 p-0"
+    >
+      <legend class="mb-2 p-0 font-bold">Sessie</legend>
+      {fouten.sessie_id && <FieldError id="f-sessie_id-fout">{fouten.sessie_id}</FieldError>}
+
+      {
+        sessies.length === 0 ? (
+          <Alert soort="info" role="status" id="geen-sessie-uitleg">
+            <strong>Er is nu geen sessie open.</strong> De volgende datum wordt binnenkort bekend.
+          </Alert>
+        ) : (
+          sessies.map((s) => {
+            const vrij = vrijePlekken(s);
+            const vol = isVol(s.id, vrij);
+            const label = `${datumKort(s.datum)}`;
+            return vol ? (
+              <label class="flex min-h-card cursor-not-allowed items-center gap-3 rounded-xl border-thin border-dashed border-line-strong bg-sand-light px-3.5 py-2.5 text-ink-muted">
+                <input type="radio" name="sessie_id" value={s.id} disabled class="m-0 size-[22px] flex-none" />
+                <span class="flex-1">
+                  <strong>{label}</strong>, {s.starttijd}
+                  <br />
+                  <span class="text-sm">Vol, niet te kiezen</span>
+                </span>
+                <span class="rounded-full border border-ink-muted px-2 py-[3px] font-mono text-xs font-semibold">VOL</span>
+              </label>
+            ) : (
+              <label class="flex min-h-card cursor-pointer items-center gap-3 rounded-xl border-thin border-line-strong bg-surface px-3.5 py-2.5 has-checked:border-2 has-checked:border-rust has-checked:bg-rust-50">
+                <input
+                  type="radio"
+                  name="sessie_id"
+                  value={s.id}
+                  checked={waarden.sessie_id === String(s.id)}
+                  required
+                  class="m-0 size-[22px] flex-none accent-rust"
+                />
+                <span class="flex-1">
+                  <strong>{label}</strong>, {s.starttijd}
+                  <br />
+                  <span class="text-sm">{plekken(vrij)} vrij</span>
+                </span>
+              </label>
+            );
+          })
+        )
+      }
+    </fieldset>
+
+    <div id="f-turnstile" class="flex flex-col gap-2">
+      {
+        state === 'bezig' ? (
+          <div role="status" class="flex min-h-[68px] items-center gap-2.5 rounded-lg border border-line bg-surface px-4">
+            <Marker soort="ok" maat="lg" />
+            <span class="text-small">Controle geslaagd</span>
+          </div>
+        ) : (
+          <div
+            class:list={[
+              'grid min-h-[68px] place-items-center rounded-lg bg-stripes-sm px-4 text-center',
+              state === 'controle-mislukt' ? 'border-2 border-error' : 'border border-line',
+            ]}
+          >
+            <span class="font-mono text-xs text-ink-muted">
+              {state === 'controle-mislukt' ? 'Nieuwe controle (Turnstile)' : 'Controle tegen spam (Turnstile)'}
+            </span>
+            <noscript>
+              <span class="text-sm">Zet JavaScript aan om de controle te laten werken.</span>
+            </noscript>
+          </div>
+        )
+      }
+      <input type="hidden" name="cf-turnstile-response" value="" />
+      {state === 'controle-mislukt' && <FieldError>De controle is mislukt, probeer het opnieuw.</FieldError>}
+    </div>
+
+    {
+      state === 'bezig' ? (
+        <Button bezig breed>
+          Bezig met verzenden…
+        </Button>
+      ) : sessies.length === 0 ? (
+        <Button uit breed aria-describedby="geen-sessie-uitleg">
+          Aanmelden
+        </Button>
+      ) : (
+        <Button type="submit" breed>
+          {state === 'systeemfout' || state === 'controle-mislukt' ? 'Opnieuw aanmelden' : 'Aanmelden'}
+        </Button>
+      )
+    }
+
+    <p class="text-sm text-pretty text-ink-muted">
+      We gebruiken je gegevens alleen voor deze aanmelding. Zes maanden na de sessie worden ze geanonimiseerd.
+    </p>
+  </form>
+</Layout>

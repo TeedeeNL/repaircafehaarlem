@@ -1,0 +1,60 @@
+@import 'tailwindcss';
+@config '../../tailwind.config.mjs';
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-paper text-ink font-sans text-base antialiased;
+    line-height: 1.5;
+  }
+  a {
+    @apply text-rust-700 underline-offset-[3px] hover:text-ink;
+  }
+  :focus-visible {
+    @apply outline-3 outline-offset-2 outline-rust;
+  }
+  button:not(:disabled),
+  [role='button'] {
+    cursor: pointer;
+  }
+  [hidden] {
+    display: none !important;
+  }
+}
+
+/* Markdown-inhoud van /info/<bestand>: lead, genummerde lijst met gestippelde scheiding. */
+@layer components {
+  .info-body {
+    @apply flex flex-col gap-4 text-base;
+  }
+  .info-body > p:first-child {
+    @apply text-lg text-pretty;
+  }
+  .info-body h2 {
+    @apply font-display text-xl font-extrabold;
+  }
+  .info-body ol,
+  .info-body ul {
+    @apply m-0 flex list-none flex-col border-b border-dashed border-line-strong p-0;
+    counter-reset: item;
+  }
+  .info-body li {
+    @apply grid grid-cols-[36px_minmax(0,1fr)] gap-2 border-t border-dashed border-line-strong py-3.5;
+    counter-increment: item;
+  }
+  .info-body li::before {
+    @apply font-mono font-semibold text-rust-700;
+    content: counter(item, decimal-leading-zero);
+  }
+  .info-body li > * {
+    @apply col-start-2;
+  }
+  .info-body li p {
+    @apply m-0;
+  }
+  .info-body li strong {
+    @apply block text-lead;
+  }
+}

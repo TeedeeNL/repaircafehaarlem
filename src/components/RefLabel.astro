@@ -1,0 +1,21 @@
+---
+// Referentie als gereedschapslabel (licht gedraaid, ponsgat): terug te zien in de mail en op de werkbank.
+interface Props {
+  referentie: string;
+  groot?: boolean;
+}
+const { referentie, groot = false } = Astro.props;
+---
+
+<div
+  class:list={[
+    'relative rotate-[-1.2deg] rounded-tag border-ink bg-surface py-[18px] pr-[18px] pl-[46px] shadow-tag motion-reduce:rotate-0',
+    groot ? 'border-2 py-[22px]' : 'border-thin',
+  ]}
+>
+  <span aria-hidden="true" class="absolute top-1/2 left-[15px] -mt-2 size-4 rounded-full border-thin border-ink bg-paper"></span>
+  <p class="font-mono text-xs font-semibold tracking-[.08em] text-ink-muted">REFERENTIENUMMER</p>
+  <p class:list={['font-mono leading-[1.15] font-semibold break-all', groot ? 'text-[34px]' : 'text-[28px]']}>{referentie}</p>
+  <div class="my-3 border-t-thin border-dashed border-line-strong"></div>
+  <slot />
+</div>

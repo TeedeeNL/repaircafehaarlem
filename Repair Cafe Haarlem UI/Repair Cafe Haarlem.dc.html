@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#E7DFD0;color:#231F1A;font-family:'Atkinson Hyperlegible',system-ui,sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,p,ul,ol,dl,dd{margin:0}
+a{color:#8F3413;text-underline-offset:3px}
+a:hover{color:#231F1A}
+:focus-visible{outline:3px solid #B4441A;outline-offset:2px}
+</style>
+</helmet>
+
+<div style="padding:64px 64px 8px;max-width:1240px;display:flex;flex-direction:column;gap:16px;">
+  <p style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#5F5549;">Repair Cafe Haarlem · UI-ontwerp v1 · gebaseerd op W1 t/m W8</p>
+  <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:56px;line-height:1;letter-spacing:-.02em;">Aanmelden, opvolgen, repareren.</h1>
+  <p style="max-width:720px;font-size:18px;color:#5F5549;text-wrap:pretty;">Publieke kant (S1–S4, S8) warm en uitnodigend op papierkleur met roestoranje. Crew-kant (S5–S7) zakelijk en compact: donkere balk, witte werkvlakken, inktzwarte knoppen. Alle schermen op 360 px; desktop waar de indeling wezenlijk verandert.</p>
+</div>
+
+<section id="tokens" style="padding:40px 64px 56px;display:flex;flex-direction:column;gap:32px;">
+  <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;">
+    <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:32px;">Tokens</h2>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F5549;">naar tailwind.config → theme.extend</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;max-width:1240px;">
+    <div style="background:#FFFDF9;border-radius:12px;overflow:hidden;border:1px solid #D8CCB8;"><div style="height:64px;background:#F6F1E7;border-bottom:1px solid #D8CCB8;"></div><div style="padding:12px 16px;font-size:14px;"><strong>paper</strong> #F6F1E7<br><span style="color:#5F5549;">achtergrond publiek</span></div></div>
+    <div style="background:#FFFDF9;border-radius:12px;overflow:hidden;border:1px solid #D8CCB8;"><div style="height:64px;background:#FFFDF9;border-bottom:1px solid #D8CCB8;"></div><div style="padding:12px 16px;font-size:14px;"><strong>surface</strong> #FFFDF9<br><span style="color:#5F5549;">kaarten, velden, crew</span></div></div>
+    <div style="background:#FFFDF9;border-radius:12px;overflow:hidden;border:1px solid #D8CCB8;"><div style="height:64px;background:#231F1A;"></div><div style="padding:12px 16px;font-size:14px;"><strong>ink</strong> #231F1A<br><span style="color:#5F5549;">tekst, crew-knoppen</span></div></div>
+    <div style="background:#FFFDF9;border-radius:12px;overflow:hidden;border:1px solid #D8CCB8;"><div style="height:64px;background:#5F5549;"></div><div style="padding:12px 16px;font-size:14px;"><strong>ink-muted</strong> #5F5549<br><span style="color:#5F5549;">hulptekst · 6,4:1 op paper</span></div></div>
+    <div style="background:#FFFDF9;border-radius:12px;overflow:hidden;border:1px solid #D8CCB8;"><div style="height:64px;display:grid;grid-template-columns:1fr 1fr;"><div style="background:#D8CCB8;"></div><div style="background:#8C7F6E;"></div></div><div style="padding:12px 16px;font-size:14px;"><strong>line</strong> #D8CCB8 · <strong>line-strong</strong> #8C7F6E<br><span style="color:#5F5549;">scheiding · veldrand (3,9:1)</span></div></div>
+    <div style="background:#FFFDF9;border-radius:12px;overflow:hidden;border:1px solid #D8CCB8;"><div style="height:64px;display:grid;grid-template-columns:2fr 1fr 1fr;"><div style="background:#B4441A;"></div><div style="background:#8F3413;"></div><div style="background:#F7E3D6;"></div></div><div style="padding:12px 16px;font-size:14px;"><strong>rust</strong> #B4441A / 700 #8F3413 / 50 #F7E3D6<br><span style="color:#5F5549;">primaire actie · 5,5:1 met wit</span></div></div>
+    <div style="background:#FFFDF9;border-radius:12px;overflow:hidden;border:1px solid #D8CCB8;"><div style="height:64px;display:grid;grid-template-columns:2fr 1fr;"><div style="background:#2E6B4F;"></div><div style="background:#E2EEE6;"></div></div><div style="padding:12px 16px;font-size:14px;"><strong>ok</strong> #2E6B4F / 50 #E2EEE6<br><span style="color:#5F5549;">gelukt, gerepareerd</span></div></div>
+    <div style="background:#FFFDF9;border-radius:12px;overflow:hidden;border:1px solid #D8CCB8;"><div style="height:64px;display:grid;grid-template-columns:2fr 1fr;"><div style="background:#7A4E00;"></div><div style="background:#FCF0D6;"></div></div><div style="padding:12px 16px;font-size:14px;"><strong>warn</strong> #7A4E00 / 50 #FCF0D6<br><span style="color:#5F5549;">let op, deels, geblokkeerd</span></div></div>
+    <div style="background:#FFFDF9;border-radius:12px;overflow:hidden;border:1px solid #D8CCB8;"><div style="height:64px;display:grid;grid-template-columns:2fr 1fr;"><div style="background:#A3261B;"></div><div style="background:#FBEAE5;"></div></div><div style="padding:12px 16px;font-size:14px;"><strong>error</strong> #A3261B / 50 #FBEAE5<br><span style="color:#5F5549;">fout, niet gelukt</span></div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;max-width:1240px;">
+    <div style="background:#FFFDF9;border:1px solid #D8CCB8;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:12px;">
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F5549;">TYPE · font-display / font-sans / font-mono</p>
+      <p style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:36px;line-height:1.05;">Kapot? 4xl/36</p>
+      <p style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;line-height:1.15;">Koptekst 2xl/24</p>
+      <p style="font-size:18px;">Intro lg/18 · Atkinson Hyperlegible</p>
+      <p style="font-size:16px;">Body en velden base/16 (geen zoom op iOS)</p>
+      <p style="font-size:14px;color:#5F5549;">Hulptekst, crew-tabel sm/14</p>
+      <p style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:18px;">RC-2026-0009 · mono</p>
+    </div>
+    <div style="background:#FFFDF9;border:1px solid #D8CCB8;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px;">
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F5549;">SPACING · Tailwind-standaard, 4 px-basis</p>
+      <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;"><div style="width:4px;height:4px;background:#B4441A;"></div>1</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;"><div style="width:8px;height:8px;background:#B4441A;"></div>2</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;"><div style="width:12px;height:12px;background:#B4441A;"></div>3</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;"><div style="width:16px;height:16px;background:#B4441A;"></div>4</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;"><div style="width:24px;height:24px;background:#B4441A;"></div>6</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;"><div style="width:32px;height:32px;background:#B4441A;"></div>8</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;"><div style="width:48px;height:48px;background:#B4441A;"></div>12</div>
+      </div>
+      <p style="font-size:14px;color:#5F5549;">Schermrand px-4 · tussen velden gap-5 (crew gap-3) · secties py-8.<br>Radius: rounded-lg 8 (knop, veld) · rounded-xl 12 (kaart) · rounded-full (badge).<br>Knoppen min-h-12 (48) publiek, min-h-11 (44) crew.</p>
+    </div>
+    <div style="background:#FFFDF9;border:1px solid #D8CCB8;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:12px;">
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F5549;">KNOPPEN · BADGES · FOUT</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <button style="min-height:48px;padding:0 20px;border:0;border-radius:8px;background:#B4441A;color:#FFFDF9;font-weight:700;box-shadow:0 2px 0 #8F3413;">Primair</button>
+        <button style="min-height:48px;padding:0 20px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;">Secundair</button>
+        <button style="min-height:48px;padding:0 20px;border:0;border-radius:8px;background:#E4DBCC;color:#5F5549;font-weight:700;">Uit</button>
+        <button style="min-height:44px;padding:0 16px;border:0;border-radius:8px;background:#231F1A;color:#FFFDF9;font-weight:700;font-size:15px;outline:3px solid #B4441A;outline-offset:2px;">Crew · focus</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:999px;background:#EFE7DA;color:#231F1A;border:1px solid #8C7F6E;">aangemeld</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:999px;background:#FCF0D6;color:#7A4E00;border:1px solid #7A4E00;">in behandeling</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:999px;background:#E2EEE6;color:#2E6B4F;border:1px solid #2E6B4F;">✓ gerepareerd</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:999px;background:#FCF0D6;color:#7A4E00;border:1px solid #7A4E00;">◐ deels</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:999px;background:#FBEAE5;color:#A3261B;border:1px solid #A3261B;">✕ niet gelukt</span>
+      </div>
+      <p style="display:flex;gap:8px;align-items:flex-start;color:#A3261B;font-size:14px;font-weight:700;"><span aria-hidden="true" style="flex:none;width:20px;height:20px;border-radius:50%;background:#A3261B;color:#FFFDF9;display:grid;place-items:center;font-size:13px;font-weight:800;">!</span>Fout = rode rand 2 px + pictogram + tekst, gekoppeld met aria-describedby.</p>
+    </div>
+  </div>
+</section>
+
+<!-- S1 -->
+<section id="s1" style="padding:56px 64px;border-top:2px dashed #B9AB94;display:flex;flex-direction:column;gap:32px;">
+  <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;"><h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:32px;">S1 Home + informatiepagina</h2><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F5549;">W1 · F-11 · prerendered</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start;">
+
+    <div id="s1a" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S1a</span><span style="font-weight:700;">Standaard</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #D8CCB8;"><div style="display:flex;align-items:center;gap:10px;"><span style="width:32px;height:32px;border-radius:50%;background:#B4441A;color:#FFFDF9;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;line-height:1.05;">Repair Cafe<br><span style="font-weight:600;color:#5F5549;font-size:14px;">Haarlem</span></span></div><button style="min-height:44px;padding:0 14px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:15px;">Menu</button></header>
+        <div style="padding:28px 16px 24px;display:flex;flex-direction:column;gap:12px;">
+          <p style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:#8F3413;text-transform:uppercase;letter-spacing:.06em;">Elke eerste zaterdag</p>
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:36px;line-height:1.02;letter-spacing:-.02em;">Kapot? Gooi het niet weg.</h1>
+          <p style="font-size:17px;text-wrap:pretty;">Vrijwilligers repareren gratis je apparaat. Jij kijkt mee en leert hoe het werkt.</p>
+        </div>
+        <div style="margin:0 16px;height:168px;border-radius:12px;background:repeating-linear-gradient(135deg,#E9E0D0 0 8px,#F1EADD 8px 16px);display:grid;place-items:center;border:1px solid #D8CCB8;"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F5549;">foto: vrijwilliger aan de werkbank</span></div>
+        <div style="margin:20px 16px 0;background:#FFFDF9;border:1.5px solid #231F1A;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:4px 4px 0 #D8CCB8;">
+          <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#5F5549;">Eerstvolgende sessie</p>
+          <div><p style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;line-height:1.1;">Zaterdag 7 november</p><p style="color:#5F5549;">vanaf 10:00 uur</p></div>
+          <div style="display:flex;align-items:center;gap:10px;"><div aria-hidden="true" style="display:flex;gap:3px;"><span style="width:10px;height:14px;border-radius:2px;background:#231F1A;"></span><span style="width:10px;height:14px;border-radius:2px;background:#231F1A;"></span><span style="width:10px;height:14px;border-radius:2px;background:#231F1A;"></span><span style="width:10px;height:14px;border-radius:2px;background:#231F1A;"></span><span style="width:10px;height:14px;border-radius:2px;background:#231F1A;"></span><span style="width:10px;height:14px;border-radius:2px;background:#231F1A;"></span><span style="width:10px;height:14px;border-radius:2px;background:#231F1A;"></span><span style="width:10px;height:14px;border-radius:2px;background:#231F1A;"></span><span style="width:10px;height:14px;border-radius:2px;background:#231F1A;"></span><span style="width:10px;height:14px;border-radius:2px;border:1.5px solid #8C7F6E;"></span><span style="width:10px;height:14px;border-radius:2px;border:1.5px solid #8C7F6E;"></span><span style="width:10px;height:14px;border-radius:2px;border:1.5px solid #8C7F6E;"></span></div><span style="font-weight:700;font-size:15px;">3 plekken vrij</span></div>
+          <button style="min-height:52px;width:100%;border:0;border-radius:8px;background:#B4441A;color:#FFFDF9;font-weight:700;font-size:17px;box-shadow:0 2px 0 #8F3413;">Apparaat aanmelden</button>
+          <a href="#s4a" style="align-self:center;font-weight:700;font-size:15px;min-height:44px;display:flex;align-items:center;">Status van je aanmelding bekijken</a>
+        </div>
+        <nav style="margin:28px 16px 0;display:flex;flex-direction:column;">
+          <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#5F5549;padding-bottom:8px;">Goed om te weten</p>
+          <a href="#s1c" style="min-height:52px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #D8CCB8;color:#231F1A;text-decoration:none;font-weight:700;font-size:17px;">Over ons<span aria-hidden="true" style="color:#B4441A;">→</span></a>
+          <a href="#s1c" style="min-height:52px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #D8CCB8;color:#231F1A;text-decoration:none;font-weight:700;font-size:17px;">Huisregels<span aria-hidden="true" style="color:#B4441A;">→</span></a>
+          <a href="#s1c" style="min-height:52px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #D8CCB8;border-bottom:1px solid #D8CCB8;color:#231F1A;text-decoration:none;font-weight:700;font-size:17px;">Veelgestelde vragen<span aria-hidden="true" style="color:#B4441A;">→</span></a>
+        </nav>
+        <footer style="margin-top:32px;padding:20px 16px;background:#231F1A;color:#F6F1E7;display:flex;justify-content:space-between;gap:12px;font-size:15px;"><a href="#s8a" style="color:#F6F1E7;min-height:44px;display:flex;align-items:center;">Statistieken</a><a href="#s5a" style="color:#F6F1E7;min-height:44px;display:flex;align-items:center;">Inloggen vrijwilligers</a></footer>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;text-wrap:pretty;">Plekkenmeter toont bezet/vrij ook zonder kleur (gevuld vs. omlijnd) plus de tekst. Lijst “Goed om te weten” en het menu komen uit de content collection (titel + volgorde uit frontmatter).</p></sc-if>
+    </div>
+
+    <div id="s1b" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S1b</span><span style="font-weight:700;">Geen open sessie</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #D8CCB8;"><div style="display:flex;align-items:center;gap:10px;"><span style="width:32px;height:32px;border-radius:50%;background:#B4441A;color:#FFFDF9;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;line-height:1.05;">Repair Cafe<br><span style="font-weight:600;color:#5F5549;font-size:14px;">Haarlem</span></span></div><button style="min-height:44px;padding:0 14px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:15px;">Menu</button></header>
+        <div style="padding:28px 16px 20px;"><h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:36px;line-height:1.02;letter-spacing:-.02em;">Kapot? Gooi het niet weg.</h1></div>
+        <div style="margin:0 16px 24px;background:#FFFDF9;border:1.5px dashed #8C7F6E;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+          <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#5F5549;">Eerstvolgende sessie</p>
+          <p style="display:flex;gap:10px;align-items:flex-start;font-size:17px;font-weight:700;"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:#231F1A;color:#FFFDF9;display:grid;place-items:center;font-size:13px;font-weight:800;font-family:'IBM Plex Mono',monospace;margin-top:2px;">i</span>De volgende datum wordt binnenkort bekend.</p>
+          <button aria-disabled="true" style="min-height:52px;width:100%;border:0;border-radius:8px;background:#E4DBCC;color:#5F5549;font-weight:700;font-size:17px;cursor:not-allowed;">Apparaat aanmelden</button>
+          <p style="font-size:14px;color:#5F5549;">Aanmelden kan zodra de coördinator een nieuwe sessie heeft geopend.</p>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">W1-2. Kaart wordt gestippeld, knop uit (aria-disabled, blijft focusbaar zodat de uitleg voorgelezen wordt).</p></sc-if>
+    </div>
+
+    <div id="s1c" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S1c</span><span style="font-weight:700;">Menu open</span></div>
+      <div style="width:360px;background:#231F1A;color:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:24px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #4A423A;"><div style="display:flex;align-items:center;gap:10px;"><span style="width:32px;height:32px;border-radius:50%;background:#B4441A;color:#FFFDF9;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;line-height:1.05;">Repair Cafe<br><span style="font-weight:600;color:#D8CCB8;font-size:14px;">Haarlem</span></span></div><button style="min-height:44px;padding:0 14px;border:1.5px solid #F6F1E7;border-radius:8px;background:transparent;color:#F6F1E7;font-weight:700;font-size:15px;">Sluiten</button></header>
+        <nav style="padding:12px 16px;display:flex;flex-direction:column;">
+          <a href="#s1a" style="min-height:56px;display:flex;align-items:center;border-bottom:1px solid #4A423A;color:#F6F1E7;text-decoration:none;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;">Home</a>
+          <a href="#s1d" style="min-height:56px;display:flex;align-items:center;border-bottom:1px solid #4A423A;color:#F6F1E7;text-decoration:none;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;">Over ons</a>
+          <a href="#s1d" aria-current="page" style="min-height:56px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #4A423A;color:#F6F1E7;text-decoration:underline;text-decoration-color:#E08A5F;text-decoration-thickness:3px;text-underline-offset:6px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;">Huisregels</a>
+          <a href="#s1d" style="min-height:56px;display:flex;align-items:center;border-bottom:1px solid #4A423A;color:#F6F1E7;text-decoration:none;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;">Veelgestelde vragen</a>
+          <a href="#s8a" style="min-height:56px;display:flex;align-items:center;border-bottom:1px solid #4A423A;color:#F6F1E7;text-decoration:none;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;">Statistieken</a>
+          <a href="#s4a" style="min-height:56px;display:flex;align-items:center;border-bottom:1px solid #4A423A;color:#F6F1E7;text-decoration:none;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;">Status opvragen</a>
+        </nav>
+        <div style="padding:8px 16px;display:flex;flex-direction:column;gap:12px;">
+          <button style="min-height:52px;width:100%;border:0;border-radius:8px;background:#B4441A;color:#FFFDF9;font-weight:700;font-size:17px;">Apparaat aanmelden</button>
+          <a href="#s5a" style="color:#F6F1E7;font-weight:700;min-height:44px;display:flex;align-items:center;justify-content:center;">Inloggen vrijwilligers</a>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">W1-1. Pagina’s met in_menu: true, gesorteerd op volgorde. Actieve pagina: dikke onderstreping + aria-current.</p></sc-if>
+    </div>
+
+    <div id="s1d" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S1d</span><span style="font-weight:700;">Informatiepagina · Huisregels</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:28px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #D8CCB8;"><div style="display:flex;align-items:center;gap:10px;"><span style="width:32px;height:32px;border-radius:50%;background:#B4441A;color:#FFFDF9;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;line-height:1.05;">Repair Cafe<br><span style="font-weight:600;color:#5F5549;font-size:14px;">Haarlem</span></span></div><button style="min-height:44px;padding:0 14px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:15px;">Menu</button></header>
+        <article style="padding:28px 16px 0;display:flex;flex-direction:column;gap:16px;">
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:32px;line-height:1.05;">Huisregels</h1>
+          <p style="font-size:17px;">Zo houden we het gezellig en veilig aan de werkbank.</p>
+          <ol style="padding:0;list-style:none;display:flex;flex-direction:column;gap:0;">
+            <li style="display:grid;grid-template-columns:32px 1fr;gap:8px;padding:12px 0;border-top:1px dashed #8C7F6E;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#8F3413;">01</span><span>Eén apparaat per persoon per sessie.</span></li>
+            <li style="display:grid;grid-template-columns:32px 1fr;gap:8px;padding:12px 0;border-top:1px dashed #8C7F6E;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#8F3413;">02</span><span>Je blijft erbij en kijkt mee tijdens de reparatie.</span></li>
+            <li style="display:grid;grid-template-columns:32px 1fr;gap:8px;padding:12px 0;border-top:1px dashed #8C7F6E;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#8F3413;">03</span><span>Neem het apparaat, de stekker of oplader en je referentienummer mee.</span></li>
+            <li style="display:grid;grid-template-columns:32px 1fr;gap:8px;padding:12px 0;border-top:1px dashed #8C7F6E;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#8F3413;">04</span><span>Reparatie is gratis. Nieuwe onderdelen betaal je zelf.</span></li>
+            <li style="display:grid;grid-template-columns:32px 1fr;gap:8px;padding:12px 0;border-top:1px dashed #8C7F6E;border-bottom:1px dashed #8C7F6E;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#8F3413;">05</span><span>Repareren gebeurt op eigen risico.</span></li>
+          </ol>
+          <button style="min-height:52px;width:100%;border:0;border-radius:8px;background:#B4441A;color:#FFFDF9;font-weight:700;font-size:17px;box-shadow:0 2px 0 #8F3413;">Apparaat aanmelden</button>
+        </article>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">Generiek Markdown-layout voor /info/&lt;bestand&gt;: h1, lead, lijsten met gestippelde scheiding. Afsluitende CTA in de layout, niet in de Markdown.</p></sc-if>
+    </div>
+
+    <sc-if value="{{ showDesktop }}" hint-placeholder-val="{{ true }}">
+    <div id="s1e" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S1e</span><span style="font-weight:700;">Desktop · 1024</span></div>
+      <div style="width:1024px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding:14px 40px;border-bottom:1px solid #D8CCB8;">
+          <div style="display:flex;align-items:center;gap:10px;"><span style="width:36px;height:36px;border-radius:50%;background:#B4441A;color:#FFFDF9;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:14px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;">Repair Cafe <span style="color:#5F5549;font-weight:600;">Haarlem</span></span></div>
+          <nav style="display:flex;align-items:center;gap:4px;font-weight:700;font-size:15px;">
+            <a href="#s1d" style="color:#231F1A;text-decoration:none;padding:0 12px;min-height:44px;display:flex;align-items:center;">Over ons</a>
+            <a href="#s1d" style="color:#231F1A;text-decoration:none;padding:0 12px;min-height:44px;display:flex;align-items:center;">Huisregels</a>
+            <a href="#s1d" style="color:#231F1A;text-decoration:none;padding:0 12px;min-height:44px;display:flex;align-items:center;">Vragen</a>
+            <a href="#s8a" style="color:#231F1A;text-decoration:none;padding:0 12px;min-height:44px;display:flex;align-items:center;">Statistieken</a>
+            <a href="#s5a" style="color:#231F1A;padding:0 14px;min-height:44px;display:flex;align-items:center;border:1.5px solid #231F1A;border-radius:8px;text-decoration:none;margin-left:8px;">Inloggen</a>
+          </nav>
+        </header>
+        <div style="display:grid;grid-template-columns:1.05fr 1fr;gap:48px;padding:56px 40px;align-items:center;">
+          <div style="display:flex;flex-direction:column;gap:20px;">
+            <p style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:#8F3413;text-transform:uppercase;letter-spacing:.06em;">Elke eerste zaterdag</p>
+            <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:60px;line-height:.98;letter-spacing:-.025em;">Kapot? Gooi het niet weg.</h1>
+            <p style="font-size:19px;max-width:420px;">Vrijwilligers repareren gratis je apparaat. Jij kijkt mee en leert hoe het werkt.</p>
+            <div style="background:#FFFDF9;border:1.5px solid #231F1A;border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:20px;box-shadow:4px 4px 0 #D8CCB8;">
+              <div><p style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#5F5549;">Eerstvolgende sessie</p><p style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:22px;">Za 7 november, 10:00</p><p style="font-weight:700;font-size:15px;">3 plekken vrij</p></div>
+              <button style="min-height:52px;padding:0 24px;border:0;border-radius:8px;background:#B4441A;color:#FFFDF9;font-weight:700;font-size:17px;box-shadow:0 2px 0 #8F3413;white-space:nowrap;">Apparaat aanmelden</button>
+            </div>
+          </div>
+          <div style="aspect-ratio:4/3;border-radius:12px;background:repeating-linear-gradient(135deg,#E9E0D0 0 8px,#F1EADD 8px 16px);display:grid;place-items:center;border:1px solid #D8CCB8;"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F5549;">foto: vrijwilliger aan de werkbank</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:0 40px 48px;">
+          <a href="#s1d" style="background:#FFFDF9;border:1px solid #D8CCB8;border-radius:12px;padding:20px;color:#231F1A;text-decoration:none;display:flex;flex-direction:column;gap:6px;"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;">Over ons →</span><span style="color:#5F5549;font-size:15px;">Wie we zijn en waarom we repareren.</span></a>
+          <a href="#s1d" style="background:#FFFDF9;border:1px solid #D8CCB8;border-radius:12px;padding:20px;color:#231F1A;text-decoration:none;display:flex;flex-direction:column;gap:6px;"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;">Huisregels →</span><span style="color:#5F5549;font-size:15px;">Wat je meeneemt en hoe het werkt.</span></a>
+          <a href="#s1d" style="background:#FFFDF9;border:1px solid #D8CCB8;border-radius:12px;padding:20px;color:#231F1A;text-decoration:none;display:flex;flex-direction:column;gap:6px;"><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;">Veelgestelde vragen →</span><span style="color:#5F5549;font-size:15px;">Kosten, onderdelen, garantie.</span></a>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+</section>
+
+<!-- S2 -->
+<section id="s2" style="padding:56px 64px;border-top:2px dashed #B9AB94;display:flex;flex-direction:column;gap:32px;">
+  <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;"><h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:32px;">S2 Aanmeldformulier</h2><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F5549;">W2 · F-01 F-02 F-03 · TE-05</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start;">
+
+    <div id="s2a" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S2a</span><span style="font-weight:700;">Normaal · ingevuld</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:28px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #D8CCB8;"><div style="display:flex;align-items:center;gap:10px;"><span style="width:32px;height:32px;border-radius:50%;background:#B4441A;color:#FFFDF9;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;line-height:1.05;">Repair Cafe<br><span style="font-weight:600;color:#5F5549;font-size:14px;">Haarlem</span></span></div><button style="min-height:44px;padding:0 14px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:15px;">Menu</button></header>
+        <form style="padding:24px 16px 0;display:flex;flex-direction:column;gap:20px;">
+          <div style="display:flex;flex-direction:column;gap:6px;"><h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;line-height:1.05;">Meld je apparaat aan</h1><p style="color:#5F5549;">Alle velden zijn verplicht. Duurt zo’n twee minuten.</p></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-weight:700;">Voornaam</label><input value="Sanne" style="min-height:48px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;width:100%;"></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-weight:700;">E-mailadres</label><input value="sanne@voorbeeld.nl" style="min-height:48px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;width:100%;"></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-weight:700;">Categorie</label><div style="position:relative;"><select style="appearance:none;min-height:48px;padding:0 40px 0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;width:100%;"><option>Klein huishoudelijk</option></select><span aria-hidden="true" style="position:absolute;right:14px;top:12px;pointer-events:none;">▾</span></div></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-weight:700;">Merk en type</label><input value="Philips HD9650" style="min-height:48px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;width:100%;"><p style="font-size:14px;color:#5F5549;">Staat meestal op een sticker aan de onderkant.</p></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-weight:700;">Wat is er kapot?</label><textarea rows="3" style="padding:10px 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;width:100%;resize:vertical;">Airfryer gaat niet meer aan, lampje brandt niet. Snoer ziet er goed uit.</textarea><p style="font-size:14px;color:#5F5549;display:flex;justify-content:space-between;"><span>Minimaal 20 tekens</span><span>71 / 500</span></p></div>
+          <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;"><legend style="font-weight:700;padding:0;margin-bottom:8px;">Sessie</legend>
+            <label style="display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 14px;border:2px solid #B4441A;border-radius:12px;background:#F7E3D6;"><span style="flex:none;width:22px;height:22px;border-radius:50%;border:2px solid #B4441A;display:grid;place-items:center;"><span style="width:10px;height:10px;border-radius:50%;background:#B4441A;"></span></span><span style="flex:1;"><strong>Za 7 november</strong>, 10:00<br><span style="font-size:14px;">3 plekken vrij</span></span></label>
+            <label style="display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 14px;border:1.5px dashed #8C7F6E;border-radius:12px;background:#EFE9DE;color:#5F5549;cursor:not-allowed;"><span style="flex:none;width:22px;height:22px;border-radius:50%;border:2px solid #8C7F6E;background:#E4DBCC;"></span><span style="flex:1;"><strong>Za 5 december</strong>, 10:00<br><span style="font-size:14px;">Vol, niet te kiezen</span></span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;border:1px solid #5F5549;">VOL</span></label>
+          </fieldset>
+          <div style="height:68px;border:1px solid #D8CCB8;border-radius:8px;background:repeating-linear-gradient(135deg,#EFE9DE 0 6px,#F6F1E7 6px 12px);display:grid;place-items:center;"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F5549;">Turnstile-widget (300×65)</span></div>
+          <button type="button" style="min-height:52px;width:100%;border:0;border-radius:8px;background:#B4441A;color:#FFFDF9;font-weight:700;font-size:17px;box-shadow:0 2px 0 #8F3413;">Aanmelden</button>
+          <p style="font-size:14px;color:#5F5549;text-wrap:pretty;">We gebruiken je gegevens alleen voor deze aanmelding. Zes maanden na de sessie worden ze geanonimiseerd.</p>
+        </form>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;text-wrap:pretty;">Sessie als radiokaarten i.p.v. keuzelijst: vrije plekken zichtbaar, volle sessie disabled met tekst “vol” (niet alleen kleur). Zonder JS toont de Turnstile-plek een uitleg.</p></sc-if>
+    </div>
+
+    <div id="s2b" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#A3261B;color:#FFFDF9;padding:3px 8px;border-radius:999px;">S2b</span><span style="font-weight:700;">Foutstates 1–3 (HTTP 400 / 409)</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:28px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #D8CCB8;"><div style="display:flex;align-items:center;gap:10px;"><span style="width:32px;height:32px;border-radius:50%;background:#B4441A;color:#FFFDF9;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;line-height:1.05;">Repair Cafe<br><span style="font-weight:600;color:#5F5549;font-size:14px;">Haarlem</span></span></div><button style="min-height:44px;padding:0 14px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:15px;">Menu</button></header>
+        <form style="padding:24px 16px 0;display:flex;flex-direction:column;gap:20px;">
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;line-height:1.05;">Meld je apparaat aan</h1>
+          <div role="alert" style="background:#FBEAE5;border:2px solid #A3261B;border-radius:12px;padding:14px;display:flex;gap:10px;"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:#A3261B;color:#FFFDF9;display:grid;place-items:center;font-size:14px;font-weight:800;">!</span><div style="display:flex;flex-direction:column;gap:4px;"><p style="font-weight:700;color:#A3261B;">Controleer 3 velden</p><ul style="padding-left:18px;font-size:15px;"><li><a href="#s2b">E-mailadres</a></li><li><a href="#s2b">Wat is er kapot?</a></li><li><a href="#s2b">Sessie</a></li></ul></div></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-weight:700;">Voornaam</label><input value="Sanne" style="min-height:48px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;width:100%;"></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-weight:700;">E-mailadres</label><input value="test@" aria-invalid="true" style="min-height:48px;padding:0 12px;border:2px solid #A3261B;border-radius:8px;background:#FFFDF9;width:100%;"><p style="display:flex;gap:8px;align-items:flex-start;color:#A3261B;font-size:14px;font-weight:700;"><span aria-hidden="true" style="flex:none;width:20px;height:20px;border-radius:50%;background:#A3261B;color:#FFFDF9;display:grid;place-items:center;font-size:13px;font-weight:800;">!</span>Vul een geldig e-mailadres in, bijvoorbeeld naam@voorbeeld.nl</p></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-weight:700;">Wat is er kapot?</label><textarea rows="2" aria-invalid="true" style="padding:10px 12px;border:2px solid #A3261B;border-radius:8px;background:#FFFDF9;width:100%;resize:vertical;">Doet het niet</textarea><p style="display:flex;gap:8px;align-items:flex-start;color:#A3261B;font-size:14px;font-weight:700;"><span aria-hidden="true" style="flex:none;width:20px;height:20px;border-radius:50%;background:#A3261B;color:#FFFDF9;display:grid;place-items:center;font-size:13px;font-weight:800;">!</span>Beschrijf het defect in minimaal 20 tekens (nog 7)</p></div>
+          <fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;"><legend style="font-weight:700;padding:0;margin-bottom:8px;">Sessie</legend>
+            <p style="display:flex;gap:8px;align-items:flex-start;color:#A3261B;font-size:14px;font-weight:700;"><span aria-hidden="true" style="flex:none;width:20px;height:20px;border-radius:50%;background:#A3261B;color:#FFFDF9;display:grid;place-items:center;font-size:13px;font-weight:800;">!</span>Deze sessie is inmiddels vol, kies een andere datum.</p>
+            <label style="display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 14px;border:1.5px dashed #8C7F6E;border-radius:12px;background:#EFE9DE;color:#5F5549;"><span style="flex:none;width:22px;height:22px;border-radius:50%;border:2px solid #8C7F6E;background:#E4DBCC;"></span><span style="flex:1;"><strong>Za 7 november</strong>, 10:00<br><span style="font-size:14px;">Vol, niet te kiezen</span></span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;border:1px solid #5F5549;">VOL</span></label>
+            <label style="display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 14px;border:1.5px solid #8C7F6E;border-radius:12px;background:#FFFDF9;"><span style="flex:none;width:22px;height:22px;border-radius:50%;border:2px solid #8C7F6E;"></span><span style="flex:1;"><strong>Za 9 januari</strong>, 10:00<br><span style="font-size:14px;">12 plekken vrij</span></span></label>
+          </fieldset>
+          <button type="button" style="min-height:52px;width:100%;border:0;border-radius:8px;background:#B4441A;color:#FFFDF9;font-weight:700;font-size:17px;box-shadow:0 2px 0 #8F3413;">Aanmelden</button>
+        </form>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;text-wrap:pretty;">Samenvatting bovenaan (role=alert) met ankerlinks, focus op het eerste foute veld. Waarden blijven staan. 409: sessielijst wordt opnieuw opgehaald, keuze leeg gemaakt.</p></sc-if>
+    </div>
+
+    <div id="s2c" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#A3261B;color:#FFFDF9;padding:3px 8px;border-radius:999px;">S2c</span><span style="font-weight:700;">Systeemfout (500) · controle mislukt</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:24px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #D8CCB8;"><div style="display:flex;align-items:center;gap:10px;"><span style="width:32px;height:32px;border-radius:50%;background:#B4441A;color:#FFFDF9;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;line-height:1.05;">Repair Cafe<br><span style="font-weight:600;color:#5F5549;font-size:14px;">Haarlem</span></span></div><button style="min-height:44px;padding:0 14px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:15px;">Menu</button></header>
+        <div style="padding:24px 16px 0;display:flex;flex-direction:column;gap:20px;">
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;line-height:1.05;">Meld je apparaat aan</h1>
+          <div role="alert" style="background:#FBEAE5;border:2px solid #A3261B;border-radius:12px;padding:14px;display:flex;gap:10px;"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:#A3261B;color:#FFFDF9;display:grid;place-items:center;font-size:14px;font-weight:800;">!</span><div><p style="font-weight:700;color:#A3261B;">Er ging iets mis, probeer het opnieuw.</p><p style="font-size:15px;">Je ingevulde gegevens staan er nog. Er is niets opgeslagen.</p></div></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-weight:700;">Voornaam</label><input value="Sanne" style="min-height:48px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;width:100%;"></div>
+          <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F5549;text-align:center;">· · · overige velden ingevuld · · ·</p>
+          <div style="display:flex;flex-direction:column;gap:8px;"><div style="height:68px;border:2px solid #A3261B;border-radius:8px;background:repeating-linear-gradient(135deg,#EFE9DE 0 6px,#F6F1E7 6px 12px);display:grid;place-items:center;"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F5549;">nieuwe Turnstile-widget</span></div><p style="display:flex;gap:8px;align-items:flex-start;color:#A3261B;font-size:14px;font-weight:700;"><span aria-hidden="true" style="flex:none;width:20px;height:20px;border-radius:50%;background:#A3261B;color:#FFFDF9;display:grid;place-items:center;font-size:13px;font-weight:800;">!</span>De controle is mislukt, probeer het opnieuw.</p></div>
+          <button type="button" style="min-height:52px;width:100%;border:0;border-radius:8px;background:#B4441A;color:#FFFDF9;font-weight:700;font-size:17px;box-shadow:0 2px 0 #8F3413;">Opnieuw aanmelden</button>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">Twee varianten in één beeld: 500 → melding boven het formulier; Turnstile 400 → melding bij de widget, nieuwe widget geladen.</p></sc-if>
+    </div>
+
+    <div id="s2d" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S2d</span><span style="font-weight:700;">Bezig met verzenden (4)</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding:20px 16px 24px;display:flex;flex-direction:column;gap:16px;">
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F5549;text-align:center;">· · · onderkant formulier · · ·</p>
+        <div style="height:68px;border:1px solid #D8CCB8;border-radius:8px;background:#FFFDF9;display:flex;align-items:center;gap:10px;padding:0 16px;"><span aria-hidden="true" style="width:22px;height:22px;border-radius:50%;background:#2E6B4F;color:#FFFDF9;display:grid;place-items:center;font-size:13px;font-weight:800;">✓</span><span style="font-size:15px;">Controle geslaagd</span></div>
+        <button type="button" disabled="" aria-busy="true" style="min-height:52px;width:100%;border:0;border-radius:8px;background:#8F3413;color:#FFFDF9;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:progress;"><span aria-hidden="true" style="width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,253,249,.35);border-top-color:#FFFDF9;"></span>Bezig met verzenden…</button>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">Knop disabled + aria-busy tegen dubbel verzenden; donkerder roest zodat de tekst leesbaar blijft (7,6:1).</p></sc-if>
+    </div>
+  </div>
+</section>
+
+<!-- S3 -->
+<section id="s3" style="padding:56px 64px;border-top:2px dashed #B9AB94;display:flex;flex-direction:column;gap:32px;">
+  <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;"><h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:32px;">S3 Bevestiging</h2><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F5549;">W3 · F-01 F-04</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start;">
+
+    <div id="s3a" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S3a</span><span style="font-weight:700;">Gelukt</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:28px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #D8CCB8;"><div style="display:flex;align-items:center;gap:10px;"><span style="width:32px;height:32px;border-radius:50%;background:#B4441A;color:#FFFDF9;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;line-height:1.05;">Repair Cafe<br><span style="font-weight:600;color:#5F5549;font-size:14px;">Haarlem</span></span></div><button style="min-height:44px;padding:0 14px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:15px;">Menu</button></header>
+        <div style="padding:28px 16px 0;display:flex;flex-direction:column;gap:20px;">
+          <div style="display:flex;flex-direction:column;gap:10px;"><span aria-hidden="true" style="width:44px;height:44px;border-radius:50%;background:#2E6B4F;color:#FFFDF9;display:grid;place-items:center;font-size:24px;font-weight:800;">✓</span><h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;line-height:1.05;">Je aanmelding is gelukt</h1></div>
+          <div style="position:relative;background:#FFFDF9;border:1.5px solid #231F1A;border-radius:10px;padding:18px 18px 18px 44px;transform:rotate(-1.2deg);box-shadow:3px 4px 0 #D8CCB8;">
+            <span aria-hidden="true" style="position:absolute;left:14px;top:50%;margin-top:-8px;width:16px;height:16px;border-radius:50%;border:1.5px solid #231F1A;background:#F6F1E7;"></span>
+            <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:.08em;color:#5F5549;">REFERENTIENUMMER</p>
+            <p style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:28px;letter-spacing:.01em;">RC-2026-0009</p>
+            <div style="border-top:1.5px dashed #8C7F6E;margin:12px 0;"></div>
+            <p style="font-weight:700;">Zaterdag 7 november 2026</p><p>10:00 uur · Philips HD9650</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;"><h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;">Neem mee</h2><ul style="padding-left:20px;display:flex;flex-direction:column;gap:4px;"><li>het apparaat</li><li>de stekker, het snoer of de oplader</li><li>dit referentienummer</li></ul><p style="font-size:15px;color:#5F5549;">Maximaal één apparaat per persoon, en je blijft erbij.</p></div>
+          <p style="display:flex;gap:10px;align-items:flex-start;font-size:15px;background:#E2EEE6;border-radius:8px;padding:12px;"><span aria-hidden="true" style="flex:none;width:20px;height:20px;border-radius:50%;background:#2E6B4F;color:#FFFDF9;display:grid;place-items:center;font-size:12px;font-weight:800;">✓</span><span>Bevestiging verstuurd naar <strong>sanne@voorbeeld.nl</strong></span></p>
+          <button style="min-height:52px;width:100%;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:17px;">Status van je aanmelding bekijken</button>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">Referentie als gereedschapslabel (licht gedraaid, ponsgat): het beeld dat terugkomt in de mail en op de werkbank.</p></sc-if>
+    </div>
+
+    <div id="s3b" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#7A4E00;color:#FFFDF9;padding:3px 8px;border-radius:999px;">S3b</span><span style="font-weight:700;">Mail niet verstuurd</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:28px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #D8CCB8;"><div style="display:flex;align-items:center;gap:10px;"><span style="width:32px;height:32px;border-radius:50%;background:#B4441A;color:#FFFDF9;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;line-height:1.05;">Repair Cafe<br><span style="font-weight:600;color:#5F5549;font-size:14px;">Haarlem</span></span></div><button style="min-height:44px;padding:0 14px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:15px;">Menu</button></header>
+        <div style="padding:28px 16px 0;display:flex;flex-direction:column;gap:20px;">
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;line-height:1.05;">Je aanmelding is gelukt</h1>
+          <div role="status" style="background:#FCF0D6;border:2px solid #7A4E00;border-radius:12px;padding:14px;display:flex;gap:10px;"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:#7A4E00;color:#FFFDF9;display:grid;place-items:center;font-size:14px;font-weight:800;">!</span><div><p style="font-weight:700;color:#7A4E00;">De bevestigingsmail kon nu niet worden verstuurd.</p><p style="font-size:15px;">Je aanmelding staat wél genoteerd. Noteer je referentienummer; de mail volgt later.</p></div></div>
+          <div style="position:relative;background:#FFFDF9;border:2px solid #231F1A;border-radius:10px;padding:22px 18px 22px 44px;transform:rotate(-1.2deg);box-shadow:3px 4px 0 #D8CCB8;">
+            <span aria-hidden="true" style="position:absolute;left:14px;top:50%;margin-top:-8px;width:16px;height:16px;border-radius:50%;border:1.5px solid #231F1A;background:#F6F1E7;"></span>
+            <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:.08em;color:#5F5549;">REFERENTIENUMMER</p>
+            <p style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:34px;line-height:1.1;">RC-2026<br>-0009</p>
+            <div style="border-top:1.5px dashed #8C7F6E;margin:12px 0;"></div>
+            <p style="font-weight:700;">Za 7 november 2026, 10:00 uur</p>
+          </div>
+          <p style="font-size:15px;color:#5F5549;">Tip: maak een screenshot van dit scherm.</p>
+          <button style="min-height:52px;width:100%;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:17px;">Status van je aanmelding bekijken</button>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">W3-2. Amber, geen rood: de aanmelding is geslaagd. Nummer extra groot.</p></sc-if>
+    </div>
+  </div>
+</section>
+
+<!-- S4 -->
+<section id="s4" style="padding:56px 64px;border-top:2px dashed #B9AB94;display:flex;flex-direction:column;gap:32px;">
+  <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;"><h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:32px;">S4 Statusopvraag</h2><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F5549;">W4 · F-09</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start;">
+
+    <div id="s4a" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S4a</span><span style="font-weight:700;">Invoer</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:28px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #D8CCB8;"><div style="display:flex;align-items:center;gap:10px;"><span style="width:32px;height:32px;border-radius:50%;background:#B4441A;color:#FFFDF9;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;line-height:1.05;">Repair Cafe<br><span style="font-weight:600;color:#5F5549;font-size:14px;">Haarlem</span></span></div><button style="min-height:44px;padding:0 14px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:15px;">Menu</button></header>
+        <form style="padding:28px 16px 0;display:flex;flex-direction:column;gap:20px;">
+          <div style="display:flex;flex-direction:column;gap:6px;"><h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;line-height:1.05;">Status opvragen</h1><p style="color:#5F5549;">Hoe staat het met je apparaat?</p></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-weight:700;">Referentienummer</label><input placeholder="RC-2026-0000" style="min-height:48px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;width:100%;font-family:'IBM Plex Mono',monospace;"><p style="font-size:14px;color:#5F5549;">Staat in je bevestigingsmail.</p></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-weight:700;">E-mailadres van je aanmelding</label><input style="min-height:48px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;width:100%;"></div>
+          <button type="button" style="min-height:52px;width:100%;border:0;border-radius:8px;background:#B4441A;color:#FFFDF9;font-weight:700;font-size:17px;box-shadow:0 2px 0 #8F3413;">Bekijken</button>
+        </form>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">W4-1. Twee gegevens samen, zodat een nummer niet te raden is.</p></sc-if>
+    </div>
+
+    <div id="s4b" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#2E6B4F;color:#FFFDF9;padding:3px 8px;border-radius:999px;">S4b</span><span style="font-weight:700;">Gevonden</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:28px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #D8CCB8;"><div style="display:flex;align-items:center;gap:10px;"><span style="width:32px;height:32px;border-radius:50%;background:#B4441A;color:#FFFDF9;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;line-height:1.05;">Repair Cafe<br><span style="font-weight:600;color:#5F5549;font-size:14px;">Haarlem</span></span></div><button style="min-height:44px;padding:0 14px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:15px;">Menu</button></header>
+        <div style="padding:28px 16px 0;display:flex;flex-direction:column;gap:16px;">
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;line-height:1.05;">Je aanmelding</h1>
+          <div style="background:#FFFDF9;border:1.5px solid #231F1A;border-radius:12px;overflow:hidden;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px 16px;border-bottom:1.5px dashed #8C7F6E;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:18px;">RC-2026-0009</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:#EFE7DA;border:1px solid #8C7F6E;">afgerond</span></div>
+            <dl style="padding:4px 16px 8px;display:grid;grid-template-columns:auto 1fr;column-gap:16px;font-size:15px;">
+              <dt style="color:#5F5549;padding:8px 0;">Sessie</dt><dd style="padding:8px 0;font-weight:700;">7 november 2026</dd>
+              <dt style="color:#5F5549;padding:8px 0;border-top:1px solid #D8CCB8;">Apparaat</dt><dd style="padding:8px 0;font-weight:700;border-top:1px solid #D8CCB8;">Philips HD9650</dd>
+              <dt style="color:#5F5549;padding:8px 0;border-top:1px solid #D8CCB8;">Uitkomst</dt><dd style="padding:8px 0;border-top:1px solid #D8CCB8;"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:#E2EEE6;color:#2E6B4F;border:1px solid #2E6B4F;">✓ gerepareerd</span></dd>
+              <dt style="color:#5F5549;padding:8px 0;border-top:1px solid #D8CCB8;">Notitie</dt><dd style="padding:8px 0;border-top:1px solid #D8CCB8;">Snoer vervangen</dd>
+              <dt style="color:#5F5549;padding:8px 0;border-top:1px solid #D8CCB8;">Bestede tijd</dt><dd style="padding:8px 0;border-top:1px solid #D8CCB8;">35 minuten</dd>
+            </dl>
+          </div>
+          <div style="background:#FFFDF9;border:1px dashed #8C7F6E;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;"><p style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#5F5549;">VÓÓR DE SESSIE</p><p style="font-size:15px;">Status <strong>aangemeld</strong>. De uitkomst verschijnt hier na de sessie.</p></div>
+          <a href="#s4a" style="font-weight:700;min-height:44px;display:flex;align-items:center;">Andere aanmelding opvragen</a>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">W4-2. Onderste kaart = variant vóór de sessie (uitkomst, notitie en tijd verborgen).</p></sc-if>
+    </div>
+
+    <div id="s4c" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#A3261B;color:#FFFDF9;padding:3px 8px;border-radius:999px;">S4c</span><span style="font-weight:700;">Niet gevonden</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:28px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #D8CCB8;"><div style="display:flex;align-items:center;gap:10px;"><span style="width:32px;height:32px;border-radius:50%;background:#B4441A;color:#FFFDF9;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;line-height:1.05;">Repair Cafe<br><span style="font-weight:600;color:#5F5549;font-size:14px;">Haarlem</span></span></div><button style="min-height:44px;padding:0 14px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:15px;">Menu</button></header>
+        <form style="padding:28px 16px 0;display:flex;flex-direction:column;gap:20px;">
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;line-height:1.05;">Status opvragen</h1>
+          <div role="alert" style="background:#FBEAE5;border:2px solid #A3261B;border-radius:12px;padding:14px;display:flex;gap:10px;"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:#A3261B;color:#FFFDF9;display:grid;place-items:center;font-size:14px;font-weight:800;">!</span><div><p style="font-weight:700;color:#A3261B;">Geen aanmelding gevonden.</p><p style="font-size:15px;">Controleer het nummer en het e-mailadres en probeer het opnieuw.</p></div></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-weight:700;">Referentienummer</label><input value="RC-2026-0090" style="min-height:48px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;width:100%;font-family:'IBM Plex Mono',monospace;"></div>
+          <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-weight:700;">E-mailadres van je aanmelding</label><input value="sanne@voorbeeld.nl" style="min-height:48px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;width:100%;"></div>
+          <button type="button" style="min-height:52px;width:100%;border:0;border-radius:8px;background:#B4441A;color:#FFFDF9;font-weight:700;font-size:17px;box-shadow:0 2px 0 #8F3413;">Bekijken</button>
+        </form>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">W4-3. Altijd dezelfde melding; geen veldmarkering, dus niet af te leiden wélk gegeven fout is.</p></sc-if>
+    </div>
+
+    <div id="s4d" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#7A4E00;color:#FFFDF9;padding:3px 8px;border-radius:999px;">S4d</span><span style="font-weight:700;">Te veel pogingen (429)</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding:24px 16px;display:flex;flex-direction:column;gap:16px;">
+        <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;line-height:1.05;">Status opvragen</h1>
+        <div role="alert" style="background:#FCF0D6;border:2px solid #7A4E00;border-radius:12px;padding:14px;display:flex;gap:10px;"><span aria-hidden="true" style="flex:none;width:22px;height:22px;border-radius:50%;background:#7A4E00;color:#FFFDF9;display:grid;place-items:center;font-size:14px;font-weight:800;">!</span><div><p style="font-weight:700;color:#7A4E00;">Te veel pogingen.</p><p style="font-size:15px;">Probeer het over een kwartier opnieuw.</p></div></div>
+        <button type="button" aria-disabled="true" style="min-height:52px;width:100%;border:0;border-radius:8px;background:#E4DBCC;color:#5F5549;font-weight:700;font-size:17px;">Bekijken</button>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">W4-4. Na 10 pogingen per kwartier per IP-adres.</p></sc-if>
+    </div>
+  </div>
+</section>
+
+<!-- S5 -->
+<section id="s5" style="padding:56px 64px;border-top:2px dashed #B9AB94;display:flex;flex-direction:column;gap:32px;">
+  <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;"><h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:32px;">S5 Login vrijwilligers</h2><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F5549;">W5 · F-05 · TE-04 · vanaf hier crew-stijl</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start;">
+
+    <div id="s5a" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S5a</span><span style="font-weight:700;">Leeg</span></div>
+      <div style="width:360px;background:#FFFDF9;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:24px;">
+        <header style="display:flex;align-items:center;gap:8px;padding:0 16px;min-height:56px;background:#231F1A;color:#F6F1E7;"><span style="width:28px;height:28px;border-radius:50%;background:#B4441A;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;">Repair Cafe · Crew</span></header>
+        <form style="padding:24px 16px 0;display:flex;flex-direction:column;gap:14px;">
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;">Inloggen vrijwilligers</h1>
+          <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-weight:700;font-size:15px;">E-mailadres</label><input style="min-height:44px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;width:100%;"></div>
+          <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-weight:700;font-size:15px;">Wachtwoord</label><div style="display:flex;gap:6px;"><input type="password" style="flex:1;min-width:0;min-height:44px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;"><button type="button" style="min-height:44px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:transparent;font-weight:700;font-size:14px;">Toon</button></div></div>
+          <button type="button" style="min-height:44px;width:100%;border:0;border-radius:8px;background:#231F1A;color:#FFFDF9;font-weight:700;">Inloggen</button>
+          <p style="font-size:14px;color:#5F5549;">Geen account? De coördinator maakt accounts aan.</p>
+        </form>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">Crew: witte ondergrond, 44 px-knoppen, inkt als primair. W5-1: geen zelfregistratie.</p></sc-if>
+    </div>
+
+    <div id="s5b" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#A3261B;color:#FFFDF9;padding:3px 8px;border-radius:999px;">S5b</span><span style="font-weight:700;">Onjuiste inloggegevens</span></div>
+      <div style="width:360px;background:#FFFDF9;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:24px;">
+        <header style="display:flex;align-items:center;gap:8px;padding:0 16px;min-height:56px;background:#231F1A;color:#F6F1E7;"><span style="width:28px;height:28px;border-radius:50%;background:#B4441A;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;">Repair Cafe · Crew</span></header>
+        <form style="padding:24px 16px 0;display:flex;flex-direction:column;gap:14px;">
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;">Inloggen vrijwilligers</h1>
+          <div role="alert" style="background:#FBEAE5;border:2px solid #A3261B;border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:center;"><span aria-hidden="true" style="flex:none;width:20px;height:20px;border-radius:50%;background:#A3261B;color:#FFFDF9;display:grid;place-items:center;font-size:13px;font-weight:800;">!</span><p style="font-weight:700;color:#A3261B;font-size:15px;">Onjuiste inloggegevens</p></div>
+          <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-weight:700;font-size:15px;">E-mailadres</label><input value="joost@repaircafehaarlem.nl" style="min-height:44px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;width:100%;"></div>
+          <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-weight:700;font-size:15px;">Wachtwoord</label><div style="display:flex;gap:6px;"><input type="password" style="flex:1;min-width:0;min-height:44px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;"><button type="button" style="min-height:44px;padding:0 12px;border:1.5px solid #8C7F6E;border-radius:8px;background:transparent;font-weight:700;font-size:14px;">Toon</button></div></div>
+          <button type="button" style="min-height:44px;width:100%;border:0;border-radius:8px;background:#231F1A;color:#FFFDF9;font-weight:700;">Inloggen</button>
+        </form>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">W5-2. Zelfde melding bij onbekend adres en fout wachtwoord; e-mail blijft staan, wachtwoord leeg.</p></sc-if>
+    </div>
+
+    <div id="s5c" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#7A4E00;color:#FFFDF9;padding:3px 8px;border-radius:999px;">S5c</span><span style="font-weight:700;">Geblokkeerd</span></div>
+      <div style="width:360px;background:#FFFDF9;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:24px;">
+        <header style="display:flex;align-items:center;gap:8px;padding:0 16px;min-height:56px;background:#231F1A;color:#F6F1E7;"><span style="width:28px;height:28px;border-radius:50%;background:#B4441A;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;">Repair Cafe · Crew</span></header>
+        <div style="padding:24px 16px 0;display:flex;flex-direction:column;gap:14px;">
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;">Inloggen vrijwilligers</h1>
+          <div role="alert" style="background:#FCF0D6;border:2px solid #7A4E00;border-radius:8px;padding:12px;display:flex;gap:10px;"><span aria-hidden="true" style="flex:none;width:20px;height:20px;border-radius:50%;background:#7A4E00;color:#FFFDF9;display:grid;place-items:center;font-size:13px;font-weight:800;">!</span><div><p style="font-weight:700;color:#7A4E00;font-size:15px;">Account tijdelijk geblokkeerd</p><p style="font-size:14px;">Te veel mislukte pogingen. Probeer het over 15 minuten opnieuw.</p></div></div>
+          <button type="button" aria-disabled="true" style="min-height:44px;width:100%;border:0;border-radius:8px;background:#E4DBCC;color:#5F5549;font-weight:700;">Inloggen</button>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">W5-3. Na 5 mislukte pogingen binnen 10 minuten.</p></sc-if>
+    </div>
+
+    <div id="s5d" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S5d</span><span style="font-weight:700;">Doorverwezen van /crew (302)</span></div>
+      <div style="width:360px;background:#FFFDF9;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:24px;">
+        <header style="display:flex;align-items:center;gap:8px;padding:0 16px;min-height:56px;background:#231F1A;color:#F6F1E7;"><span style="width:28px;height:28px;border-radius:50%;background:#B4441A;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;">Repair Cafe · Crew</span></header>
+        <div style="padding:24px 16px 0;display:flex;flex-direction:column;gap:14px;">
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;">Inloggen vrijwilligers</h1>
+          <div role="status" style="background:#EFE7DA;border:1.5px solid #8C7F6E;border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:center;"><span aria-hidden="true" style="flex:none;width:20px;height:20px;border-radius:50%;background:#231F1A;color:#FFFDF9;display:grid;place-items:center;font-size:12px;font-weight:800;font-family:'IBM Plex Mono',monospace;">i</span><p style="font-size:15px;">Log in om de werklijst te openen.</p></div>
+          <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F5549;text-align:center;">· · · formulier als S5a · · ·</p>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">W5-4. Na inloggen terug naar de gevraagde pagina. W5-5 (403) staat bij <a href="#s7c">S7c</a>.</p></sc-if>
+    </div>
+  </div>
+</section>
+
+<!-- S6 -->
+<section id="s6" style="padding:56px 64px;border-top:2px dashed #B9AB94;display:flex;flex-direction:column;gap:32px;">
+  <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;"><h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:32px;">S6 Werklijst + uitkomstformulier</h2><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F5549;">W6 · F-06 F-07</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start;">
+
+    <div id="s6a" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S6a</span><span style="font-weight:700;">Gevuld · gefilterd · opgeslagen</span></div>
+      <div style="width:360px;background:#FFFDF9;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:16px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 16px;min-height:56px;background:#231F1A;color:#F6F1E7;"><div style="display:flex;align-items:center;gap:8px;"><span style="width:28px;height:28px;border-radius:50%;background:#B4441A;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;">Crew</span></div><button style="min-height:44px;padding:0 12px;border:1px solid #8C7F6E;border-radius:8px;background:transparent;color:#F6F1E7;font-weight:700;font-size:14px;">Uitloggen</button></header>
+        <nav style="display:flex;border-bottom:1px solid #D8CCB8;font-weight:700;font-size:15px;"><a href="#s6a" aria-current="page" style="flex:1;min-height:44px;display:grid;place-items:center;color:#231F1A;text-decoration:none;border-bottom:3px solid #B4441A;">Werklijst</a><a href="#s7a" style="flex:1;min-height:44px;display:grid;place-items:center;color:#5F5549;text-decoration:none;">Sessies</a></nav>
+        <div style="padding:14px 12px 0;display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;flex-direction:column;gap:2px;"><h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;">Za 7 november 2026</h1><p style="font-size:14px;color:#5F5549;">10 aanmeldingen · <strong style="color:#231F1A;">4 na filteren</strong></p></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="display:flex;flex-direction:column;gap:2px;"><label style="font-size:13px;font-weight:700;">Categorie</label><div style="position:relative;"><select style="appearance:none;min-height:44px;width:100%;padding:0 28px 0 10px;border:1.5px solid #231F1A;border-radius:8px;background:#FFFDF9;font-size:14px;"><option>Klein huish.</option></select><span aria-hidden="true" style="position:absolute;right:10px;top:10px;pointer-events:none;font-size:14px;">▾</span></div></div>
+            <div style="display:flex;flex-direction:column;gap:2px;"><label style="font-size:13px;font-weight:700;">Status</label><div style="position:relative;"><select style="appearance:none;min-height:44px;width:100%;padding:0 28px 0 10px;border:1.5px solid #231F1A;border-radius:8px;background:#FFFDF9;font-size:14px;"><option>Aangemeld</option></select><span aria-hidden="true" style="position:absolute;right:10px;top:10px;pointer-events:none;font-size:14px;">▾</span></div></div>
+          </div>
+          <div role="status" style="background:#E2EEE6;border:1.5px solid #2E6B4F;border-radius:8px;padding:8px 10px;display:flex;gap:8px;align-items:center;font-size:14px;"><span aria-hidden="true" style="flex:none;width:18px;height:18px;border-radius:50%;background:#2E6B4F;color:#FFFDF9;display:grid;place-items:center;font-size:11px;font-weight:800;">✓</span><span>Uitkomst opgeslagen voor <strong style="font-family:'IBM Plex Mono',monospace;">RC-2026-0005</strong></span></div>
+          <ul style="list-style:none;padding:0;display:flex;flex-direction:column;border-top:1px solid #D8CCB8;">
+            <li style="padding:10px 0;border-bottom:1px solid #D8CCB8;display:flex;flex-direction:column;gap:6px;"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;">RC-2026-0007</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:#EFE7DA;border:1px solid #8C7F6E;">aangemeld</span></div><p style="font-size:15px;"><strong>Philips HD9650</strong> · <span style="color:#5F5549;">Klein huishoudelijk</span></p><p style="font-size:14px;color:#5F5549;">Doet niets meer, lampje brandt niet.</p><button style="min-height:44px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:14px;">Uitkomst vastleggen</button></li>
+            <li style="padding:10px 0;border-bottom:1px solid #D8CCB8;display:flex;flex-direction:column;gap:6px;"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;">RC-2026-0010</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:#EFE7DA;border:1px solid #8C7F6E;">aangemeld</span></div><p style="font-size:15px;"><strong>Bosch TAT3A011</strong> · <span style="color:#5F5549;">Klein huishoudelijk</span></p><p style="font-size:14px;color:#5F5549;">Broodrooster springt niet meer omhoog.</p><button style="min-height:44px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:14px;">Uitkomst vastleggen</button></li>
+            <li style="padding:10px 0;border-bottom:1px solid #D8CCB8;display:flex;flex-direction:column;gap:6px;"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;">RC-2026-0012</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:#EFE7DA;border:1px solid #8C7F6E;">aangemeld</span></div><p style="font-size:15px;"><strong>Senseo HD7865</strong> · <span style="color:#5F5549;">Klein huishoudelijk</span></p><p style="font-size:14px;color:#5F5549;">Lekt water onder het apparaat.</p><button style="min-height:44px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:14px;">Uitkomst vastleggen</button></li>
+          </ul>
+          <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F5549;text-align:center;">+ 1 meer</p>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;text-wrap:pretty;">Op mobiel worden tabelrijen compacte kaarten. Tabs “Sessies” alleen zichtbaar voor de coördinator. Sessie wisselen via de datumkop.</p></sc-if>
+    </div>
+
+    <div id="s6b" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#A3261B;color:#FFFDF9;padding:3px 8px;border-radius:999px;">S6b</span><span style="font-weight:700;">Uitkomstformulier · opslaan mislukt</span></div>
+      <div style="width:360px;background:#FFFDF9;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:16px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 16px;min-height:56px;background:#231F1A;color:#F6F1E7;"><div style="display:flex;align-items:center;gap:8px;"><span style="width:28px;height:28px;border-radius:50%;background:#B4441A;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;">Crew</span></div><button style="min-height:44px;padding:0 12px;border:1px solid #8C7F6E;border-radius:8px;background:transparent;color:#F6F1E7;font-weight:700;font-size:14px;">Uitloggen</button></header>
+        <div style="padding:14px 12px 0;">
+          <div style="border:1.5px solid #231F1A;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;">RC-2026-0007</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:#EFE7DA;border:1px solid #8C7F6E;">aangemeld</span></div>
+            <p style="font-size:15px;"><strong>Philips HD9650</strong> · Doet niets meer, lampje brandt niet.</p>
+            <div role="alert" style="background:#FBEAE5;border:2px solid #A3261B;border-radius:8px;padding:8px 10px;display:flex;gap:8px;"><span aria-hidden="true" style="flex:none;width:18px;height:18px;border-radius:50%;background:#A3261B;color:#FFFDF9;display:grid;place-items:center;font-size:12px;font-weight:800;">!</span><p style="font-size:14px;"><strong style="color:#A3261B;">Opslaan is niet gelukt, probeer opnieuw.</strong> Je invoer staat er nog.</p></div>
+            <fieldset style="border:0;padding:0;margin:0;"><legend style="font-size:14px;font-weight:700;padding:0;margin-bottom:4px;">Uitkomst</legend>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);border:1.5px solid #231F1A;border-radius:8px;overflow:hidden;font-size:14px;font-weight:700;">
+                <label style="min-height:44px;display:grid;place-items:center;background:#231F1A;color:#FFFDF9;">✓ Gerepareerd</label>
+                <label style="min-height:44px;display:grid;place-items:center;border-left:1.5px solid #231F1A;">Deels</label>
+                <label style="min-height:44px;display:grid;place-items:center;border-left:1.5px solid #231F1A;">Niet gelukt</label>
+              </div>
+            </fieldset>
+            <div style="display:flex;flex-direction:column;gap:2px;"><label style="font-size:14px;font-weight:700;">Bestede tijd (minuten)</label><input value="35" inputmode="numeric" style="min-height:44px;width:120px;padding:0 10px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;"></div>
+            <div style="display:flex;flex-direction:column;gap:2px;"><label style="font-size:14px;font-weight:700;">Notitie</label><textarea rows="2" style="padding:8px 10px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;font-size:15px;resize:vertical;">Snoer vervangen, thermische zekering was ok.</textarea><p style="font-size:13px;color:#5F5549;text-align:right;">45 / 300</p></div>
+            <div style="display:flex;gap:8px;"><button style="flex:1;min-height:44px;border:0;border-radius:8px;background:#231F1A;color:#FFFDF9;font-weight:700;">Opnieuw opslaan</button><button style="min-height:44px;padding:0 14px;border:1.5px solid #8C7F6E;border-radius:8px;background:transparent;font-weight:700;">Annuleren</button></div>
+          </div>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;text-wrap:pretty;">Klapt open in de kaart. Segmentknop i.p.v. keuzelijst: één tik. Veldfout minuten: “Vul een tijd in van 1 tot en met 480 minuten” (zelfde patroon als S2b). Bestaande reparatie → formulier voorgevuld, knop “Bijwerken”.</p></sc-if>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:48px;">
+      <div id="s6c" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S6c</span><span style="font-weight:700;">Leeg</span></div>
+        <div style="width:360px;background:#FFFDF9;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding:16px 12px;display:flex;flex-direction:column;gap:12px;">
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;">Za 5 december 2026</h1>
+          <div style="border:1.5px dashed #8C7F6E;border-radius:12px;padding:24px 16px;text-align:center;display:flex;flex-direction:column;gap:4px;"><p style="font-weight:700;">Er zijn nog geen aanmeldingen voor deze sessie.</p><p style="font-size:14px;color:#5F5549;">Nieuwe aanmeldingen verschijnen hier vanzelf.</p></div>
+        </div>
+      </div>
+      <div id="s6d" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S6d</span><span style="font-weight:700;">Filterresultaat leeg</span></div>
+        <div style="width:360px;background:#FFFDF9;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding:16px 12px;display:flex;flex-direction:column;gap:12px;">
+          <p style="font-size:14px;color:#5F5549;">10 aanmeldingen · <strong style="color:#231F1A;">0 na filteren</strong> · Fiets, Afgerond</p>
+          <div style="border:1.5px dashed #8C7F6E;border-radius:12px;padding:24px 16px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;"><p style="font-weight:700;">Geen aanmeldingen die aan het filter voldoen.</p><button style="min-height:44px;padding:0 16px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;">Filter wissen</button></div>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{ showDesktop }}" hint-placeholder-val="{{ true }}">
+    <div id="s6e" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S6e</span><span style="font-weight:700;">Desktop · 1024 · tabel met inline formulier</span></div>
+      <div style="width:1024px;background:#FFFDF9;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:20px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;padding:0 24px;min-height:56px;background:#231F1A;color:#F6F1E7;"><div style="display:flex;align-items:center;gap:24px;"><div style="display:flex;align-items:center;gap:8px;"><span style="width:28px;height:28px;border-radius:50%;background:#B4441A;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;">Crew</span></div><nav style="display:flex;gap:4px;font-weight:700;font-size:15px;"><a href="#s6e" aria-current="page" style="color:#F6F1E7;min-height:56px;display:flex;align-items:center;padding:0 12px;text-decoration:none;border-bottom:3px solid #E08A5F;">Werklijst</a><a href="#s7a" style="color:#D8CCB8;min-height:56px;display:flex;align-items:center;padding:0 12px;text-decoration:none;">Sessies</a></nav></div><div style="display:flex;align-items:center;gap:12px;font-size:14px;"><span style="color:#D8CCB8;">Joost · coördinator</span><button style="min-height:44px;padding:0 12px;border:1px solid #8C7F6E;border-radius:8px;background:transparent;color:#F6F1E7;font-weight:700;font-size:14px;">Uitloggen</button></div></header>
+        <div style="padding:20px 24px 12px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;">
+          <div><h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;">Werklijst · za 7 november 2026</h1><p style="font-size:14px;color:#5F5549;">10 aanmeldingen · <strong style="color:#231F1A;">6 na filteren</strong></p></div>
+          <div style="display:flex;gap:8px;align-items:flex-end;">
+            <div style="display:flex;flex-direction:column;gap:2px;"><label style="font-size:13px;font-weight:700;">Categorie</label><div style="position:relative;"><select style="appearance:none;min-height:44px;width:190px;padding:0 28px 0 10px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;font-size:14px;"><option>Alle categorieën</option></select><span aria-hidden="true" style="position:absolute;right:10px;top:10px;pointer-events:none;font-size:14px;">▾</span></div></div>
+            <div style="display:flex;flex-direction:column;gap:2px;"><label style="font-size:13px;font-weight:700;">Status</label><div style="position:relative;"><select style="appearance:none;min-height:44px;width:160px;padding:0 28px 0 10px;border:1.5px solid #231F1A;border-radius:8px;background:#FFFDF9;font-size:14px;"><option>Niet geannuleerd</option></select><span aria-hidden="true" style="position:absolute;right:10px;top:10px;pointer-events:none;font-size:14px;">▾</span></div></div>
+          </div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          <thead><tr style="text-align:left;background:#F6F1E7;border-top:1px solid #D8CCB8;border-bottom:1px solid #D8CCB8;"><th style="padding:10px 12px 10px 24px;font-weight:700;">Referentie</th><th style="padding:10px 12px;font-weight:700;">Categorie</th><th style="padding:10px 12px;font-weight:700;">Merk en type</th><th style="padding:10px 12px;font-weight:700;">Defect</th><th style="padding:10px 12px;font-weight:700;">Status</th><th style="padding:10px 24px 10px 12px;font-weight:700;text-align:right;">Actie</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #D8CCB8;"><td style="padding:6px 12px 6px 24px;font-family:'IBM Plex Mono',monospace;font-weight:600;">RC-2026-0005</td><td style="padding:6px 12px;">Klein huishoudelijk</td><td style="padding:6px 12px;font-weight:700;">Tefal FV1711</td><td style="padding:6px 12px;color:#5F5549;">Strijkijzer wordt niet warm</td><td style="padding:6px 12px;"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:#E2EEE6;color:#2E6B4F;border:1px solid #2E6B4F;">✓ gerepareerd</span></td><td style="padding:6px 24px 6px 12px;text-align:right;"><button style="min-height:44px;padding:0 12px;border:0;background:transparent;font-weight:700;text-decoration:underline;text-underline-offset:3px;">Bekijken</button></td></tr>
+            <tr style="background:#F7E3D6;"><td style="padding:6px 12px 6px 24px;font-family:'IBM Plex Mono',monospace;font-weight:600;">RC-2026-0007</td><td style="padding:6px 12px;">Klein huishoudelijk</td><td style="padding:6px 12px;font-weight:700;">Philips HD9650</td><td style="padding:6px 12px;color:#5F5549;">Doet niets meer</td><td style="padding:6px 12px;"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:#EFE7DA;border:1px solid #8C7F6E;">aangemeld</span></td><td style="padding:6px 24px 6px 12px;text-align:right;"><button style="min-height:44px;padding:0 12px;border:0;background:transparent;font-weight:700;">Sluiten ▴</button></td></tr>
+            <tr style="background:#F7E3D6;border-bottom:1px solid #D8CCB8;"><td colspan="6" style="padding:4px 24px 16px;">
+              <div style="background:#FFFDF9;border:1.5px solid #231F1A;border-radius:12px;padding:14px;display:grid;grid-template-columns:auto 130px 1fr auto;gap:16px;align-items:end;">
+                <fieldset style="border:0;padding:0;margin:0;"><legend style="font-size:13px;font-weight:700;padding:0;margin-bottom:4px;">Uitkomst</legend><div style="display:flex;border:1.5px solid #231F1A;border-radius:8px;overflow:hidden;font-weight:700;"><label style="min-height:44px;padding:0 12px;display:grid;place-items:center;">Gerepareerd</label><label style="min-height:44px;padding:0 12px;display:grid;place-items:center;border-left:1.5px solid #231F1A;background:#231F1A;color:#FFFDF9;">◐ Deels</label><label style="min-height:44px;padding:0 12px;display:grid;place-items:center;border-left:1.5px solid #231F1A;">Niet gelukt</label></div></fieldset>
+                <div style="display:flex;flex-direction:column;gap:2px;"><label style="font-size:13px;font-weight:700;">Bestede tijd (min)</label><input value="20" style="min-height:44px;width:100%;padding:0 10px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;"></div>
+                <div style="display:flex;flex-direction:column;gap:2px;"><label style="font-size:13px;font-weight:700;">Notitie <span style="font-weight:400;color:#5F5549;">(max. 300)</span></label><input value="Schakelaar besteld, volgende sessie terug" style="min-height:44px;width:100%;padding:0 10px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;"></div>
+                <button style="min-height:44px;padding:0 20px;border:0;border-radius:8px;background:#231F1A;color:#FFFDF9;font-weight:700;">Opslaan</button>
+              </div>
+            </td></tr>
+            <tr style="border-bottom:1px solid #D8CCB8;"><td style="padding:6px 12px 6px 24px;font-family:'IBM Plex Mono',monospace;font-weight:600;">RC-2026-0008</td><td style="padding:6px 12px;">Audio en beeld</td><td style="padding:6px 12px;font-weight:700;">Sony SRS-XB13</td><td style="padding:6px 12px;color:#5F5549;">Laadt niet op</td><td style="padding:6px 12px;"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:#FCF0D6;color:#7A4E00;border:1px solid #7A4E00;">in behandeling</span></td><td style="padding:6px 24px 6px 12px;text-align:right;"><button style="min-height:44px;padding:0 12px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;">Uitkomst</button></td></tr>
+            <tr style="border-bottom:1px solid #D8CCB8;"><td style="padding:6px 12px 6px 24px;font-family:'IBM Plex Mono',monospace;font-weight:600;">RC-2026-0009</td><td style="padding:6px 12px;">Computer en telefoon</td><td style="padding:6px 12px;font-weight:700;">Lenovo IdeaPad 3</td><td style="padding:6px 12px;color:#5F5549;">Scharnier gebroken</td><td style="padding:6px 12px;"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:#FBEAE5;color:#A3261B;border:1px solid #A3261B;">✕ niet gelukt</span></td><td style="padding:6px 24px 6px 12px;text-align:right;"><button style="min-height:44px;padding:0 12px;border:0;background:transparent;font-weight:700;text-decoration:underline;text-underline-offset:3px;">Bekijken</button></td></tr>
+            <tr style="border-bottom:1px solid #D8CCB8;"><td style="padding:6px 12px 6px 24px;font-family:'IBM Plex Mono',monospace;font-weight:600;">RC-2026-0010</td><td style="padding:6px 12px;">Klein huishoudelijk</td><td style="padding:6px 12px;font-weight:700;">Bosch TAT3A011</td><td style="padding:6px 12px;color:#5F5549;">Springt niet omhoog</td><td style="padding:6px 12px;"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:#EFE7DA;border:1px solid #8C7F6E;">aangemeld</span></td><td style="padding:6px 24px 6px 12px;text-align:right;"><button style="min-height:44px;padding:0 12px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;">Uitkomst</button></td></tr>
+            <tr style="border-bottom:1px solid #D8CCB8;"><td style="padding:6px 12px 6px 24px;font-family:'IBM Plex Mono',monospace;font-weight:600;">RC-2026-0011</td><td style="padding:6px 12px;">Textiel</td><td style="padding:6px 12px;font-weight:700;">Spijkerjas</td><td style="padding:6px 12px;color:#5F5549;">Rits kapot</td><td style="padding:6px 12px;"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:#EFE7DA;border:1px solid #8C7F6E;">aangemeld</span></td><td style="padding:6px 24px 6px 12px;text-align:right;"><button style="min-height:44px;padding:0 12px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;">Uitkomst</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+</section>
+
+<!-- S7 -->
+<section id="s7" style="padding:56px 64px;border-top:2px dashed #B9AB94;display:flex;flex-direction:column;gap:32px;">
+  <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;"><h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:32px;">S7 Sessiebeheer</h2><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F5549;">W7 · F-08 · alleen coördinator</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start;">
+
+    <div id="s7a" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S7a</span><span style="font-weight:700;">Standaard</span></div>
+      <div style="width:360px;background:#FFFDF9;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:20px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 16px;min-height:56px;background:#231F1A;color:#F6F1E7;"><div style="display:flex;align-items:center;gap:8px;"><span style="width:28px;height:28px;border-radius:50%;background:#B4441A;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;">Crew</span></div><button style="min-height:44px;padding:0 12px;border:1px solid #8C7F6E;border-radius:8px;background:transparent;color:#F6F1E7;font-weight:700;font-size:14px;">Uitloggen</button></header>
+        <nav style="display:flex;border-bottom:1px solid #D8CCB8;font-weight:700;font-size:15px;"><a href="#s6a" style="flex:1;min-height:44px;display:grid;place-items:center;color:#5F5549;text-decoration:none;">Werklijst</a><a href="#s7a" aria-current="page" style="flex:1;min-height:44px;display:grid;place-items:center;color:#231F1A;text-decoration:none;border-bottom:3px solid #B4441A;">Sessies</a></nav>
+        <div style="padding:14px 12px 0;display:flex;flex-direction:column;gap:16px;">
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;">Sessies</h1>
+          <ul style="list-style:none;padding:0;border-top:1px solid #D8CCB8;">
+            <li style="padding:10px 0;border-bottom:1px solid #D8CCB8;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;"><strong style="font-size:15px;">Za 7 nov 2026 · 10:00</strong><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:#E2EEE6;color:#2E6B4F;border:1px solid #2E6B4F;">open</span><div style="display:flex;align-items:center;gap:8px;font-size:14px;color:#5F5549;"><span style="width:96px;height:8px;border-radius:999px;background:#EFE7DA;overflow:hidden;"><span style="display:block;width:75%;height:100%;background:#231F1A;"></span></span>9 van 12 bezet</div></li>
+            <li style="padding:10px 0;border-bottom:1px solid #D8CCB8;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;"><strong style="font-size:15px;">Za 5 dec 2026 · 10:00</strong><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:#FCF0D6;color:#7A4E00;border:1px solid #7A4E00;">vol</span><div style="display:flex;align-items:center;gap:8px;font-size:14px;color:#5F5549;"><span style="width:96px;height:8px;border-radius:999px;background:#EFE7DA;overflow:hidden;"><span style="display:block;width:100%;height:100%;background:#231F1A;"></span></span>12 van 12 bezet</div></li>
+            <li style="padding:10px 0;border-bottom:1px solid #D8CCB8;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;color:#5F5549;"><strong style="font-size:15px;">Za 3 okt 2026 · 10:00</strong><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid #8C7F6E;">gesloten</span><div style="font-size:14px;">11 van 12 · afgerond</div></li>
+          </ul>
+          <form style="background:#F6F1E7;border:1px solid #D8CCB8;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px;">
+            <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;">Nieuwe sessie</h2>
+            <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:8px;">
+              <div style="display:flex;flex-direction:column;gap:2px;"><label style="font-size:14px;font-weight:700;">Datum</label><input value="02-01-2027" style="min-height:44px;width:100%;padding:0 10px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;"></div>
+              <div style="display:flex;flex-direction:column;gap:2px;"><label style="font-size:14px;font-weight:700;">Starttijd</label><input value="10:00" style="min-height:44px;width:100%;padding:0 10px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;"><label style="font-size:14px;font-weight:700;">Max. plekken</label><input value="12" style="min-height:44px;width:100px;padding:0 10px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;"><p style="font-size:13px;color:#5F5549;">1 tot en met 40</p></div>
+            <button type="button" style="min-height:44px;border:0;border-radius:8px;background:#231F1A;color:#FFFDF9;font-weight:700;">Sessie aanmaken</button>
+          </form>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">Bezetting als balk + tekst. “Vol” in amber: informatief, geen fout. Na aanmaken: groene melding zoals in S6a.</p></sc-if>
+    </div>
+
+    <div id="s7b" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#A3261B;color:#FFFDF9;padding:3px 8px;border-radius:999px;">S7b</span><span style="font-weight:700;">Validatiefouten 1–3</span></div>
+      <div style="width:360px;background:#FFFDF9;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding:16px 12px 20px;">
+        <form style="background:#F6F1E7;border:1px solid #D8CCB8;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px;">
+          <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;">Nieuwe sessie</h2>
+          <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:14px;font-weight:700;">Datum</label><input value="05-12-2026" aria-invalid="true" style="min-height:44px;width:100%;padding:0 10px;border:2px solid #A3261B;border-radius:8px;background:#FFFDF9;"><p style="display:flex;gap:6px;align-items:flex-start;color:#A3261B;font-size:14px;font-weight:700;"><span aria-hidden="true" style="flex:none;width:18px;height:18px;border-radius:50%;background:#A3261B;color:#FFFDF9;display:grid;place-items:center;font-size:12px;font-weight:800;">!</span>Er bestaat al een sessie op deze datum.</p></div>
+          <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:14px;font-weight:700;">Datum</label><input value="01-09-2026" aria-invalid="true" style="min-height:44px;width:100%;padding:0 10px;border:2px solid #A3261B;border-radius:8px;background:#FFFDF9;"><p style="display:flex;gap:6px;align-items:flex-start;color:#A3261B;font-size:14px;font-weight:700;"><span aria-hidden="true" style="flex:none;width:18px;height:18px;border-radius:50%;background:#A3261B;color:#FFFDF9;display:grid;place-items:center;font-size:12px;font-weight:800;">!</span>Kies een datum van vandaag of later.</p></div>
+          <div style="display:flex;flex-direction:column;gap:2px;"><label style="font-size:14px;font-weight:700;">Starttijd</label><input value="10:00" style="min-height:44px;width:120px;padding:0 10px;border:1.5px solid #8C7F6E;border-radius:8px;background:#FFFDF9;"></div>
+          <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:14px;font-weight:700;">Max. plekken</label><input value="60" aria-invalid="true" style="min-height:44px;width:100px;padding:0 10px;border:2px solid #A3261B;border-radius:8px;background:#FFFDF9;"><p style="display:flex;gap:6px;align-items:flex-start;color:#A3261B;font-size:14px;font-weight:700;"><span aria-hidden="true" style="flex:none;width:18px;height:18px;border-radius:50%;background:#A3261B;color:#FFFDF9;display:grid;place-items:center;font-size:12px;font-weight:800;">!</span>Aantal plekken: kies 1 tot en met 40.</p></div>
+          <button type="button" style="min-height:44px;border:0;border-radius:8px;background:#231F1A;color:#FFFDF9;font-weight:700;">Sessie aanmaken</button>
+        </form>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">Beide datumfouten getoond ter documentatie; in de app verschijnt er één tegelijk. Invoer blijft behouden.</p></sc-if>
+    </div>
+
+    <div id="s7c" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#A3261B;color:#FFFDF9;padding:3px 8px;border-radius:999px;">S7c</span><span style="font-weight:700;">Geen rechten (403)</span></div>
+      <div style="width:360px;background:#FFFDF9;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:24px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 16px;min-height:56px;background:#231F1A;color:#F6F1E7;"><div style="display:flex;align-items:center;gap:8px;"><span style="width:28px;height:28px;border-radius:50%;background:#B4441A;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;">Crew</span></div><button style="min-height:44px;padding:0 12px;border:1px solid #8C7F6E;border-radius:8px;background:transparent;color:#F6F1E7;font-weight:700;font-size:14px;">Uitloggen</button></header>
+        <div style="padding:32px 16px 0;display:flex;flex-direction:column;gap:14px;">
+          <p style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:48px;line-height:1;color:#B4441A;">403</p>
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;line-height:1.1;">Je hebt geen toegang tot deze pagina.</h1>
+          <p style="font-size:15px;color:#5F5549;">Sessiebeheer is alleen voor de coördinator. Klopt dit niet? Vraag de coördinator je rol aan te passen.</p>
+          <button style="min-height:44px;border:0;border-radius:8px;background:#231F1A;color:#FFFDF9;font-weight:700;">Naar de werklijst</button>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">W5-5 / W7-4. Tab “Sessies” is voor vrijwilligers verborgen; deze pagina vangt directe URL’s en POSTs af.</p></sc-if>
+    </div>
+  </div>
+</section>
+
+<!-- S8 -->
+<section id="s8" style="padding:56px 64px 96px;border-top:2px dashed #B9AB94;display:flex;flex-direction:column;gap:32px;">
+  <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;"><h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:32px;">S8 Statistiek</h2><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F5549;">W8 · F-10 · prerendered</span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start;">
+
+    <div id="s8a" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S8a</span><span style="font-weight:700;">Standaard</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding-bottom:28px;">
+        <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #D8CCB8;"><div style="display:flex;align-items:center;gap:10px;"><span style="width:32px;height:32px;border-radius:50%;background:#B4441A;color:#FFFDF9;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;">RC</span><span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;line-height:1.05;">Repair Cafe<br><span style="font-weight:600;color:#5F5549;font-size:14px;">Haarlem</span></span></div><button style="min-height:44px;padding:0 14px;border:1.5px solid #231F1A;border-radius:8px;background:transparent;font-weight:700;font-size:15px;">Menu</button></header>
+        <div style="padding:28px 16px 0;display:flex;flex-direction:column;gap:20px;">
+          <div style="display:flex;flex-direction:column;gap:6px;"><h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;line-height:1.05;">Wat hebben we gerepareerd?</h1><p style="font-size:15px;color:#5F5549;">Laatste zes sessies · bijgewerkt op 8 november 2026</p></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="background:#FFFDF9;border:1.5px solid #231F1A;border-radius:12px;padding:14px;"><p style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:36px;line-height:1;">65</p><p style="font-size:15px;">apparaten</p></div>
+            <div style="background:#231F1A;color:#F6F1E7;border-radius:12px;padding:14px;"><p style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:36px;line-height:1;">68%</p><p style="font-size:15px;">weer heel</p></div>
+          </div>
+          <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:14px;">
+            <li style="display:flex;flex-direction:column;gap:6px;"><div style="display:flex;justify-content:space-between;gap:8px;font-size:15px;"><strong>Klein huishoudelijk</strong><span>24 stuks · <strong>71%</strong></span></div><div style="height:14px;border-radius:4px;background:#FFFDF9;border:1.5px solid #231F1A;overflow:hidden;"><div style="width:71%;height:100%;background:#B4441A;"></div></div></li>
+            <li style="display:flex;flex-direction:column;gap:6px;"><div style="display:flex;justify-content:space-between;gap:8px;font-size:15px;"><strong>Audio en beeld</strong><span>15 stuks · <strong>60%</strong></span></div><div style="height:14px;border-radius:4px;background:#FFFDF9;border:1.5px solid #231F1A;overflow:hidden;"><div style="width:60%;height:100%;background:#B4441A;"></div></div></li>
+            <li style="display:flex;flex-direction:column;gap:6px;"><div style="display:flex;justify-content:space-between;gap:8px;font-size:15px;"><strong>Computer en telefoon</strong><span>11 stuks · <strong>45%</strong></span></div><div style="height:14px;border-radius:4px;background:#FFFDF9;border:1.5px solid #231F1A;overflow:hidden;"><div style="width:45%;height:100%;background:#B4441A;"></div></div></li>
+            <li style="display:flex;flex-direction:column;gap:6px;"><div style="display:flex;justify-content:space-between;gap:8px;font-size:15px;"><strong>Textiel</strong><span>9 stuks · <strong>89%</strong></span></div><div style="height:14px;border-radius:4px;background:#FFFDF9;border:1.5px solid #231F1A;overflow:hidden;"><div style="width:89%;height:100%;background:#B4441A;"></div></div></li>
+            <li style="display:flex;flex-direction:column;gap:6px;"><div style="display:flex;justify-content:space-between;gap:8px;font-size:15px;"><strong>Fiets</strong><span>6 stuks · <strong>83%</strong></span></div><div style="height:14px;border-radius:4px;background:#FFFDF9;border:1.5px solid #231F1A;overflow:hidden;"><div style="width:83%;height:100%;background:#B4441A;"></div></div></li>
+          </ul>
+          <p style="font-size:14px;color:#5F5549;">Balk = percentage geslaagd (gerepareerd of deels).</p>
+          <button style="min-height:52px;width:100%;border:0;border-radius:8px;background:#B4441A;color:#FFFDF9;font-weight:700;font-size:17px;box-shadow:0 2px 0 #8F3413;">Apparaat aanmelden</button>
+        </div>
+      </div>
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}"><p style="width:360px;font-size:14px;color:#5F5549;">Aantal en percentage staan als tekst naast elke balk, dus ook zonder kleur leesbaar. Geen persoonsgegevens.</p></sc-if>
+    </div>
+
+    <div id="s8b" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S8b</span><span style="font-weight:700;">Minder dan zes sessies</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding:24px 16px;display:flex;flex-direction:column;gap:16px;">
+        <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;line-height:1.05;">Wat hebben we gerepareerd?</h1>
+        <p style="display:flex;gap:10px;align-items:flex-start;background:#FFFDF9;border:1.5px solid #8C7F6E;border-radius:8px;padding:10px 12px;font-size:15px;"><span aria-hidden="true" style="flex:none;width:20px;height:20px;border-radius:50%;background:#231F1A;color:#FFFDF9;display:grid;place-items:center;font-size:12px;font-weight:800;font-family:'IBM Plex Mono',monospace;">i</span><span><strong>Gebaseerd op 3 sessies.</strong> Zodra er zes zijn, tonen we steeds de laatste zes.</span></p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:#FFFDF9;border:1.5px solid #231F1A;border-radius:12px;padding:14px;"><p style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:36px;line-height:1;">28</p><p style="font-size:15px;">apparaten</p></div>
+          <div style="background:#231F1A;color:#F6F1E7;border-radius:12px;padding:14px;"><p style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:36px;line-height:1;">64%</p><p style="font-size:15px;">weer heel</p></div>
+        </div>
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F5549;text-align:center;">· · · categorieën als S8a · · ·</p>
+      </div>
+    </div>
+
+    <div id="s8c" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;background:#231F1A;color:#F6F1E7;padding:3px 8px;border-radius:999px;">S8c</span><span style="font-weight:700;">Nog geen gegevens</span></div>
+      <div style="width:360px;background:#F6F1E7;border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(35,31,26,.3);padding:24px 16px;display:flex;flex-direction:column;gap:16px;">
+        <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;line-height:1.05;">Wat hebben we gerepareerd?</h1>
+        <div style="border:1.5px dashed #8C7F6E;border-radius:12px;padding:28px 16px;text-align:center;display:flex;flex-direction:column;gap:6px;"><p style="font-weight:700;font-size:17px;">Nog geen gegevens beschikbaar.</p><p style="font-size:15px;color:#5F5549;">Na de eerste afgeronde sessie verschijnen hier de cijfers.</p></div>
+        <button style="min-height:52px;width:100%;border:0;border-radius:8px;background:#B4441A;color:#FFFDF9;font-weight:700;font-size:17px;box-shadow:0 2px 0 #8F3413;">Apparaat aanmelden</button>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showNotes&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;label&quot;:&quot;Toelichting per state&quot;},&quot;showDesktop&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;label&quot;:&quot;Desktopschermen tonen&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showNotes: this.props.showNotes ?? true,
+      showDesktop: this.props.showDesktop ?? true,
+    };
+  }
+}
+</script>
+</body>
+</html>

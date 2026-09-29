@@ -1,0 +1,28 @@
+---
+// S1d Informatiepagina (W1, F-11). Prerendered uit de content collection src/content/info/.
+export const prerender = true;
+
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render } from 'astro:content';
+import Layout from '../../components/Layout.astro';
+import Button from '../../components/Button.astro';
+
+export const getStaticPaths = (async () => {
+  const paginas = await getCollection('info');
+  return paginas.map((pagina) => ({ params: { slug: pagina.id }, props: { pagina } }));
+}) satisfies GetStaticPaths;
+
+const { pagina } = Astro.props;
+const { Content } = await render(pagina);
+---
+
+<Layout titel={pagina.data.titel} beschrijving={pagina.data.samenvatting}>
+  <article class="mx-auto flex max-w-[680px] flex-col gap-4 px-4 pt-7 pb-14 lg:pt-10">
+    <h1 class="font-display text-[32px] leading-[1.05] font-extrabold lg:text-[44px]">{pagina.data.titel}</h1>
+    <div class="info-body">
+      <Content />
+    </div>
+    <!-- Afsluitende actie hoort bij de layout, niet bij de Markdown. -->
+    <Button href="/aanmelden" breed class="mt-2 sm:max-w-[360px]">Apparaat aanmelden</Button>
+  </article>
+</Layout>

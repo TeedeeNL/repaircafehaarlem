@@ -1,0 +1,37 @@
+---
+import { STATES_AAN, type StateOptie } from '../lib/state';
+
+// Alleen in dev: snelkoppelingen naar de states uit de export (?state=...).
+interface Props {
+  opties: readonly StateOptie<string>[];
+  huidig: string | null;
+}
+const { opties, huidig } = Astro.props;
+const pad = Astro.url.pathname;
+---
+
+{
+  STATES_AAN && opties.length > 0 && (
+    <details class="fixed right-2 bottom-2 z-50 max-w-[calc(100vw-16px)] rounded-lg border-thin border-ink bg-surface text-sm shadow-card">
+      <summary class="flex min-h-touch items-center px-3 font-mono font-semibold">States (dev)</summary>
+      <ul class="max-h-[60vh] overflow-auto border-t border-line px-3 py-2">
+        <li>
+          <a href={pad} aria-current={huidig === null ? 'page' : undefined} class="flex min-h-touch items-center aria-[current=page]:font-bold">
+            Standaard
+          </a>
+        </li>
+        {opties.map((o) => (
+          <li>
+            <a
+              href={`${pad}?state=${o.key}`}
+              aria-current={huidig === o.key ? 'page' : undefined}
+              class="flex min-h-touch items-center aria-[current=page]:font-bold"
+            >
+              {o.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}

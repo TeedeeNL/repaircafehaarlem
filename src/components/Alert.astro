@@ -1,0 +1,48 @@
+---
+import Marker from './Marker.astro';
+
+/**
+ * Melding boven een formulier of lijst.
+ * - error: rood, role=alert · warn: amber (informatief, geen fout) · info: neutraal · ok: groen
+ * - compact: crew-maat (kleinere padding en tekst)
+ * Standaardrol: alert voor error en warn, status voor info en ok.
+ */
+interface Props {
+  soort: 'error' | 'warn' | 'info' | 'ok';
+  titel?: string;
+  compact?: boolean;
+  role?: 'alert' | 'status';
+  id?: string;
+  class?: string;
+}
+const { soort, titel, compact = false, role, id, class: extra } = Astro.props;
+
+const stijl = {
+  error: 'bg-error-50 border-2 border-error',
+  warn: 'bg-warn-50 border-2 border-warn',
+  info: 'bg-sand border-thin border-line-strong',
+  ok: 'bg-ok-50 border-thin border-ok',
+}[soort];
+const titelKleur = { error: 'text-error', warn: 'text-warn', info: 'text-ink', ok: 'text-ink' }[soort];
+const rol = role ?? (soort === 'error' || soort === 'warn' ? 'alert' : 'status');
+const heeftInhoud = Astro.slots.has('default');
+---
+
+<div
+  id={id}
+  role={rol}
+  tabindex={id ? -1 : undefined}
+  class:list={[
+    'flex gap-2.5',
+    compact ? 'rounded-lg px-3 py-2.5' : 'rounded-xl p-3.5',
+    !heeftInhoud || !titel ? 'items-center' : 'items-start',
+    stijl,
+    extra,
+  ]}
+>
+  <Marker soort={soort} maat={compact ? 'md' : 'lg'} />
+  <div class:list={['flex min-w-0 flex-col gap-1', compact ? 'text-small' : '']}>
+    {titel && <p class:list={['font-bold', titelKleur]}>{titel}</p>}
+    {heeftInhoud && <div class:list={[compact ? 'text-sm' : 'text-small']}><slot /></div>}
+  </div>
+</div>
