@@ -6,11 +6,16 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "node --disable-warning=DEP0040 node_modules/astro/bin/astro.mjs build",
+    "dev": "wrangler types --strict-vars=false && astro dev",
+    "build": "wrangler types --strict-vars=false && node --disable-warning=DEP0040 node_modules/astro/bin/astro.mjs build",
     "preview": "astro preview",
     "astro": "astro",
-    "check": "astro check"
+    "check": "wrangler types --strict-vars=false && astro check",
+    "types": "wrangler types --strict-vars=false",
+    "db:migrate": "wrangler d1 migrations apply DB --local",
+    "db:seed": "wrangler d1 execute DB --local --file=migrations/seed.sql",
+    "db:reset": "npm run db:migrate && npm run db:seed",
+    "hash": "node scripts/hash-wachtwoord.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.3",

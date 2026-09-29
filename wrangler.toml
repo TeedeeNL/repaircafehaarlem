@@ -1,0 +1,18 @@
+name = "repair-cafe-haarlem"
+main = "@astrojs/cloudflare/entrypoints/server"
+compatibility_date = "2026-09-26"
+
+[vars]
+# Officiële Turnstile-testsleutel (slaagt altijd). Vervang in productie via het dashboard.
+TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
+# console = mail naar de log (dev), uit = mail altijd mislukt (aanmelding blijft staan)
+MAIL_MODUS = "console"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "repair-cafe"
+# Lokaal werkt elke waarde. Voor productie: `wrangler d1 create repair-cafe` en het id hier invullen.
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+# Alleen genummerde bestanden zijn migraties; seed.sql wordt nooit automatisch uitgevoerd.
+migrations_pattern = "migrations/[0-9][0-9][0-9][0-9]_*.sql"

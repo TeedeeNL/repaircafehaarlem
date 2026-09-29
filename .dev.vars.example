@@ -1,0 +1,4 @@
+# Kopieer naar .dev.vars (niet committen). Officiële Turnstile-testsleutels:
+# 1x0000000000000000000000000000000AA = slaagt altijd
+# 2x0000000000000000000000000000000AA = mislukt altijd
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA

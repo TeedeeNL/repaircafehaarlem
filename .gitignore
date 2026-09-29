@@ -25,3 +25,9 @@ pnpm-debug.log*
 
 # wrangler
 .wrangler/
+
+# lokale secrets
+.dev.vars
+
+# gegenereerd door wrangler types
+worker-configuration.d.ts
