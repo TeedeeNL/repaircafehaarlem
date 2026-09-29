@@ -16,7 +16,9 @@ interface Props {
   tab?: 'werklijst' | 'sessies' | null;
 }
 const { variant, menu = [], pad = Astro.url.pathname, menuOpen = false, gebruiker = null, tab = null } = Astro.props;
-const huidig = (href: string) => (pad.replace(/\/$/, '') === href ? 'page' : undefined);
+// Bij prerenderen eindigt het pad op .html (build.format 'file'); vergelijk zonder extensie en slash.
+const schoon = pad.replace(/(\/index)?\.html$/, '').replace(/\/$/, '');
+const huidig = (href: string) => (schoon === href ? 'page' : undefined);
 ---
 
 {
