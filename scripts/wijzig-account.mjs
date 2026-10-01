@@ -21,7 +21,7 @@ if (!huidig || !EMAIL.test(huidig) || (!nieuwEmail && !wachtwoordWijzigen) || (n
 // Bestaat het account?
 const check = voerSqlUit(`SELECT id FROM vrijwilliger WHERE email = ${q(huidig)};`, remote);
 const rij = check.ok ? check.resultaten?.[0]?.results?.[0] : undefined;
-if (!rij) {
+if (!Number.isInteger(rij?.id)) {
   console.error(check.ok ? 'Geen account gevonden met dat e-mailadres.' : 'Opzoeken mislukt:\n' + check.fout.slice(-800));
   process.exit(1);
 }
@@ -33,7 +33,7 @@ if (wachtwoordWijzigen) {
   sets.push(`wachtwoord_hash = ${q(hash)}`, `salt = ${q(salt)}`);
 }
 
-const id = Number(rij.id);
+const id = rij.id;
 const res = voerSqlUit(
   `UPDATE vrijwilliger SET ${sets.join(', ')} WHERE id = ${id};\nDELETE FROM login_sessie WHERE vrijwilliger_id = ${id};`,
   remote,

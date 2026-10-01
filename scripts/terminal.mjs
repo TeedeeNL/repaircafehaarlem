@@ -1,8 +1,6 @@
 // Gedeelde hulpjes voor de accountscripts.
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 export function arg(naam) {
   const i = process.argv.indexOf(`--${naam}`);
@@ -58,20 +56,18 @@ export async function vraagNieuwWachtwoord() {
   return wachtwoord;
 }
 
+const WRANGLER = fileURLToPath(new URL('../node_modules/wrangler/bin/wrangler.js', import.meta.url));
+
 /**
- * Voert SQL uit op D1 via Wrangler. Via een tijdelijk bestand, zodat geen shell de SQL kan verminken;
- * het bestand bevat nooit een wachtwoord, alleen hash en salt. Geeft de JSON-resultaten terug.
+ * Voert SQL uit op D1 via Wrangler. Wrangler draait direct via Node zonder shell, zodat niets de SQL
+ * kan verminken. Bewust --command en geen --file: remote gaat --file via de import-API, die alleen
+ * statistieken teruggeeft en geen rijen. De SQL bevat nooit een wachtwoord, alleen hash en salt.
  */
 export function voerSqlUit(sql, remote) {
-  const map = mkdtempSync(join(tmpdir(), 'rc-account-'));
-  const bestand = join(map, 'account.sql');
-  writeFileSync(bestand, sql, { mode: 0o600 });
-  const res = spawnSync('npx', ['wrangler', 'd1', 'execute', 'DB', remote ? '--remote' : '--local', `--file=${bestand}`, '--yes', '--json'], {
+  const res = spawnSync(process.execPath, [WRANGLER, 'd1', 'execute', 'DB', remote ? '--remote' : '--local', '--command', sql, '--yes', '--json'], {
     stdio: ['ignore', 'pipe', 'pipe'],
-    shell: process.platform === 'win32',
     encoding: 'utf8',
   });
-  rmSync(map, { recursive: true, force: true });
   if (res.status !== 0) {
     const fout = `${res.stdout}\n${res.stderr}`;
     return { ok: false, fout };
