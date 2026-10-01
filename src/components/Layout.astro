@@ -39,6 +39,8 @@ const volledigeTitel = titel === 'Repair Cafe Haarlem' ? titel : `${titel} · Re
     <Font cssVariable="--font-rc-tekst" preload />
     <Font cssVariable="--font-rc-mono" />
     <title>{volledigeTitel}</title>
+    <!-- Vóór het eerste tekenen: markeer dat JS werkt, zodat reveals alleen dan iets verbergen. -->
+    <script is:inline>document.documentElement.classList.add('js');</script>
   </head>
   <body class:list={['flex min-h-dvh flex-col', variant === 'crew' ? 'bg-surface' : 'bg-paper']}>
     <a
@@ -52,5 +54,26 @@ const volledigeTitel = titel === 'Repair Cafe Haarlem' ? titel : `${titel} · Re
       <slot />
     </main>
     {variant === 'publiek' && <Footer info={info} />}
+
+    <script>
+      // Scroll-reveals: [data-reveal] krijgt .zichtbaar zodra het in beeld komt (één keer).
+      const items = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      const rustig = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (rustig || !('IntersectionObserver' in window)) {
+        items.forEach((el) => el.classList.add('zichtbaar'));
+      } else {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (!e.isIntersecting) continue;
+              e.target.classList.add('zichtbaar');
+              io.unobserve(e.target);
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
+        );
+        items.forEach((el) => io.observe(el));
+      }
+    </script>
   </body>
 </html>
