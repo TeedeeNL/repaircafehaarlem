@@ -25,8 +25,9 @@
   --kleur-inkt-licht: #c9d1c9; /* hulptekst op donker, 9.5:1 */
 
   /* Kleur: oranje */
-  --kleur-signaal: #e0561f; /* accent, decoratie, focus */
-  --kleur-oranje: #b8431a; /* knoppen en links, 4.7:1 op papier, wit erop 5.1:1 */
+  --kleur-signaal: #e0561f; /* accent, decoratie, focus (niet voor kleine tekst) */
+  --kleur-signaal-licht: #f07b47; /* oranje tekst op inkt, 5.4:1 */
+  --kleur-oranje: #a83c14; /* knoppen en links: 5.5:1 op papier, 4.8:1 op papier-diep, wit erop 6.0:1 */
   --kleur-oranje-diep: #96360f; /* hover, ingedrukt */
   --kleur-oranje-zacht: #f7ddcd;
 
@@ -322,7 +323,7 @@
     color: var(--kleur-papier);
   }
   .menu-link[aria-current='page'] {
-    color: var(--kleur-signaal); /* 26px vet: grote tekst, 3:1 volstaat */
+    color: var(--kleur-signaal-licht);
   }
   .menu-regel {
     transition:

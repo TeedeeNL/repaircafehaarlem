@@ -30,7 +30,7 @@ export default {
           300: v('kleur-signaal'),
           50: v('kleur-oranje-zacht'),
         },
-        signaal: v('kleur-signaal'),
+        signaal: { DEFAULT: v('kleur-signaal'), licht: v('kleur-signaal-licht') },
         ok: { DEFAULT: v('kleur-ok'), 50: v('kleur-ok-zacht') },
         warn: { DEFAULT: v('kleur-let-op'), 50: v('kleur-let-op-zacht') },
         error: { DEFAULT: v('kleur-fout'), 50: v('kleur-fout-zacht') },
