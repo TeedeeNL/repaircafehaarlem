@@ -4,9 +4,11 @@ export const prerender = false;
 
 import Layout from '../../components/Layout.astro';
 import Alert from '../../components/Alert.astro';
-import Button from '../../components/Button.astro';
+import Icon from '../../components/Icon.astro';
+import Knop from '../../components/Knop.astro';
+import Label from '../../components/Label.astro';
 import Marker from '../../components/Marker.astro';
-import RefLabel from '../../components/RefLabel.astro';
+import PaginaKop from '../../components/PaginaKop.astro';
 import { aanmeldingVoorOpvraag } from '../../lib/db/aanmelding';
 import { leesBevestiging } from '../../lib/bevestiging';
 import { datumLang } from '../../lib/format';
@@ -17,67 +19,91 @@ const mailMislukt = bevestiging ? !bevestiging.mailVerstuurd : false;
 ---
 
 <Layout titel={aanmelding ? 'Aanmelding gelukt' : 'Geen aanmelding'}>
-  <div class="mx-auto flex max-w-[560px] flex-col gap-5 px-4 pt-7 pb-14 lg:pt-8">
-    {
-      aanmelding ? (
-        <>
-          <div class="flex flex-col gap-2.5">
-            <Marker soort="ok" maat="xl" />
-            <h1 class="font-display text-[30px] leading-[1.05] font-extrabold lg:text-[40px]">Je aanmelding is gelukt</h1>
+  {
+    aanmelding ? (
+      <>
+        <PaginaKop kopje="Aanmelden" titel="Je aanmelding is gelukt" icoon="vink" />
+        <div class="mx-auto grid max-w-page items-start gap-12 px-rand py-12 md:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
+          <div class="flex flex-col gap-6">
+            {mailMislukt && (
+              <Alert soort="warn" role="status" titel="De bevestigingsmail kon nu niet worden verstuurd.">
+                Je aanmelding staat wél genoteerd. Noteer je referentienummer; de mail volgt later.
+              </Alert>
+            )}
+
+            <div class="pt-10">
+              <Label as="section" kantel={-1.5} zwaai={false} class="instempelen max-w-[30rem]" aria-label={`Referentienummer ${aanmelding.referentie}`}>
+                <p class="font-mono text-meta font-semibold tracking-[.16em] text-ink-muted">REFERENTIENUMMER</p>
+                <p class:list={['mt-1 font-mono leading-[1.1] font-semibold break-all', mailMislukt ? 'text-[2.25rem]' : 'text-[1.9rem] md:text-[2.25rem]']}>
+                  {aanmelding.referentie}
+                </p>
+                <hr class="scheur" />
+                <p class="flex items-center gap-2 font-bold">
+                  <Icon naam="kalender" maat={18} class="text-rust" />
+                  {datumLang(aanmelding.datum)}
+                </p>
+                <p class="mt-1 flex items-center gap-2">
+                  <Icon naam="klok" maat={18} class="text-rust" />
+                  {aanmelding.starttijd} uur · {aanmelding.merk_type}
+                </p>
+                <span class="stempel text-ok" aria-hidden="true">
+                  aan-
+                  <br />
+                  gemeld
+                </span>
+              </Label>
+            </div>
+
+            {mailMislukt ? (
+              <p class="text-small text-ink-muted">Tip: maak een screenshot van dit scherm.</p>
+            ) : (
+              <p class="flex max-w-[30rem] items-start gap-2.5 rounded-lg border-thin border-ok bg-ok-50 p-3 text-small">
+                <Marker soort="ok" />
+                <span>
+                  Bevestiging verstuurd naar <strong class="break-all">{aanmelding.email}</strong>
+                </span>
+              </p>
+            )}
           </div>
 
-          {mailMislukt && (
-            <Alert soort="warn" role="status" titel="De bevestigingsmail kon nu niet worden verstuurd.">
-              Je aanmelding staat wél genoteerd. Noteer je referentienummer; de mail volgt later.
-            </Alert>
-          )}
-
-          <RefLabel referentie={aanmelding.referentie} groot={mailMislukt}>
-            <p class="font-bold">{datumLang(aanmelding.datum)}</p>
-            <p>
-              {aanmelding.starttijd} uur · {aanmelding.merk_type}
-            </p>
-          </RefLabel>
-
-          <section aria-labelledby="neem-mee" class="flex flex-col gap-2">
-            <h2 id="neem-mee" class="font-display text-xl font-extrabold">
-              Neem mee
-            </h2>
-            <ul class="flex list-disc flex-col gap-1 pl-5">
-              <li>het apparaat</li>
-              <li>de stekker, het snoer of de oplader</li>
-              <li>dit referentienummer</li>
-            </ul>
-            <p class="text-small text-ink-muted">Maximaal één apparaat per persoon, en je blijft erbij.</p>
-          </section>
-
-          {mailMislukt ? (
-            <p class="text-small text-ink-muted">Tip: maak een screenshot van dit scherm.</p>
-          ) : (
-            <p class="flex items-start gap-2.5 rounded-lg bg-ok-50 p-3 text-small">
-              <Marker soort="ok" />
-              <span>
-                Bevestiging verstuurd naar <strong class="break-all">{aanmelding.email}</strong>
-              </span>
-            </p>
-          )}
-
-          <Button href="/status" variant="secundair" breed>
-            Status van je aanmelding bekijken
-          </Button>
-        </>
-      ) : (
-        <>
-          <h1 class="font-display text-[32px] leading-[1.05] font-extrabold">Geen aanmelding om te tonen</h1>
-          <p>Heb je je al aangemeld? Bekijk dan de status met je referentienummer.</p>
+          <div class="flex flex-col gap-6">
+            <section aria-labelledby="neem-mee" class="rounded-xl border-thin border-ink bg-surface p-6 shadow-card">
+              <h2 id="neem-mee" class="font-display text-kop-3 font-extrabold">
+                Neem mee
+              </h2>
+              <ul class="mt-4 flex flex-col">
+                {['het apparaat', 'de stekker, het snoer of de oplader', 'dit referentienummer'].map((t) => (
+                  <li class="flex items-center gap-3 border-b border-dashed border-line-strong py-3 last:border-b-0">
+                    <span class="grid size-8 flex-none place-items-center rounded-full bg-rust-50 text-rust-700">
+                      <Icon naam="vink" maat={18} />
+                    </span>
+                    {t}
+                  </li>
+                ))}
+              </ul>
+              <p class="mt-4 text-small text-ink-muted">Maximaal één apparaat per persoon, en je blijft erbij.</p>
+            </section>
+            <Knop href="/status" variant="lijn" breed pijl>
+              Status van je aanmelding bekijken
+            </Knop>
+          </div>
+        </div>
+      </>
+    ) : (
+      <>
+        <PaginaKop kopje="Aanmelden" titel="Geen aanmelding om te tonen" icoon="label" />
+        <div class="mx-auto flex max-w-page flex-col gap-6 px-rand py-12">
+          <p class="text-lead">Heb je je al aangemeld? Bekijk dan de status met je referentienummer.</p>
           <div class="flex flex-wrap gap-3">
-            <Button href="/status" variant="secundair">
+            <Knop href="/status" variant="lijn">
               Status opvragen
-            </Button>
-            <Button href="/aanmelden">Apparaat aanmelden</Button>
+            </Knop>
+            <Knop href="/aanmelden" pijl>
+              Apparaat aanmelden
+            </Knop>
           </div>
-        </>
-      )
-    }
-  </div>
+        </div>
+      </>
+    )
+  }
 </Layout>

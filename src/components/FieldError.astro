@@ -10,7 +10,7 @@ interface Props {
 const { id, maat = 'publiek', class: extra } = Astro.props;
 ---
 
-<p id={id} class:list={['flex items-start gap-2 text-sm font-bold text-error', extra]}>
+<p id={id} class:list={['flex items-start gap-2 text-sm font-bold text-error', maat === 'publiek' && 'veldfout', extra]}>
   <Marker soort="error" maat={maat === 'crew' ? 'sm' : 'md'} class="mt-px" />
   <span><slot /></span>
 </p>

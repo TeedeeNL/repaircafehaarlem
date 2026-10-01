@@ -12,14 +12,15 @@ interface Props {
   /** Zwaaien bij hover. */
   zwaai?: boolean;
   class?: string;
+  style?: string;
   [key: string]: unknown;
 }
-const { as: Tag = 'article', kantel = -1.5, variant = 'papier', touw = true, zwaai = true, class: extra, ...rest } = Astro.props;
+const { as: Tag = 'article', kantel = -1.5, variant = 'papier', touw = true, zwaai = true, class: extra, style, ...rest } = Astro.props;
 ---
 
 <Tag
   class:list={['label', `label-${variant}`, touw && 'label-met-touw', zwaai && 'label-zwaai', extra]}
-  style={`--kantel: ${kantel}deg`}
+  style={`--kantel: ${kantel}deg;${style ? ` ${style}` : ''}`}
   {...rest}
 >
   <span class="label-gat" aria-hidden="true"></span>

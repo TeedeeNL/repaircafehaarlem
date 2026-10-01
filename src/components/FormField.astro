@@ -81,6 +81,8 @@ const veldKlas = [
   'w-full rounded-lg bg-surface text-base',
   crew ? 'min-h-touch px-2.5' : 'min-h-btn px-3',
   error ? 'border-2 border-error' : 'border-thin border-line-strong',
+  !crew && 'veld',
+  !crew && error && 'veld-fout',
   mono && 'font-mono',
   veldClass,
 ];

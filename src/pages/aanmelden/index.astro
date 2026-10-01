@@ -4,7 +4,9 @@ export const prerender = false;
 
 import Layout from '../../components/Layout.astro';
 import Alert from '../../components/Alert.astro';
-import Button from '../../components/Button.astro';
+import Knop from '../../components/Knop.astro';
+import Icon from '../../components/Icon.astro';
+import PaginaKop from '../../components/PaginaKop.astro';
 import FieldError from '../../components/FieldError.astro';
 import FormField from '../../components/FormField.astro';
 import { CATEGORIEEN } from '../../lib/domein';
@@ -104,17 +106,16 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
 ---
 
 <Layout titel="Apparaat aanmelden">
+  <PaginaKop kopje="Aanmelden" titel="Meld je apparaat aan" intro="Alle velden zijn verplicht. Duurt zo’n twee minuten." icoon="moersleutel" />
+
+  <div class="mx-auto grid max-w-page items-start gap-10 px-rand py-10 md:py-14 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-14">
   <form
     method="post"
     action="/aanmelden"
     novalidate
     data-aanmelden
-    class="mx-auto flex max-w-[560px] flex-col gap-5 px-4 pt-6 pb-14 lg:pt-8"
+    class="werkbon flex min-w-0 flex-col gap-6"
   >
-    <div class="flex flex-col gap-1.5">
-      <h1 class="font-display text-[30px] leading-[1.05] font-extrabold lg:text-[40px]">Meld je apparaat aan</h1>
-      <p class="text-ink-muted">Alle velden zijn verplicht. Duurt zo’n twee minuten.</p>
-    </div>
 
     {
       systeemfout && (
@@ -140,6 +141,8 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
       )
     }
 
+    <fieldset class="groep">
+      <legend class="groep-kop"><span aria-hidden="true">01</span> Over jou</legend>
     <FormField
       id="f-voornaam"
       name="voornaam"
@@ -162,6 +165,11 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
       autofocus={eersteFout === 'email'}
       required
     />
+    </fieldset>
+
+    <div class="scheiding" aria-hidden="true"></div>
+    <fieldset class="groep">
+      <legend class="groep-kop"><span aria-hidden="true">02</span> Over het apparaat</legend>
     <FormField
       id="f-categorie"
       name="categorie"
@@ -197,14 +205,16 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
       autofocus={eersteFout === 'defect'}
       required
     />
+    </fieldset>
 
+    <div class="scheiding" aria-hidden="true"></div>
     <fieldset
       id="f-sessie_id"
       tabindex="-1"
       aria-describedby={fouten.sessie_id ? 'f-sessie_id-fout' : undefined}
-      class="flex min-w-0 flex-col gap-2 border-0 p-0"
+      class="groep"
     >
-      <legend class="mb-2 p-0 font-bold">Sessie</legend>
+      <legend class="groep-kop"><span aria-hidden="true">03</span> Sessie</legend>
       {fouten.sessie_id && <FieldError id="f-sessie_id-fout">{fouten.sessie_id}</FieldError>}
 
       {
@@ -216,7 +226,7 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
           sessies.map((s) => {
             const vrij = Math.max(0, s.max_plekken - s.bezet);
             return vrij === 0 ? (
-              <label class="flex min-h-card cursor-not-allowed items-center gap-3 rounded-xl border-thin border-dashed border-line-strong bg-sand-light px-3.5 py-2.5 text-ink-muted">
+              <label class="sessie-optie sessie-vol">
                 <input type="radio" name="sessie_id" value={s.id} disabled class="m-0 size-[22px] flex-none" />
                 <span class="flex-1">
                   <strong>{datumKort(s.datum)}</strong>, {s.starttijd}
@@ -226,7 +236,7 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
                 <span class="rounded-full border border-ink-muted px-2 py-[3px] font-mono text-xs font-semibold">VOL</span>
               </label>
             ) : (
-              <label class="flex min-h-card cursor-pointer items-center gap-3 rounded-xl border-thin border-line-strong bg-surface px-3.5 py-2.5 has-checked:border-2 has-checked:border-rust has-checked:bg-rust-50">
+              <label class="sessie-optie">
                 <input
                   type="radio"
                   name="sessie_id"
@@ -241,6 +251,7 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
                   <br />
                   <span class="text-sm">{plekken(vrij)} vrij</span>
                 </span>
+                <Icon naam="vink" maat={22} class="sessie-vink text-rust" />
               </label>
             );
           })
@@ -248,6 +259,7 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
       }
     </fieldset>
 
+    <div class="scheiding" aria-hidden="true"></div>
     <div id="f-turnstile" tabindex="-1" class="flex flex-col gap-2">
       <div
         class:list={[
@@ -265,13 +277,13 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
 
     {
       sessies.length === 0 ? (
-        <Button uit breed aria-describedby="geen-sessie-uitleg">
+        <Knop uit breed aria-describedby="geen-sessie-uitleg">
           Aanmelden
-        </Button>
+        </Knop>
       ) : (
-        <Button type="submit" breed data-verzend>
+        <Knop type="submit" breed pijl data-verzend>
           {systeemfout || fouten.turnstile ? 'Opnieuw aanmelden' : 'Aanmelden'}
-        </Button>
+        </Knop>
       )
     }
 
@@ -279,7 +291,110 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
       We gebruiken je gegevens alleen voor deze aanmelding. Zes maanden na de sessie worden ze geanonimiseerd.
     </p>
   </form>
+
+  <aside aria-labelledby="goed-om-te-weten-kop" class="flex flex-col gap-4 lg:sticky lg:top-28">
+    <div class="rounded-xl border-thin border-ink bg-surface p-5 shadow-card">
+      <h2 id="goed-om-te-weten-kop" class="flex items-center gap-2 font-mono text-meta font-semibold tracking-[.14em] text-rust uppercase">
+        <Icon naam="label" maat={18} />
+        Goed om te weten
+      </h2>
+      <ul class="mt-3 flex flex-col">
+        <li class="border-b border-dashed border-line-strong py-2.5 text-small">Eén apparaat per persoon per sessie.</li>
+        <li class="border-b border-dashed border-line-strong py-2.5 text-small">Je blijft erbij en kijkt mee tijdens de reparatie.</li>
+        <li class="py-2.5 text-small">Reparatie is gratis. Nieuwe onderdelen betaal je zelf.</li>
+      </ul>
+      <a href="/info/huisregels" class="mt-2 inline-flex min-h-touch items-center gap-2 text-small font-bold">
+        Alle huisregels <Icon naam="pijl-rechts" maat={16} />
+      </a>
+    </div>
+  </aside>
+  </div>
 </Layout>
+
+<style>
+  .groep {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-width: 0;
+    border: 0;
+    padding: 0;
+  }
+  /* Losse scheidingslijn: een fieldset-rand zou door de legend heen lopen */
+  .scheiding {
+    border-top: 1.5px dashed var(--kleur-lijn-sterk);
+  }
+  .groep-kop {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.25rem;
+    padding: 0;
+    font-family: var(--font-rc-display);
+    font-size: 1.375rem;
+    font-weight: 800;
+  }
+  .groep-kop span {
+    font-family: var(--font-rc-mono);
+    font-size: var(--tekst-xs);
+    font-weight: 600;
+    color: var(--kleur-oranje);
+    letter-spacing: 0.1em;
+  }
+  .sessie-optie {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    min-height: 64px;
+    padding: 0.7rem 1rem;
+    border: 1.5px solid var(--kleur-lijn-sterk);
+    border-left-width: 6px;
+    border-radius: var(--radius-md);
+    background: var(--kleur-papier);
+    cursor: pointer;
+    transition:
+      border-color var(--duur-basis) var(--ease-uit),
+      background-color var(--duur-basis) var(--ease-uit),
+      transform var(--duur-snel) var(--ease-uit);
+  }
+  .sessie-optie:hover {
+    border-color: var(--kleur-inkt);
+  }
+  .sessie-optie:active {
+    transform: translateY(1px);
+  }
+  .sessie-optie:has(:checked) {
+    border-color: var(--kleur-oranje);
+    background: var(--kleur-oranje-zacht);
+  }
+  .sessie-optie input {
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    flex: none;
+    accent-color: var(--kleur-oranje);
+  }
+  .sessie-vink {
+    opacity: 0;
+    transform: scale(0.5);
+    transition:
+      opacity var(--duur-basis) var(--ease-uit),
+      transform var(--duur-basis) var(--ease-veer);
+  }
+  .sessie-optie:has(:checked) .sessie-vink {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .sessie-vol {
+    border-style: dashed;
+    background: var(--kleur-zand-licht);
+    color: var(--kleur-inkt-zacht);
+    cursor: not-allowed;
+  }
+  .sessie-vol:hover {
+    border-color: var(--kleur-lijn-sterk);
+  }
+</style>
 
 <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script>
@@ -290,7 +405,7 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
     if (!knop) return;
     knop.disabled = true;
     knop.setAttribute('aria-busy', 'true');
-    knop.classList.add('bg-rust-700', 'cursor-progress');
+    knop.style.cursor = 'progress';
     knop.textContent = 'Bezig met verzenden…';
   });
 </script>

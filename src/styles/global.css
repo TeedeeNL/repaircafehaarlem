@@ -400,3 +400,99 @@ html.menu-open {
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================================
+   Formulieren (publiek): focus, fout en bevestiging
+   ========================================================================== */
+@layer components {
+  .veld {
+    transition:
+      border-color var(--duur-basis) var(--ease-uit),
+      box-shadow var(--duur-basis) var(--ease-uit);
+  }
+  .veld:hover {
+    border-color: var(--kleur-inkt);
+  }
+  .veld:focus {
+    border-color: var(--kleur-inkt);
+    box-shadow: 4px 4px 0 var(--kleur-kraft);
+    outline: 3px solid var(--kleur-signaal);
+    outline-offset: 2px;
+  }
+  .veld-fout {
+    background-color: color-mix(in srgb, var(--kleur-fout-zacht) 55%, var(--kleur-vlak));
+  }
+  /* Werkbon: formulierkaart (aanmelden, status, login) */
+  .werkbon {
+    padding: 1.5rem 1.25rem;
+    background: var(--kleur-vlak);
+    border: 1.5px solid var(--kleur-inkt);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--schaduw-kaart);
+  }
+  @media (min-width: 640px) {
+    .werkbon {
+      padding: 2rem;
+    }
+  }
+  /* Stempel op een label (bevestiging, status) */
+  .stempel {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: grid;
+    place-items: center;
+    width: 5.5rem;
+    height: 5.5rem;
+    border: 2.5px double currentColor;
+    border-radius: 50%;
+    font-family: var(--font-rc-mono);
+    font-size: var(--tekst-2xs);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    text-align: center;
+    text-transform: uppercase;
+    transform: rotate(-14deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .veld-fout {
+    animation: schud 420ms var(--ease-uit);
+  }
+  .veldfout {
+    animation: fout-in var(--duur-basis) var(--ease-uit);
+  }
+  .melding {
+    animation: melding-in 480ms var(--ease-veer);
+  }
+  .instempelen {
+    animation: instempelen 750ms var(--ease-veer) both;
+  }
+  .instempelen .stempel {
+    animation: stempel 520ms var(--ease-veer) 600ms both;
+  }
+}
+@keyframes schud {
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+@keyframes fout-in {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+@keyframes melding-in {
+  from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+}
+@keyframes instempelen {
+  0% { opacity: 0; transform: translateY(-24px) rotate(-7deg) scale(1.08); }
+  55% { opacity: 1; transform: translateY(3px) rotate(calc(var(--kantel, 0deg) + 1deg)) scale(0.99); }
+  100% { opacity: 1; transform: rotate(var(--kantel, 0deg)); }
+}
+@keyframes stempel {
+  0% { opacity: 0; transform: rotate(-14deg) scale(2.2); }
+  70% { opacity: 1; transform: rotate(-14deg) scale(0.94); }
+  100% { opacity: 1; transform: rotate(-14deg) scale(1); }
+}

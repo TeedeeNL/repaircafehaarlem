@@ -4,7 +4,9 @@ export const prerender = false;
 
 import Layout from '../components/Layout.astro';
 import Alert from '../components/Alert.astro';
-import Button from '../components/Button.astro';
+import Icon from '../components/Icon.astro';
+import Knop from '../components/Knop.astro';
+import PaginaKop from '../components/PaginaKop.astro';
 import FormField from '../components/FormField.astro';
 import { vrijwilligerOpEmail } from '../lib/db/vrijwilliger';
 import { controleerWachtwoord, doeAlsofControle } from '../lib/auth/wachtwoord';
@@ -59,22 +61,21 @@ if (Astro.request.method === 'POST') {
 const doorverwezen = Boolean(terug) && Astro.request.method === 'GET';
 ---
 
-<Layout titel="Inloggen vrijwilligers" variant="crew">
-  <div class="mx-auto max-w-[420px] px-4 pt-6 pb-14 md:pt-8">
-    <form method="post" action="/login" novalidate class="flex flex-col gap-3.5">
-      <h1 class="font-display text-2xl font-extrabold md:text-[26px]">Inloggen vrijwilligers</h1>
-
+<Layout titel="Inloggen vrijwilligers">
+  <PaginaKop kopje="Vrijwilligers" titel="Inloggen vrijwilligers" icoon="persoon" smal />
+  <div class="mx-auto max-w-[44rem] px-rand py-12 md:py-16">
+    <form method="post" action="/login" novalidate class="werkbon mx-auto flex max-w-[28rem] flex-col gap-5">
       {
         doorverwezen && (
-          <Alert soort="info" compact>
+          <Alert soort="info">
             Log in om verder te gaan.
           </Alert>
         )
       }
-      {onjuist && <Alert soort="error" compact titel="Onjuiste inloggegevens" />}
+      {onjuist && <Alert soort="error" titel="Onjuiste inloggegevens" />}
       {
         blokkade.geblokkeerd && (
-          <Alert soort="warn" compact titel="Account tijdelijk geblokkeerd" id="geblokkeerd">
+          <Alert soort="warn" titel="Account tijdelijk geblokkeerd" id="geblokkeerd">
             Te veel mislukte pogingen. Probeer het over {blokkade.minuten} {blokkade.minuten === 1 ? 'minuut' : 'minuten'}{' '}
             opnieuw.
           </Alert>
@@ -90,7 +91,6 @@ const doorverwezen = Boolean(terug) && Astro.request.method === 'GET';
         type="email"
         inputmode="email"
         autocomplete="username"
-        maat="crew"
         value={email}
         error={fouten.email}
         autofocus={Boolean(fouten.email)}
@@ -102,15 +102,17 @@ const doorverwezen = Boolean(terug) && Astro.request.method === 'GET';
         label="Wachtwoord"
         type="password"
         autocomplete="current-password"
-        maat="crew"
         toonKnop
         error={fouten.wachtwoord}
         autofocus={onjuist || (!fouten.email && Boolean(fouten.wachtwoord))}
         required
       />
 
-      <Button type="submit" variant="crew" maat="crew" breed>Inloggen</Button>
-      <p class="text-sm text-ink-muted">Geen account? De coördinator maakt accounts aan.</p>
+      <Knop type="submit" breed pijl>Inloggen</Knop>
+      <p class="flex items-start gap-2 text-small text-ink-muted">
+        <Icon naam="info" maat={18} class="mt-0.5" />
+        Geen account? De coördinator maakt accounts aan.
+      </p>
     </form>
   </div>
 </Layout>

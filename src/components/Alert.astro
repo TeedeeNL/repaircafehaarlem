@@ -34,7 +34,7 @@ const heeftInhoud = Astro.slots.has('default');
   tabindex={id ? -1 : undefined}
   class:list={[
     'flex gap-2.5',
-    compact ? 'rounded-lg px-3 py-2.5' : 'rounded-xl p-3.5',
+    compact ? 'rounded-lg px-3 py-2.5' : 'melding rounded-xl border-l-[6px] p-4',
     !heeftInhoud || !titel ? 'items-center' : 'items-start',
     stijl,
     extra,

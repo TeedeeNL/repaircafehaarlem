@@ -1,0 +1,27 @@
+---
+import Icon, { type IconNaam } from './Icon.astro';
+
+// Kop voor losse pagina's (formulieren, statistiek): kopje, grote titel, intro en een draaiend icoon.
+interface Props {
+  kopje: string;
+  titel: string;
+  intro?: string;
+  icoon?: IconNaam;
+  smal?: boolean;
+}
+const { kopje, titel, intro, icoon = 'moersleutel', smal = false } = Astro.props;
+---
+
+<header class="border-b-thin border-dashed border-line-strong bg-paper-deep">
+  <div class:list={['mx-auto flex items-end justify-between gap-6 px-rand pt-10 pb-10 md:pt-16 md:pb-12', smal ? 'max-w-[44rem]' : 'max-w-page']}>
+    <div class="flex flex-col gap-3">
+      <p class="hero-in font-mono text-meta font-semibold tracking-[.16em] text-rust uppercase" style="--i: 0">{kopje}</p>
+      <h1 class="hero-in font-display text-kop-2 font-extrabold tracking-[-0.025em]" style="--i: 1">{titel}</h1>
+      {intro && <p class="hero-in text-lead text-ink-muted" style="--i: 2">{intro}</p>}
+      <slot />
+    </div>
+    <span class="hero-in draai-ouder hidden size-24 flex-none place-items-center rounded-full border-thin border-ink bg-surface sm:grid" style="--i: 3" aria-hidden="true">
+      <Icon naam={icoon} maat={44} class="icoon-draai text-rust" />
+    </span>
+  </div>
+</header>
