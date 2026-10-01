@@ -1,0 +1,215 @@
+---
+// Mijn account: eigen e-mailadres en wachtwoord wijzigen. Alleen ingelogd (middleware op /crew).
+// Elke wijziging vraagt het huidige wachtwoord; een fout wachtwoord telt als mislukte inlogpoging
+// (zelfde blokkade als /login). Na een nieuw wachtwoord worden alle andere sessies beëindigd.
+export const prerender = false;
+
+import Layout from '../../components/Layout.astro';
+import Alert from '../../components/Alert.astro';
+import Button from '../../components/Button.astro';
+import FormField from '../../components/FormField.astro';
+import { vrijwilligerOpId, wijzigEmail, wijzigWachtwoord } from '../../lib/db/vrijwilliger';
+import { verwijderAndereSessies } from '../../lib/db/login-sessie';
+import { controleerWachtwoord, hashWachtwoord } from '../../lib/auth/wachtwoord';
+import { huidigeTokenHash } from '../../lib/auth/sessie';
+import { loginBlokkade, registreerMislukteLogin, wisMislukteLogins } from '../../lib/auth/limiet';
+import {
+  EMAIL_WIJZIG_VELDEN,
+  WACHTWOORD_WIJZIG_VELDEN,
+  emailWijzigSchema,
+  wachtwoordWijzigSchema,
+} from '../../lib/schemas/account';
+import { leesFormulier, valideer, type Fouten } from '../../lib/schemas/formulier';
+
+const gebruiker = Astro.locals.gebruiker!;
+
+let actie: 'email' | 'wachtwoord' | null = null;
+let fouten: Fouten = {};
+let nieuwEmail = '';
+let blokkade = { geblokkeerd: false, minuten: 0 };
+let systeemfout = false;
+
+/** Controleert het huidige wachtwoord; telt een fout mee voor de inlogblokkade. */
+async function huidigKlopt(wachtwoord: string): Promise<boolean> {
+  const v = await vrijwilligerOpId(gebruiker.id);
+  if (v && (await controleerWachtwoord(wachtwoord, v.salt, v.wachtwoord_hash))) return true;
+  if (await registreerMislukteLogin(gebruiker.email)) blokkade = { geblokkeerd: true, minuten: 15 };
+  else fouten = { huidig_wachtwoord: 'Je huidige wachtwoord klopt niet.' };
+  return false;
+}
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  actie = form.get('actie') === 'email' ? 'email' : form.get('actie') === 'wachtwoord' ? 'wachtwoord' : null;
+  blokkade = await loginBlokkade(gebruiker.email);
+
+  try {
+    if (!actie) {
+      Astro.response.status = 400;
+    } else if (blokkade.geblokkeerd) {
+      Astro.response.status = 429;
+    } else if (actie === 'email') {
+      const check = valideer(emailWijzigSchema, leesFormulier(form, EMAIL_WIJZIG_VELDEN));
+      nieuwEmail = check.succes ? check.data.nieuw_email : (check.waarden.nieuw_email ?? '');
+      if (!check.succes) {
+        fouten = check.fouten;
+      } else if (await huidigKlopt(check.data.huidig_wachtwoord)) {
+        if (check.data.nieuw_email === gebruiker.email) {
+          fouten = { nieuw_email: 'Dit is al je e-mailadres.' };
+        } else if ((await wijzigEmail(gebruiker.id, check.data.nieuw_email)) === 'dubbel') {
+          fouten = { nieuw_email: 'Er bestaat al een account met dit e-mailadres.' };
+        } else {
+          await wisMislukteLogins(gebruiker.email);
+          return Astro.redirect('/crew/account?gewijzigd=email', 303);
+        }
+      }
+    } else {
+      const check = valideer(wachtwoordWijzigSchema, leesFormulier(form, WACHTWOORD_WIJZIG_VELDEN));
+      if (!check.succes) {
+        fouten = check.fouten;
+      } else if (await huidigKlopt(check.data.huidig_wachtwoord)) {
+        const { hash, salt } = await hashWachtwoord(check.data.nieuw_wachtwoord);
+        await wijzigWachtwoord(gebruiker.id, hash, salt);
+        const huidig = await huidigeTokenHash(Astro.cookies);
+        if (huidig) await verwijderAndereSessies(gebruiker.id, huidig);
+        await wisMislukteLogins(gebruiker.email);
+        return Astro.redirect('/crew/account?gewijzigd=wachtwoord', 303);
+      }
+    }
+  } catch (e) {
+    // Geen persoonsgegevens in de log.
+    console.error('Account wijzigen mislukt', { actie, fout: e instanceof Error ? e.name : 'onbekend' });
+    systeemfout = true;
+  }
+
+  if (systeemfout) Astro.response.status = 500;
+  else if (blokkade.geblokkeerd) Astro.response.status = 429;
+  else if (Object.keys(fouten).length) Astro.response.status = 400;
+}
+
+const gewijzigd = Astro.url.searchParams.get('gewijzigd');
+const f = (form: 'email' | 'wachtwoord') => (actie === form ? fouten : {});
+---
+
+<Layout titel="Mijn account" variant="crew" gebruiker={gebruiker} tab="account">
+  <div class="mx-auto flex max-w-page flex-col gap-5 px-4 pt-4 pb-14 md:pt-6">
+    <h1 class="font-display text-xl font-extrabold md:text-2xl">Mijn account</h1>
+
+    {
+      gewijzigd === 'email' && (
+        <Alert soort="ok" compact>
+          Je e-mailadres is gewijzigd. Log voortaan in met <strong>{gebruiker.email}</strong>.
+        </Alert>
+      )
+    }
+    {
+      gewijzigd === 'wachtwoord' && (
+        <Alert soort="ok" compact>
+          Je wachtwoord is gewijzigd. Andere apparaten waarop je was ingelogd, zijn uitgelogd.
+        </Alert>
+      )
+    }
+    {
+      blokkade.geblokkeerd && (
+        <Alert soort="warn" compact titel="Account tijdelijk geblokkeerd">
+          Te veel mislukte pogingen. Probeer het over {blokkade.minuten} {blokkade.minuten === 1 ? 'minuut' : 'minuten'} opnieuw.
+        </Alert>
+      )
+    }
+    {
+      systeemfout && (
+        <Alert soort="error" compact titel="Opslaan is niet gelukt, probeer opnieuw.">
+          Er is niets gewijzigd.
+        </Alert>
+      )
+    }
+
+    <section aria-labelledby="gegevens" class="rounded-xl border border-line bg-paper p-4">
+      <h2 id="gegevens" class="sr-only">Je gegevens</h2>
+      <dl class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1 text-small">
+        <dt class="text-ink-muted">Naam</dt>
+        <dd class="font-bold">{gebruiker.naam}</dd>
+        <dt class="text-ink-muted">E-mailadres</dt>
+        <dd class="font-bold break-all">{gebruiker.email}</dd>
+        <dt class="text-ink-muted">Rol</dt>
+        <dd class="font-bold">{gebruiker.rol === 'coordinator' ? 'Coördinator' : 'Vrijwilliger'}</dd>
+      </dl>
+    </section>
+
+    <div class="grid gap-5 md:grid-cols-2 md:items-start">
+      <form method="post" action="/crew/account" novalidate aria-labelledby="kop-email" class="flex flex-col gap-3 rounded-xl border border-line bg-paper p-4">
+        <h2 id="kop-email" class="font-display text-lead font-extrabold">E-mailadres wijzigen</h2>
+        <input type="hidden" name="actie" value="email" />
+        <FormField
+          id="e-nieuw_email"
+          name="nieuw_email"
+          label="Nieuw e-mailadres"
+          type="email"
+          inputmode="email"
+          autocomplete="email"
+          maat="crew"
+          value={actie === 'email' ? nieuwEmail : ''}
+          error={f('email').nieuw_email}
+          autofocus={Boolean(f('email').nieuw_email)}
+          required
+        />
+        <FormField
+          id="e-huidig_wachtwoord"
+          name="huidig_wachtwoord"
+          label="Huidig wachtwoord"
+          type="password"
+          autocomplete="current-password"
+          maat="crew"
+          toonKnop
+          error={f('email').huidig_wachtwoord}
+          autofocus={!f('email').nieuw_email && Boolean(f('email').huidig_wachtwoord)}
+          required
+        />
+        <Button type="submit" variant="crew" maat="crew" breed>E-mailadres opslaan</Button>
+      </form>
+
+      <form method="post" action="/crew/account" novalidate aria-labelledby="kop-wachtwoord" class="flex flex-col gap-3 rounded-xl border border-line bg-paper p-4">
+        <h2 id="kop-wachtwoord" class="font-display text-lead font-extrabold">Wachtwoord wijzigen</h2>
+        <input type="hidden" name="actie" value="wachtwoord" />
+        <FormField
+          id="w-huidig_wachtwoord"
+          name="huidig_wachtwoord"
+          label="Huidig wachtwoord"
+          type="password"
+          autocomplete="current-password"
+          maat="crew"
+          toonKnop
+          error={f('wachtwoord').huidig_wachtwoord}
+          autofocus={Boolean(f('wachtwoord').huidig_wachtwoord)}
+          required
+        />
+        <FormField
+          id="w-nieuw_wachtwoord"
+          name="nieuw_wachtwoord"
+          label="Nieuw wachtwoord"
+          type="password"
+          autocomplete="new-password"
+          hint="Minimaal 12 tekens."
+          maat="crew"
+          toonKnop
+          error={f('wachtwoord').nieuw_wachtwoord}
+          autofocus={!f('wachtwoord').huidig_wachtwoord && Boolean(f('wachtwoord').nieuw_wachtwoord)}
+          required
+        />
+        <FormField
+          id="w-herhaal_wachtwoord"
+          name="herhaal_wachtwoord"
+          label="Herhaal nieuw wachtwoord"
+          type="password"
+          autocomplete="new-password"
+          maat="crew"
+          toonKnop
+          error={f('wachtwoord').herhaal_wachtwoord}
+          required
+        />
+        <Button type="submit" variant="crew" maat="crew" breed>Wachtwoord opslaan</Button>
+        <p class="text-sm text-ink-muted">Na het opslaan word je op andere apparaten uitgelogd.</p>
+      </form>
+    </div>
+  </div>
+</Layout>

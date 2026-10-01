@@ -7,14 +7,14 @@ import type { Gebruiker } from '../lib/domein';
 /**
  * Publiek: papieren balk met labelmerk, desktopmenu vanaf 1024px met inschuivende onderstreping,
  * daaronder een menuknop (aria-expanded, focusbeheer) met donker paneel.
- * Crew: donkere balk met gebruiker en uitloggen, tabs Werklijst en (alleen coördinator) Sessies.
+ * Crew: donkere balk met gebruiker en uitloggen, tabs Werklijst, (alleen coördinator) Sessies en Mijn account.
  */
 interface Props {
   variant: 'publiek' | 'crew';
   menu?: MenuItem[];
   pad?: string;
   gebruiker?: Gebruiker | null;
-  tab?: 'werklijst' | 'sessies' | null;
+  tab?: 'werklijst' | 'sessies' | 'account' | null;
 }
 const { variant, menu = [], pad = Astro.url.pathname, gebruiker = null, tab = null } = Astro.props;
 // Bij prerenderen eindigt het pad op .html (build.format 'file'); vergelijk zonder extensie en slash.
@@ -131,6 +131,13 @@ const huidig = (href: string) => (schoon === href ? 'page' : undefined);
                 Sessies
               </a>
             )}
+            <a
+              href="/crew/account"
+              aria-current={tab === 'account' ? 'page' : undefined}
+              class="flex min-h-touch items-center justify-center border-b-3 border-transparent px-4 text-ink-muted no-underline hover:text-ink aria-[current=page]:border-rust aria-[current=page]:text-ink max-md:flex-1 md:ml-auto"
+            >
+              Mijn account
+            </a>
           </div>
         </nav>
       )}

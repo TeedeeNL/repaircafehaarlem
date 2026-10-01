@@ -30,3 +30,9 @@ export async function beeindigSessie(cookies: AstroCookies): Promise<void> {
   if (token && /^[0-9a-f]{64}$/.test(token)) await verwijderLoginSessie(await sha256Hex(token));
   cookies.delete(SESSIE_COOKIE, { path: '/', httpOnly: true, secure: true, sameSite: 'lax' });
 }
+
+/** SHA-256 van het token van de huidige sessie, of null. */
+export async function huidigeTokenHash(cookies: AstroCookies): Promise<string | null> {
+  const token = cookies.get(SESSIE_COOKIE)?.value;
+  return token && /^[0-9a-f]{64}$/.test(token) ? sha256Hex(token) : null;
+}

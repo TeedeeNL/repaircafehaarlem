@@ -26,3 +26,8 @@ export function gebruikerBijToken(tokenHash: string, nu: number): Promise<Gebrui
 export async function verwijderLoginSessie(tokenHash: string): Promise<void> {
   await db().prepare('DELETE FROM login_sessie WHERE token = ?1').bind(tokenHash).run();
 }
+
+/** Beëindigt alle andere sessies van een vrijwilliger (bijv. na een nieuw wachtwoord). */
+export async function verwijderAndereSessies(vrijwilligerId: number, behoudTokenHash: string): Promise<void> {
+  await db().prepare('DELETE FROM login_sessie WHERE vrijwilliger_id = ?1 AND token != ?2').bind(vrijwilligerId, behoudTokenHash).run();
+}
