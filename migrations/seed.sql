@@ -1,4 +1,5 @@
--- Testdata voor lokale ontwikkeling (zelfde gegevens als de oude mock-data).
+-- Testdata voor lokale ontwikkeling. Sessies op de eerste zaterdag van de maand, 10:00, 12 plekken:
+-- 3 okt gesloten, 7 nov open met 3 plekken vrij, 5 dec vol, 2 jan open en leeg.
 -- NIET op productie uitvoeren. Uitvoeren met: npm run db:seed
 -- Beide testaccounts hebben het wachtwoord 'reparatie'.
 
@@ -15,7 +16,7 @@ INSERT INTO vrijwilliger (id, naam, email, wachtwoord_hash, salt, rol) VALUES (2
 INSERT INTO sessie (id, datum, starttijd, max_plekken, status) VALUES (1, '2026-10-03', '10:00', 12, 'gesloten');
 INSERT INTO sessie (id, datum, starttijd, max_plekken, status) VALUES (2, '2026-11-07', '10:00', 12, 'open');
 INSERT INTO sessie (id, datum, starttijd, max_plekken, status) VALUES (3, '2026-12-05', '10:00', 12, 'open');
-INSERT INTO sessie (id, datum, starttijd, max_plekken, status) VALUES (4, '2027-01-09', '10:00', 12, 'open');
+INSERT INTO sessie (id, datum, starttijd, max_plekken, status) VALUES (4, '2027-01-02', '10:00', 12, 'open');
 
 INSERT INTO aanmelding (id, referentie, sessie_id, voornaam, email, categorie, merk_type, defect, status) VALUES (1, 'RC-2026-0001', 1, 'Pieter', 'pieter@voorbeeld.nl', 'Klein huishoudelijk', 'Krups XP3440', 'Espressoapparaat lekt en slaat af na een minuut.', 'afgerond');
 INSERT INTO aanmelding (id, referentie, sessie_id, voornaam, email, categorie, merk_type, defect, status) VALUES (2, 'RC-2026-0002', 1, 'Aisha', 'aisha@voorbeeld.nl', 'Audio en beeld', 'JBL Flip 5', 'Speaker gaat niet meer aan na het opladen.', 'afgerond');
