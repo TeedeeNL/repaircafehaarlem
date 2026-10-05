@@ -32,7 +32,8 @@ const volledigeTitel = titel === 'Repair Cafe Haarlem' ? titel : `${titel} · Re
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={beschrijving} />
-    {variant === 'crew' && <meta name="robots" content="noindex" />}
+    <!-- Schoolproject: niet indexeren door zoekmachines. -->
+    <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <Font cssVariable="--font-rc-display" preload />
@@ -49,6 +50,9 @@ const volledigeTitel = titel === 'Repair Cafe Haarlem' ? titel : `${titel} · Re
     >
       Naar de inhoud
     </a>
+    <p class="schoolbalk bg-ink-line px-4 py-2 text-center font-mono text-meta font-semibold tracking-[.06em] text-paper">
+      Schoolproject, aanmeldingen worden niet verwerkt.
+    </p>
     <Header variant={variant} menu={menu} gebruiker={gebruiker} tab={tab} />
     <main id="inhoud" tabindex="-1" class="flex-1 focus:outline-none">
       <slot />
