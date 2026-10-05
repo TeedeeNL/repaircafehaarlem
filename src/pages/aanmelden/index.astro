@@ -261,17 +261,26 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
 
     <div class="scheiding" aria-hidden="true"></div>
     <div id="f-turnstile" tabindex="-1" class="flex flex-col gap-2">
-      <div
-        class:list={[
-          'grid min-h-[68px] place-items-center rounded-lg px-1 text-center',
-          fouten.turnstile ? 'border-2 border-error bg-stripes-sm' : 'border border-line bg-stripes-sm',
-        ]}
-      >
-        <div class="cf-turnstile" data-sitekey={siteKey} data-action="aanmelden" data-language="nl" data-theme="light" data-size="flexible"></div>
+      <p class="font-bold">Controle tegen spam</p>
+      <div class:list={['ts-vak', fouten.turnstile && 'ts-vak-fout']}>
+        <div
+          class="cf-turnstile"
+          data-sitekey={siteKey}
+          data-action="aanmelden"
+          data-language="nl"
+          data-theme="light"
+          data-size="flexible"
+          data-error-callback="rcTurnstileFout"
+        ></div>
+        <p class="ts-laden text-sm text-ink-muted" data-ts-laden aria-hidden="true">Controle wordt geladen…</p>
         <noscript>
-          <span class="text-sm">Zet JavaScript aan om de controle tegen spam te laten werken.</span>
+          <p class="text-sm">Zet JavaScript aan om de controle tegen spam te laten werken.</p>
         </noscript>
       </div>
+      <p class="text-sm text-ink-muted" data-ts-fout role="status" hidden>
+        De controle tegen spam kon niet laden. Zet een adblocker of strenge privacy-instelling voor deze site uit, of probeer
+        een andere browser, en laad de pagina opnieuw.
+      </p>
       {fouten.turnstile && <FieldError id="f-turnstile-fout">{fouten.turnstile}</FieldError>}
     </div>
 
@@ -385,6 +394,30 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
     opacity: 1;
     transform: scale(1);
   }
+  /* Turnstile: de widget is minimaal 300px breed. Op smalle schermen mag het vak de werkbonrand in. */
+  .ts-vak {
+    position: relative;
+    display: grid;
+    min-height: 72px;
+    border: 1.5px dashed var(--kleur-lijn-sterk);
+    border-radius: var(--radius-md);
+    background: var(--kleur-papier);
+  }
+  .ts-vak-fout {
+    border: 2px solid var(--kleur-fout);
+  }
+  .ts-vak > * {
+    grid-area: 1 / 1;
+  }
+  .ts-laden {
+    align-self: center;
+    justify-self: center;
+  }
+  @media (max-width: 400px) {
+    .ts-vak {
+      margin-inline: -0.75rem;
+    }
+  }
   .sessie-vol {
     border-style: dashed;
     background: var(--kleur-zand-licht);
@@ -396,7 +429,27 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
   }
 </style>
 
-<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script is:inline>
+  // Turnstile: "laden" weg zodra de widget er staat; uitleg tonen als het script niet laadt of een fout geeft.
+  (function () {
+    var vak = document.querySelector('.cf-turnstile');
+    var laden = document.querySelector('[data-ts-laden]');
+    var fout = document.querySelector('[data-ts-fout]');
+    if (!vak) return;
+    var toonFout = function () {
+      if (laden) laden.hidden = true;
+      if (fout) fout.hidden = false;
+    };
+    window.rcTurnstileFout = toonFout;
+    new MutationObserver(function () {
+      if (vak.childElementCount > 0 && laden) laden.hidden = true;
+    }).observe(vak, { childList: true });
+    setTimeout(function () {
+      if (!window.turnstile || vak.childElementCount === 0) toonFout();
+    }, 10000);
+  })();
+</script>
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer onerror="window.rcTurnstileFout && window.rcTurnstileFout()"></script>
 <script>
   // S2d: knop uit en "Bezig met verzenden…" tegen dubbel verzenden.
   const form = document.querySelector<HTMLFormElement>('[data-aanmelden]');
