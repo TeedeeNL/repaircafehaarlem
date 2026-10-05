@@ -251,7 +251,7 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
                   <br />
                   <span class="text-sm">{plekken(vrij)} vrij</span>
                 </span>
-                <Icon naam="vink" maat={22} class="sessie-vink text-rust" />
+                <span class="sessie-vink text-rust" aria-hidden="true"><Icon naam="vink" maat={22} /></span>
               </label>
             );
           })
@@ -383,7 +383,9 @@ const ankers: Record<string, string> = { turnstile: 'f-turnstile' };
     flex: none;
     accent-color: var(--kleur-oranje);
   }
+  /* Op een eigen span: scoped CSS bereikt de <svg> van het Icon-component niet. */
   .sessie-vink {
+    display: inline-flex;
     opacity: 0;
     transform: scale(0.5);
     transition:
