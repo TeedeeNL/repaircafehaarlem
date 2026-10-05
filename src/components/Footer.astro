@@ -1,5 +1,6 @@
 ---
 import Logo from './Logo.astro';
+import { LOCATIE, LOCATIE_FICTIEF } from '../lib/site';
 import type { MenuItem } from '../lib/menu';
 
 // Donkere voet met een perforatierand bovenaan, zoals een afscheurbon.
@@ -31,7 +32,7 @@ const kolommen = [
       </a>
       <p class="max-w-[30ch] text-small text-ink-licht">Elke eerste zaterdag van de maand samen spullen repareren.</p>
       <p class="font-mono text-meta text-ink-licht">
-        <span class="text-paper">Waar:</span> [ADRES LOCATIE]
+        <span class="text-paper">Waar:</span> {LOCATIE}{LOCATIE_FICTIEF && ' (fictief adres)'}
       </p>
     </div>
 

@@ -1,2 +1,3 @@
-// Vaste gegevens van de Repair Cafe. Het adres staat nog niet in het ontwerp.
-export const LOCATIE = 'Het adres staat op de website bij "Over ons".';
+// Vaste gegevens van de Repair Cafe. Schoolproject: het adres is fictief.
+export const LOCATIE = 'Buurthuis De Werkbank, Moersleutelstraat 12, 2011 RC Haarlem';
+export const LOCATIE_FICTIEF = true;

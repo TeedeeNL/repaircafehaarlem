@@ -7,7 +7,7 @@ import Layout from '../components/Layout.astro';
 import Bon from '../components/Bon.astro';
 import CtaBand from '../components/CtaBand.astro';
 import Faq from '../components/Faq.astro';
-import FotoPlaceholder from '../components/FotoPlaceholder.astro';
+import Gereedschapsbord from '../components/Gereedschapsbord.astro';
 import Icon, { type IconNaam } from '../components/Icon.astro';
 import Knop from '../components/Knop.astro';
 import Label from '../components/Label.astro';
@@ -81,12 +81,11 @@ const kopWoorden = ['Kapot?', 'Gooi', 'het', 'niet', 'weg.'];
       </div>
 
       <div class="hero-in relative mx-auto w-full max-w-[26rem] lg:max-w-none" style="--i: 4">
-        <FotoPlaceholder omschrijving="vrijwilliger aan de werkbank" verhouding="4 / 5" class="rotate-[1.5deg] shadow-card" />
+        <Gereedschapsbord />
         <Label as="div" kantel={-7} variant="oranje" class="!absolute -bottom-6 -left-4 w-44 text-center md:-left-10 md:w-52">
           <p class="font-mono text-tiny font-semibold tracking-[.18em] uppercase">Huisregel 04</p>
           <p class="mt-1 font-display text-2xl leading-none font-extrabold">Reparatie is gratis</p>
         </Label>
-        <Icon naam="moersleutel" maat={120} class="pointer-events-none absolute -top-8 -right-6 rotate-12 text-kraft max-lg:hidden" />
       </div>
     </div>
   </section>

@@ -1,0 +1,85 @@
+---
+import Icon, { type IconNaam } from './Icon.astro';
+
+// Illustratie voor de hero: een gaatjesbord met gereedschap aan haakjes, in de iconenstijl van de site.
+// Vaste beeldverhouding, geen afbeelding om te laden (geen layout shift).
+const gereedschap: { naam: IconNaam; x: number; y: number; maat: number; draai: number }[] = [
+  { naam: 'moersleutel', x: 22, y: 20, maat: 92, draai: -8 },
+  { naam: 'schaar', x: 62, y: 16, maat: 76, draai: 12 },
+  { naam: 'schroevendraaier', x: 78, y: 44, maat: 84, draai: -4 },
+  { naam: 'tandwiel', x: 30, y: 52, maat: 96, draai: 0 },
+  { naam: 'lamp', x: 64, y: 70, maat: 78, draai: 6 },
+  { naam: 'naald', x: 20, y: 80, maat: 70, draai: -10 },
+];
+---
+
+<div class="bord relative overflow-hidden rounded-xl border-thin border-ink shadow-card" role="img" aria-label="Illustratie: gereedschap aan een gaatjesbord boven de werkbank">
+  {
+    gereedschap.map((g, i) => (
+      <span class="haak" style={`left:${g.x}%; top:${g.y}%; --draai:${g.draai}deg; --i:${i}; --m:${g.maat / 4}`}>
+        <span class="pin" aria-hidden="true" />
+        <Icon naam={g.naam} maat={g.maat} />
+      </span>
+    ))
+  }
+  <div class="plank" aria-hidden="true"></div>
+</div>
+
+<style>
+  .bord {
+    aspect-ratio: 4 / 5;
+    container-type: inline-size;
+    rotate: 1.5deg;
+    background:
+      radial-gradient(circle, color-mix(in srgb, var(--kleur-inkt) 22%, transparent) 2.5px, transparent 3px) 0 0 / 26px 26px,
+      var(--kleur-kraft);
+  }
+  .haak {
+    position: absolute;
+    display: grid;
+    justify-items: center;
+    translate: -50% 0;
+    transform: rotate(var(--draai));
+    transform-origin: 50% 0;
+    color: var(--kleur-inkt);
+  }
+  .pin {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--kleur-oranje);
+    border: 2px solid var(--kleur-inkt);
+    margin-bottom: -4px;
+    position: relative;
+    z-index: 1;
+  }
+  /* Icon is een los component: :global nodig. Maat schaalt mee met de breedte van het bord. */
+  .haak :global(svg) {
+    width: calc(var(--m) * 1cqw);
+    height: auto;
+    stroke-width: 1.5;
+  }
+  .plank {
+    position: absolute;
+    left: -2%;
+    right: -2%;
+    bottom: 0;
+    height: 9%;
+    background: var(--kleur-inkt);
+    border-top: 3px solid var(--kleur-oranje);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .bord:hover .haak {
+      animation: wiebel 1.2s var(--ease-veer);
+      animation-delay: calc(var(--i) * 60ms);
+    }
+  }
+  @keyframes wiebel {
+    30% {
+      transform: rotate(calc(var(--draai) + 7deg));
+    }
+    60% {
+      transform: rotate(calc(var(--draai) - 4deg));
+    }
+  }
+</style>
