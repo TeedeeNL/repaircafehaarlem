@@ -2,6 +2,8 @@
 // Mijn account: eigen e-mailadres en wachtwoord wijzigen. Alleen ingelogd (middleware op /crew).
 // Elke wijziging vraagt het huidige wachtwoord; een fout wachtwoord telt als mislukte inlogpoging
 // (zelfde blokkade als /login). Na een nieuw wachtwoord worden alle andere sessies beëindigd.
+// Een ingelogde vrijwilliger gebruikt deze pagina om zijn eigen account te beheren. Hij kan alleen zijn eigen account
+// wijzigen, want we gebruiken altijd het id uit de sessie en nooit een id uit het formulier.
 export const prerender = false;
 
 import Layout from '../../components/Layout.astro';
@@ -21,6 +23,7 @@ import {
 } from '../../lib/schemas/account';
 import { leesFormulier, valideer, type Fouten } from '../../lib/schemas/formulier';
 
+// Gezet door de middleware. Het uitroepteken zegt tegen TypeScript dat dit hier nooit null is.
 const gebruiker = Astro.locals.gebruiker!;
 
 let actie: 'email' | 'wachtwoord' | null = null;
@@ -29,7 +32,10 @@ let nieuwEmail = '';
 let blokkade = { geblokkeerd: false, minuten: 0 };
 let systeemfout = false;
 
-/** Controleert het huidige wachtwoord; telt een fout mee voor de inlogblokkade. */
+/**
+ * Controleert het huidige wachtwoord; telt een fout mee voor de inlogblokkade.
+ * Beveiliging: zonder deze telling kan iemand met een gekaapte sessie hier onbeperkt wachtwoorden proberen.
+ */
 async function huidigKlopt(wachtwoord: string): Promise<boolean> {
   const v = await vrijwilligerOpId(gebruiker.id);
   if (v && (await controleerWachtwoord(wachtwoord, v.salt, v.wachtwoord_hash))) return true;
@@ -68,8 +74,10 @@ if (Astro.request.method === 'POST') {
       if (!check.succes) {
         fouten = check.fouten;
       } else if (await huidigKlopt(check.data.huidig_wachtwoord)) {
+        // Nieuwe salt en nieuwe hash (TE-04). Het wachtwoord zelf wordt nergens opgeslagen.
         const { hash, salt } = await hashWachtwoord(check.data.nieuw_wachtwoord);
         await wijzigWachtwoord(gebruiker.id, hash, salt);
+        // Alle andere sessies beëindigen, maar de huidige houden, anders logt de gebruiker zichzelf uit.
         const huidig = await huidigeTokenHash(Astro.cookies);
         if (huidig) await verwijderAndereSessies(gebruiker.id, huidig);
         await wisMislukteLogins(gebruiker.email);

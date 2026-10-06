@@ -1,14 +1,18 @@
+// Validatie voor het aanmaken van een sessie door de coördinator (FE-08). Gebruikt door pages/beheer/sessies.astro.
+// Dit is een functie en geen vaste constante, omdat "vandaag" van buiten moet komen.
 import { z } from 'astro/zod';
 import { isHeelGetalTussen } from './formulier';
 import { isGeldigeDatum } from '../tijd';
 
-// F-08: datum vandaag of later, starttijd en 1 t/m 40 plekken. "Vandaag" komt van de server.
+// FE-08: datum vandaag of later, starttijd en 1 t/m 40 plekken. "Vandaag" komt van de server.
 export const SESSIE_VELDEN = ['datum', 'starttijd', 'max_plekken'] as const;
 
 const PLEKKEN = 'Aantal plekken: kies 1 tot en met 40.';
 
 export function sessieSchema(vandaag: string) {
   return z.object({
+    // Eerst bekijken we of de datum echt bestaat (geen 31 februari), dan of hij niet in het verleden ligt.
+    // Datums in de vorm jjjj-mm-dd kun je als tekst vergelijken (d >= vandaag), de volgorde klopt dan vanzelf.
     datum: z
       .string()
       .trim()

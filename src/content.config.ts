@@ -1,9 +1,15 @@
+// Beschrijft de content collection "info": de informatiepagina's (FE-11) als Markdown-bestanden.
+// Astro leest dit bij de build en gebruikt pages/info/[slug].astro om van elk bestand een pagina te maken.
+// Voordeel: een vrijwilliger kan tekst aanpassen in een .md-bestand zonder code aan te raken.
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
-// Informatiepagina's (F-11): Markdown in src/content/info/, URL = /info/<bestandsnaam>.
+// Informatiepagina's (FE-11): Markdown in src/content/info/, URL = /info/<bestandsnaam>.
 // De inhoud staat in de frontmatter (intro, punten, regels, vragen); vrije Markdown in de body kan ook.
+// Frontmatter is het blok tussen --- bovenaan een .md-bestand met gegevens als titel en volgorde.
+// Het Zod-schema hieronder controleert die gegevens bij de build. Een vergeten titel breekt dus de build,
+// en niet pas de live site.
 const info = defineCollection({
   loader: glob({ base: './src/content/info', pattern: '**/*.md' }),
   schema: z.object({

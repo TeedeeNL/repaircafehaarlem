@@ -1,5 +1,8 @@
 ---
-// S6 Werklijst + uitkomstformulier (W6, F-06, F-07). Alleen ingelogd (middleware).
+// S6 Werklijst + uitkomstformulier (W6, FE-06, FE-07). Alleen ingelogd (middleware).
+// Vrijwilligers zien hier de aanmeldingen van één sessie, met filters, en leggen per apparaat de uitkomst vast.
+// De toegangscontrole doet src/middleware.ts: deze pagina leest alleen Astro.locals.gebruiker.
+// Filters staan in de URL (?sessie=&categorie=&status=), zodat je een gefilterde lijst kunt delen of verversen.
 export const prerender = false;
 
 import Layout from '../components/Layout.astro';
@@ -19,10 +22,14 @@ import { leesFormulier, valideer, type Fouten } from '../lib/schemas/formulier';
 import { datumKort } from '../lib/format';
 import { vandaag } from '../lib/tijd';
 
+// Het uitroepteken (!) zegt tegen TypeScript: dit is niet null. Dat klopt, want de middleware stuurt
+// niet-ingelogde bezoekers weg voordat deze pagina draait.
 const gebruiker = Astro.locals.gebruiker!;
 const q = Astro.url.searchParams;
 
-// Filters (F-06). Onbekende waarden vallen terug op "alle".
+// Filters (FE-06). Onbekende waarden vallen terug op "alle".
+// URL-parameters komen van de gebruiker en zijn dus niet te vertrouwen. We accepteren alleen cijfers voor de sessie
+// en alleen waarden uit onze vaste lijsten voor categorie en status. Al het andere wordt genegeerd.
 const gekozen = /^\d{1,9}$/.test(q.get('sessie') ?? '') ? await sessieOpId(Number(q.get('sessie'))) : null;
 const sessie = gekozen ?? (await standaardWerklijstSessie(vandaag()));
 const categorie = CATEGORIEEN.find((c) => c === q.get('categorie')) ?? null;
@@ -30,6 +37,7 @@ const status = AANMELDING_STATUSSEN.find((s) => s.value === q.get('status'))?.va
 const opgeslagenParam = q.get('opgeslagen');
 const opgeslagen = opgeslagenParam && /^RC-\d{4}-\d{4}$/.test(opgeslagenParam) ? opgeslagenParam : null;
 
+// Bouwt een link met de huidige filters. De parameters gaan door URLSearchParams, die tekens veilig codeert.
 const filterUrl = (extra: Record<string, string> = {}) => {
   const p = new URLSearchParams();
   if (sessie) p.set('sessie', String(sessie.id));
@@ -40,7 +48,7 @@ const filterUrl = (extra: Record<string, string> = {}) => {
   return s ? `/crew?${s}` : '/crew';
 };
 
-// F-07: uitkomst vastleggen. Bij een fout blijft het formulier open en ingevuld.
+// FE-07: uitkomst vastleggen. Bij een fout blijft het formulier open en ingevuld.
 let openId: number | null = null;
 let postWaarden: Record<string, string> | null = null;
 let formFouten: Fouten = {};
@@ -50,11 +58,15 @@ if (Astro.request.method === 'POST') {
   const check = valideer(uitkomstSchema, leesFormulier(await Astro.request.formData(), UITKOMST_VELDEN));
   if (check.succes) {
     try {
+      // We geven het id van de ingelogde gebruiker mee uit de sessie en niet uit het formulier.
+      // Een vrijwilliger kan dus geen uitkomst op naam van een ander vastleggen.
       const referentie = await slaUitkomstOp(check.data, gebruiker.id);
+      // Post/Redirect/Get (303): na het opslaan een GET, zodat verversen niet opnieuw opslaat.
       if (referentie) return Astro.redirect(filterUrl({ opgeslagen: referentie }), 303);
       formFouten = { uitkomst: 'Deze aanmelding bestaat niet (meer) of is geannuleerd.' };
       Astro.response.status = 404;
     } catch (e) {
+      // Privacy: alleen het id en het soort fout in de log, geen namen of notities.
       console.error('Uitkomst opslaan mislukt', { aanmelding: check.data.aanmelding_id, fout: e instanceof Error ? e.name : 'onbekend' });
       opslaanMislukt = true;
       Astro.response.status = 500;

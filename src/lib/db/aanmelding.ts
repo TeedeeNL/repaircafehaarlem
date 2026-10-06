@@ -1,3 +1,6 @@
+// Queries op de tabel aanmelding: aanmelden, opzoeken voor de statuspagina en de werklijst van de crew.
+// Gebruikt door /aanmelden (maakAanmelding), /aanmelden/bevestiging en /status (aanmeldingVoorOpvraag)
+// en /crew (werklijst). De belangrijkste functie is maakAanmelding: die bewaakt het maximum aantal plekken.
 import { db } from './client';
 import type { AanmeldingStatus, Categorie, Uitkomst } from '../domein';
 
@@ -10,15 +13,28 @@ export interface NieuweAanmelding {
   defect: string;
 }
 
+// Drie mogelijke uitkomsten. De pagina kiest op basis van "soort" de juiste melding en HTTP-status.
 export type AanmeldResultaat =
   | { soort: 'ok'; id: number; referentie: string }
   | { soort: 'vol' }
   | { soort: 'ongeldige_sessie' };
 
 /**
- * F-01 + F-03: plekcontrole en insert in één statement binnen een batch (één transactie),
+ * FE-01 + FE-03: plekcontrole en insert in één statement binnen een batch (één transactie),
  * zodat twee gelijktijdige aanmeldingen het maximum niet kunnen overschrijden.
  * Referentienummer: RC-JJJJ-NNNN, oplopend per jaar.
+ *
+ * Waarom zo? Eerst tellen en dan apart invoegen laat een gat: twee bezoekers tellen allebei "11 van 12",
+ * en beiden voegen in, dus 13 aanmeldingen (een race condition). Hier staat de telling IN de INSERT,
+ * dus de database doet controle en invoegen in één keer.
+ *
+ * Uitleg van de SQL:
+ * - INSERT ... SELECT voegt alleen een rij in als de SELECT iets oplevert. Is de sessie vol, dan niets.
+ * - De WHERE eist: sessie bestaat, is open, ligt niet in het verleden en heeft nog plek.
+ * - Het referentienummer is "hoogste nummer van dit jaar + 1". substr(referentie, 9) pakt de cijfers na "RC-2026-".
+ *   printf('%04d') vult aan met nullen, dus 7 wordt 0007.
+ * - RETURNING geeft de nieuwe rij terug, zodat we de referentie meteen hebben.
+ * De tweede query in de batch bepaalt, als er niets is ingevoegd, of de sessie vol was of niet bestaat.
  */
 export async function maakAanmelding(a: NieuweAanmelding, jaar: string, vandaag: string): Promise<AanmeldResultaat> {
   const [invoegen, sessie] = await db().batch<Record<string, unknown>>([
@@ -42,6 +58,7 @@ export async function maakAanmelding(a: NieuweAanmelding, jaar: string, vandaag:
 
   const nieuw = invoegen?.results[0] as { id: number; referentie: string } | undefined;
   if (nieuw) return { soort: 'ok', id: nieuw.id, referentie: nieuw.referentie };
+  // Niets ingevoegd: bestaat de sessie nog en is hij open? Dan was hij vol. Anders klopt de sessie niet.
   return sessie?.results.length ? { soort: 'vol' } : { soort: 'ongeldige_sessie' };
 }
 
@@ -58,7 +75,12 @@ export interface AanmeldingDetail {
   minuten: number | null;
 }
 
-/** F-09: alleen bij een kloppende combinatie van referentie en e-mailadres. */
+/**
+ * FE-09: alleen bij een kloppende combinatie van referentie en e-mailadres.
+ * Het e-mailadres werkt als tweede "sleutel": een referentienummer alleen is niet genoeg om iemands
+ * gegevens te zien. LEFT JOIN houdt de aanmelding in beeld ook als er nog geen reparatie is
+ * (uitkomst, notitie en minuten zijn dan null).
+ */
 export function aanmeldingVoorOpvraag(referentie: string, email: string): Promise<AanmeldingDetail | null> {
   return db()
     .prepare(
@@ -85,7 +107,12 @@ export interface WerklijstRij {
   notitie: string | null;
 }
 
-/** F-06: aanmeldingen van een sessie, gesorteerd op volgorde van aanmelden. */
+/**
+ * FE-06: aanmeldingen van een sessie, gesorteerd op volgorde van aanmelden.
+ * De filters zijn optioneel. "?2 IS NULL OR a.categorie = ?2" betekent: is er geen filter (null),
+ * dan telt de regel altijd mee. Zo is er één query voor alle filtercombinaties.
+ * "totaal" is het aantal zonder filter, zodat de pagina kan tonen "3 van 12".
+ */
 export async function werklijst(
   sessieId: number,
   filter: { categorie: Categorie | null; status: AanmeldingStatus | null },

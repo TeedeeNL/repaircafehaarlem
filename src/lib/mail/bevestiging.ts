@@ -2,7 +2,7 @@ import type { Bericht } from './index';
 import { datumLang } from '../format';
 import { LOCATIE } from '../site';
 
-// F-04: referentienummer, datum, tijd, adres, huisregels en de link naar de statusopvraag.
+// FE-04: referentienummer, datum, tijd, adres, huisregels en de link naar de statusopvraag.
 // Bewust zonder voornaam, zodat er in een log nooit een naam bij een adres staat.
 export function bevestigingsmail(g: {
   email: string;

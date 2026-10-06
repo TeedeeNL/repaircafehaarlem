@@ -1,5 +1,7 @@
 ---
-// S7 Sessiebeheer (W7, F-08). Alleen de coördinator: de middleware geeft anderen een 403, ook bij POST.
+// S7 Sessiebeheer (W7, FE-08). Alleen de coördinator: de middleware geeft anderen een 403, ook bij POST.
+// De coördinator ziet hier alle sessies en maakt nieuwe aan. De rolcontrole staat in src/middleware.ts en niet hier,
+// zodat ze ook werkt als iemand direct een POST naar deze URL stuurt. Dat is de beveiliging.
 export const prerender = false;
 
 import Layout from '../../components/Layout.astro';
@@ -15,6 +17,7 @@ import { datumKort, datumLang } from '../../lib/format';
 import { isGeldigeDatum, vandaag } from '../../lib/tijd';
 
 const gebruiker = Astro.locals.gebruiker!;
+// "Vandaag" komt van de server (Amsterdamse tijd), niet van de browser. Een bezoeker kan zijn eigen klok aanpassen.
 const nu = vandaag();
 
 let invoer: Record<string, string> = { datum: '', starttijd: '10:00', max_plekken: '12' };
@@ -25,6 +28,7 @@ if (Astro.request.method === 'POST') {
   const check = valideer(sessieSchema(nu), leesFormulier(await Astro.request.formData(), SESSIE_VELDEN));
   if (check.succes) {
     try {
+      // De unieke index op datum in de database bewaakt dat er maar één sessie per dag is.
       const res = await maakSessie(check.data);
       if (res.soort === 'ok') return Astro.redirect(`/beheer/sessies?aangemaakt=${check.data.datum}`, 303);
       fouten = { datum: 'Er bestaat al een sessie op deze datum.' };
@@ -42,10 +46,12 @@ if (Astro.request.method === 'POST') {
   }
 }
 
+// De datum in de URL komt van buiten. We tonen hem alleen als het echt een datum is.
 const aangemaaktParam = Astro.url.searchParams.get('aangemaakt');
 const aangemaakt = aangemaaktParam && isGeldigeDatum(aangemaaktParam) ? aangemaaktParam : null;
 const eersteFout = SESSIE_VELDEN.find((k) => fouten[k]);
 
+// Per sessie rekenen we uit welk label erbij hoort. Een sessie in het verleden telt als gesloten, ook als hij nog "open" staat.
 const rijen = (await alleSessies()).map((s) => {
   const voorbij = s.status === 'gesloten' || s.datum < nu;
   const vol = !voorbij && s.bezet >= s.max_plekken;

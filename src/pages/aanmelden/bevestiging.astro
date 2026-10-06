@@ -1,5 +1,8 @@
 ---
-// S3 Bevestiging (W3, F-01, F-04).
+// S3 Bevestiging (W3, FE-01, FE-04).
+// Toont na een geslaagde aanmelding het referentienummer. De gegevens komen uit een korte cookie die
+// /aanmelden zette (lib/bevestiging.ts) en daarna uit de database, niet uit de URL. Zo kan niemand andermans
+// bevestiging openen door een nummer in de adresbalk te veranderen.
 export const prerender = false;
 
 import Layout from '../../components/Layout.astro';

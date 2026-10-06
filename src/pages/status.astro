@@ -1,5 +1,7 @@
 ---
-// S4 Statusopvraag (W4, F-09). Maximaal 10 pogingen per kwartier per IP-adres.
+// S4 Statusopvraag (W4, FE-09). Maximaal 10 pogingen per kwartier per IP-adres.
+// Een bezoeker vult referentienummer en e-mailadres in en ziet de status van de reparatie. Geen login nodig.
+// Omdat de pagina openbaar is, beschermen we hem tegen gokken: rate limiting en één vaste melding bij "niet gevonden".
 export const prerender = false;
 
 import Layout from '../components/Layout.astro';
@@ -25,6 +27,8 @@ let geblokkeerd = false;
 if (Astro.request.method === 'POST') {
   const check = valideer(statusSchema, leesFormulier(await Astro.request.formData(), STATUS_VELDEN));
   invoer = check.succes ? check.data : check.waarden;
+  // De limiet gaat voor de validatie. Zo telt elke poging mee, ook een poging met een verkeerd ingevuld formulier.
+  // Astro.clientAddress is het IP-adres van de bezoeker.
   if (!(await statusOpvraagToegestaan(Astro.clientAddress))) {
     geblokkeerd = true;
     Astro.response.status = 429;

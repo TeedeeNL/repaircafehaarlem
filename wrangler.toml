@@ -1,7 +1,14 @@
+# Instellingen voor Cloudflare Workers, het platform waarop de site draait. Wrangler (de Cloudflare-opdrachtregel)
+# leest dit bestand bij npm run dev, bij de build en bij het deployen. Het zegt: hoe heet de Worker, welke
+# database hoort erbij en welke instellingen heeft de code nodig. Geheimen staan hier niet.
 name = "repaircafehaarlem"
+# De ingang van de Worker: de code uit de Astro-adapter die elk verzoek aanneemt.
 main = "@astrojs/cloudflare/entrypoints/server"
+# Datum waarmee we het gedrag van de Workers-runtime vastzetten, zodat een update de site niet stilletjes verandert.
 compatibility_date = "2026-09-26"
 
+# [vars] zijn gewone instellingen, zichtbaar in de repository. Geheimen horen hier NIET (zie hieronder).
+# De code leest ze via env.<NAAM> (bijvoorbeeld in lib/turnstile.ts en lib/mail/index.ts).
 [vars]
 # Turnstile-widget "Repair Cafe Haarlem - aanmelden" (secret: TURNSTILE_SECRET_KEY op de Worker).
 # Lokaal overschrijft .dev.vars dit met de publieke testsleutel.
@@ -15,6 +22,12 @@ MAIL_MODUS = "eusend"
 # geen eigen domein); voor mail gebruiken we een subdomein van timwebsites.nl.
 MAIL_AFZENDER = "Repair Cafe Haarlem <aanmelding@repaircafe.timwebsites.nl>"
 
+# Geheimen (TURNSTILE_SECRET_KEY en EUSEND_API_KEY) zijn bewust niet in dit bestand gezet.
+# Ze staan als "secret" op de Worker (wrangler secret put) en lokaal in .dev.vars, dat niet in git komt.
+# Een site key mag publiek zijn (de browser heeft hem nodig). Een secret key mag dat nooit.
+
+# D1 is de SQL-database van Cloudflare (SQLite). [[d1_databases]] met dubbele haken betekent: een lijst
+# waarvan dit één item is. De "binding" is de naam waaronder de code erbij kan: env.DB (zie src/lib/db/client.ts).
 [[d1_databases]]
 binding = "DB"
 database_name = "repair-cafe"

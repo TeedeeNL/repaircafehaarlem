@@ -1,5 +1,11 @@
 ---
-// S2 Aanmeldformulier (W2, F-01 t/m F-04, TE-03, TE-05).
+// S2 Aanmeldformulier (W2, FE-01 t/m FE-04, TE-03, TE-05).
+// Dit bestand toont het formulier (GET) en verwerkt het ook (POST). Een bezoeker komt hier via de homepage.
+// Volgorde bij een POST: lezen, valideren (Zod) en Turnstile, plek vastleggen in D1, mail, redirect naar S3.
+// De bovenste helft draait op de server. De HTML eronder is alleen opmaak.
+//
+// prerender = false: de pagina wordt bij elk verzoek op de server gemaakt (SSR) en niet vooraf als vaste HTML.
+// Dat moet, want de lijst met sessies en het aantal vrije plekken veranderen steeds, en een POST kan niet statisch.
 export const prerender = false;
 
 import Layout from '../../components/Layout.astro';
@@ -30,7 +36,11 @@ let systeemfout = false;
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
   waarden = leesFormulier(form, AANMELDING_VELDEN);
+  // Turnstile (TE-05) is de bot-controle van Cloudflare. De widget in de browser stopt een token in dit veld.
+  // Alleen de server kan bij Cloudflare navragen of dat token echt is (verifieerTurnstile in lib/turnstile.ts).
   const token = form.get('cf-turnstile-response');
+  // Beide controles doen we tegelijk (Promise.all), zodat de bezoeker niet op ze allebei na elkaar wacht.
+  // De server valideert altijd opnieuw, ook als de browser het formulier al had gecontroleerd (FE-02).
   const [check, mens] = await Promise.all([
     Promise.resolve(valideer(aanmeldingSchema, waarden)),
     verifieerTurnstile(typeof token === 'string' ? token : '', Astro.clientAddress, 'aanmelden'),
@@ -39,11 +49,14 @@ if (Astro.request.method === 'POST') {
   if (!check.succes) fouten = { ...check.fouten };
   if (!mens) fouten.turnstile = 'De controle is mislukt, probeer het opnieuw.';
 
+  // Pas als beide controles slagen, raken we de database aan. Zo kost een bot ons geen databasewerk.
   if (check.succes && mens) {
     try {
+      // Hier valt de beslissing of er nog plek is. Dat gebeurt in één SQL-statement (FE-03, zie db/aanmelding.ts).
       const res = await maakAanmelding(check.data, huidigJaar(), vandaag());
       if (res.soort === 'vol') {
-        // F-03: tussen laden en verzenden vol geraakt. Keuze leegmaken, rest blijft staan.
+        // FE-03: tussen laden en verzenden vol geraakt. Keuze leegmaken, rest blijft staan.
+        // 409 Conflict: het verzoek botst met de huidige toestand van de server.
         fouten.sessie_id = 'Deze sessie is inmiddels vol, kies een andere datum.';
         waarden.sessie_id = '';
         Astro.response.status = 409;
@@ -53,7 +66,8 @@ if (Astro.request.method === 'POST') {
         Astro.response.status = 400;
       } else {
         const sessie = (await komendeSessies(vandaag())).find((s) => s.id === check.data.sessie_id);
-        // F-04: mail is niet leidend. Mislukt hij, dan blijft de aanmelding staan.
+        // FE-04: mail is niet leidend. Mislukt hij, dan blijft de aanmelding staan.
+        // De plek is al vastgelegd. Een kapotte mailservice mag een bezoeker niet laten denken dat het niet gelukt is.
         let mailVerstuurd = false;
         try {
           await mailer().verstuur(
@@ -68,12 +82,15 @@ if (Astro.request.method === 'POST') {
           );
           mailVerstuurd = true;
         } catch (e) {
+          // Privacy: in de log zetten we de referentie en de reden, nooit het e-mailadres.
           console.error('Bevestigingsmail niet verstuurd', {
             referentie: res.referentie,
             reden: e instanceof Error ? e.message : 'onbekend',
           });
         }
         onthoudBevestiging(Astro.cookies, { referentie: res.referentie, email: check.data.email, mailVerstuurd });
+        // Post/Redirect/Get: na een POST sturen we door met 303. Als de bezoeker de pagina ververst,
+        // verstuurt de browser het formulier dus niet nog eens en ontstaat er geen dubbele aanmelding.
         return Astro.redirect('/aanmelden/bevestiging', 303);
       }
     } catch (e) {
@@ -83,6 +100,7 @@ if (Astro.request.method === 'POST') {
       Astro.response.status = 500;
     }
   } else {
+    // 400 Bad Request: de invoer klopt niet. Het formulier komt terug met de fouten en de ingevulde waarden.
     Astro.response.status = 400;
   }
 }

@@ -1,5 +1,9 @@
 ---
-// S5 Login vrijwilligers (W5, F-05, TE-04).
+// S5 Login vrijwilligers (W5, FE-05, TE-04).
+// Toont het loginformulier (GET) en controleert het (POST). Vrijwilligers komen hier, of worden hierheen gestuurd
+// door de middleware als ze een beschermde pagina openen. Bij succes start startSessie (lib/auth/sessie.ts) de sessie.
+//
+// prerender = false: deze pagina hangt af van het cookie en het verzoek, dus hij moet per verzoek op de server draaien.
 export const prerender = false;
 
 import Layout from '../components/Layout.astro';
@@ -16,9 +20,12 @@ import { LOGIN_VELDEN, loginSchema } from '../lib/schemas/login';
 import { leesFormulier, valideer, type Fouten } from '../lib/schemas/formulier';
 
 // Alleen interne paden als terugsprong, nooit een externe URL.
+// Beveiliging (open redirect): zonder deze controle kan iemand een link maken als /login?terug=https://nep-site.nl.
+// Na het inloggen komt het slachtoffer dan op die nepsite terecht. Het patroon laat alleen /crew en /beheer toe.
 const veiligDoel = (pad: unknown) =>
   typeof pad === 'string' && /^\/(crew|beheer)(\/[a-z-]+)?(\?[\w=&%.+-]*)?$/.test(pad) ? pad : '/crew';
 
+// Een al ingelogde gebruiker heeft hier niets te zoeken. Astro.locals.gebruiker is gezet door de middleware.
 const terugParam = Astro.url.searchParams.get('terug');
 if (Astro.locals.gebruiker && Astro.request.method === 'GET') return Astro.redirect(veiligDoel(terugParam), 302);
 
@@ -38,9 +45,12 @@ if (Astro.request.method === 'POST') {
     fouten = check.fouten;
     Astro.response.status = 400;
   } else {
+    // Eerst kijken of dit account geblokkeerd is. Bij een blokkade controleren we het wachtwoord niet eens.
     blokkade = await loginBlokkade(check.data.email);
     if (!blokkade.geblokkeerd) {
       const v = await vrijwilligerOpEmail(check.data.email);
+      // Bij een onbekend adres rekenen we toch een hash uit (doeAlsofControle), zodat de responstijd
+      // niet verraadt of het adres bestaat.
       const klopt = v
         ? await controleerWachtwoord(check.data.wachtwoord, v.salt, v.wachtwoord_hash)
         : await doeAlsofControle(check.data.wachtwoord);
@@ -48,12 +58,15 @@ if (Astro.request.method === 'POST') {
       if (v && klopt) {
         await wisMislukteLogins(check.data.email);
         await startSessie(Astro.cookies, v.id);
+        // 303 na een POST, zodat verversen het inloggen niet opnieuw verstuurt.
         return Astro.redirect(terug || '/crew', 303);
       }
       // Zelfde melding bij onbekend adres en fout wachtwoord.
+      // Beveiliging: een aanvaller mag niet kunnen zien welk van de twee fout was.
       if (await registreerMislukteLogin(check.data.email)) blokkade = { geblokkeerd: true, minuten: 15 };
       else onjuist = true;
     }
+    // 429 Too Many Requests bij een blokkade, 401 Unauthorized bij een fout wachtwoord.
     Astro.response.status = blokkade.geblokkeerd ? 429 : 401;
   }
 }
