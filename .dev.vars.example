@@ -7,10 +7,8 @@ TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
 TURNSTILE_TESTMODUS=aan
 
 # console = bevestigingsmail naar de terminal, uit = mail mislukt (test de variant "mail volgt later"),
-# brevo = via Brevo (zie hieronder), eusend = via EUSEND; vul dan ook EUSEND_API_KEY en MAIL_AFZENDER in (domein geverifieerd bij EUSEND).
-# Met een eu_test_-sleutel loopt de hele verwerking (validatie, limieten) maar wordt er niets bezorgd.
+# brevo = via Brevo (zie hieronder); vul dan ook BREVO_API_KEY en MAIL_AFZENDER in (domein geverifieerd bij Brevo).
 MAIL_MODUS=console
-EUSEND_API_KEY=
 
 # Brevo: API-key uit SMTP & API > API keys. Het domein van MAIL_AFZENDER moet bij Brevo geverifieerd zijn.
 # MAIL_AFZENDER=Repair Cafe Haarlem <aanmelding@mail.timwebsites.nl>

@@ -15,7 +15,7 @@ compatibility_date = "2026-09-26"
 TURNSTILE_SITE_KEY = "0x4AAAAAAFI9uyD4KOXaC8Lq"
 # Hostnames waarop een token geldig is (komma-gescheiden). Nooit localhost in productie.
 TURNSTILE_HOSTNAMES = "repaircafehaarlem.timduinker10.workers.dev"
-# brevo = via Brevo (secret BREVO_API_KEY), eusend = bevestigingsmail via EUSEND (secret EUSEND_API_KEY), console = naar de log, uit = mail mislukt.
+# brevo = via Brevo (secret BREVO_API_KEY), console = naar de log, uit = mail mislukt.
 # Mislukte mail laat de aanmelding altijd staan (S3 toont "mail volgt later").
 MAIL_MODUS = "brevo"
 # Afzender op een bij Brevo geverifieerd (sub)domein. De site zelf draait op workers.dev (schoolproject,

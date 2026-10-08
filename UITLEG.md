@@ -14,7 +14,7 @@ Dit document helpt je de code uit te leggen aan een docent. Het hoort bij het co
 6. Bij het aanmelden controleert Cloudflare Turnstile of de bezoeker geen bot is.
 7. Alle gegevens staan in Cloudflare D1 (een SQL-database). Alle queries staan in `src/lib/db/` en gebruiken prepared statements.
 8. De plekcontrole en het opslaan van een aanmelding zijn één SQL-statement. Zo kan een sessie niet overboekt raken.
-9. Daarna gaat er een bevestigingsmail uit via EUSEND. Mislukt de mail, dan blijft de aanmelding gewoon staan.
+9. Daarna gaat er een bevestigingsmail uit via Brevo. Mislukt de mail, dan blijft de aanmelding gewoon staan.
 10. Vrijwilligers loggen in met een wachtwoord (PBKDF2-hash) en krijgen een cookie. Ze zien de werklijst en leggen uitkomsten vast. De coördinator beheert ook de sessies.
 
 ## 2. De route van één aanmelding
