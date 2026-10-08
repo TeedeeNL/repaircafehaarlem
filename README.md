@@ -37,7 +37,7 @@ Statusopvraag proberen: `RC-2026-0009` met `sanne@voorbeeld.nl`.
 - `src/lib/schemas/` Zod-schema per formulier, fouten als `{ veld: melding }`
 - `src/lib/auth/` PBKDF2-wachtwoorden, sessiecookie en rate limiting
 - `src/middleware.ts` beschermt `/crew` en `/beheer` (302 naar login, 403 zonder coördinatorrol)
-- `src/lib/mail/` mailer-interface: `eusend` (productie), `console` (dev) of `uit`; een mislukte mail laat de aanmelding staan
+- `src/lib/mail/` mailer-interface: `brevo` (productie), `eusend`, `console` (dev) of `uit`; een mislukte mail laat de aanmelding staan
 - `src/content/info/` informatiepagina's in Markdown (`titel`, `volgorde`, `in_menu`)
 - `tailwind.config.mjs` alle design tokens
 
@@ -47,5 +47,5 @@ Statusopvraag proberen: `RC-2026-0009` met `sanne@voorbeeld.nl`.
 2. `npx wrangler d1 migrations apply DB --remote` (nooit `seed.sql` op productie). Demosessies voor de live versie: `npx wrangler d1 execute DB --remote --file=migrations/demo-productie.sql` (raakt geen accounts aan, veilig om opnieuw te draaien).
 3. Echte Turnstile-sleutels: `TURNSTILE_SITE_KEY` in `wrangler.toml` en `npx wrangler secret put TURNSTILE_SECRET_KEY`.
 4. Accounts aanmaken: `npm run account -- --naam "Naam" --email adres@voorbeeld.nl --rol coordinator --remote`. Het wachtwoord (minimaal 12 tekens) wordt verborgen gevraagd; alleen hash en salt gaan naar D1. Wijzigen: `npm run account:wijzig -- --email <huidig> [--nieuw-email <nieuw>] [--wachtwoord] --remote`; daarna is het account overal uitgelogd.
-5. Mail via [EUSEND](https://eusend.dev) (verwerking en opslag in de EU). De site draait op `repaircafehaarlem.timduinker10.workers.dev` zonder eigen domein; mail gaat vanaf het subdomein `repaircafe.timwebsites.nl` (afzender in `MAIL_AFZENDER`). Dat subdomein moet in EUSEND geverifieerd zijn (DKIM-, DMARC-, SPF- en MX-record in Cloudflare-DNS van timwebsites.nl). Sleutel: `npx wrangler secret put EUSEND_API_KEY`. Weigert EUSEND de mail, dan blijft de aanmelding staan, toont S3 "de mail volgt later" en staat de reden (zonder e-mailadres) in de Worker-log.
+5. Mail via [Brevo](https://www.brevo.com) (`MAIL_MODUS = "brevo"` in `wrangler.toml`). Sleutel: `npx wrangler secret put BREVO_API_KEY`. Afzender `aanmelding@mail.timwebsites.nl`; dat domein moet bij Brevo geverifieerd zijn (DKIM, SPF/Brevo-code en DMARC in de Cloudflare-DNS van timwebsites.nl). Weigert Brevo de mail, dan blijft de aanmelding staan, toont S3 "de mail volgt later" en staat de reden (zonder e-mailadres) in de Worker-log. EUSEND blijft beschikbaar met `MAIL_MODUS = "eusend"`.
 6. `/statistiek` wordt per verzoek uit D1 gelezen (`Cache-Control: s-maxage=3600`). Dat wijkt af van ontwerpkeuze K7 (statisch), omdat de build op Cloudflare geen toegang heeft tot de productiedatabase.

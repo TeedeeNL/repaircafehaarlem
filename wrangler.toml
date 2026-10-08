@@ -15,14 +15,14 @@ compatibility_date = "2026-09-26"
 TURNSTILE_SITE_KEY = "0x4AAAAAAFI9uyD4KOXaC8Lq"
 # Hostnames waarop een token geldig is (komma-gescheiden). Nooit localhost in productie.
 TURNSTILE_HOSTNAMES = "repaircafehaarlem.timduinker10.workers.dev"
-# eusend = bevestigingsmail via EUSEND (secret EUSEND_API_KEY), console = naar de log, uit = mail mislukt.
+# brevo = via Brevo (secret BREVO_API_KEY), eusend = bevestigingsmail via EUSEND (secret EUSEND_API_KEY), console = naar de log, uit = mail mislukt.
 # Mislukte mail laat de aanmelding altijd staan (S3 toont "mail volgt later").
-MAIL_MODUS = "eusend"
-# Afzender op een bij EUSEND geverifieerd (sub)domein. De site zelf draait op workers.dev (schoolproject,
+MAIL_MODUS = "brevo"
+# Afzender op een bij Brevo geverifieerd (sub)domein. De site zelf draait op workers.dev (schoolproject,
 # geen eigen domein); voor mail gebruiken we een subdomein van timwebsites.nl.
-MAIL_AFZENDER = "Repair Cafe Haarlem <aanmelding@repaircafe.timwebsites.nl>"
+MAIL_AFZENDER = "Repair Cafe Haarlem <aanmelding@mail.timwebsites.nl>"
 
-# Geheimen (TURNSTILE_SECRET_KEY en EUSEND_API_KEY) zijn bewust niet in dit bestand gezet.
+# Geheimen (TURNSTILE_SECRET_KEY en BREVO_API_KEY) zijn bewust niet in dit bestand gezet.
 # Ze staan als "secret" op de Worker (wrangler secret put) en lokaal in .dev.vars, dat niet in git komt.
 # Een site key mag publiek zijn (de browser heeft hem nodig). Een secret key mag dat nooit.
 
